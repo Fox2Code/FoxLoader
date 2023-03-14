@@ -25,6 +25,7 @@ final File buildConfigSrc = new File(buildDir,
         "generated/sources/foxloader/com/fox2code/foxloader/launcher/BuildConfig.java")
 
 static void generateBuildConfig0(File buildConfigSrc, Project project) {
+    buildConfigSrc.getParentFile().mkdirs()
     final String FOXLOADER_VERSION = project['foxloader.version']
     final String SPARK_DEPENDENCY = project['spark.dependency']
     final String REINDEV_VERSION = project['reindev.version']
@@ -56,7 +57,6 @@ tasks.register('generateBuildConfig') {
 }
 
 if (!buildConfigSrc.exists()) {
-    buildConfigSrc.getParentFile().mkdirs()
     generateBuildConfig0(buildConfigSrc, project)
 }
 

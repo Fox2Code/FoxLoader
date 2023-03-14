@@ -129,6 +129,9 @@ class GradlePlugin implements Plugin<Project> {
             process(project, foxLoaderCache, config)
             final String foxLoaderVersion = config.localTesting ?
                     "1.0" : BuildConfig.FOXLOADER_VERSION // Full release will be 1.0.0 to avoid conflicts.
+            if (config.foxLoaderLibVersionOverride != null) {
+                foxLoaderVersion = config.foxLoaderLibVersionOverride
+            }
             project.dependencies {
                 runtimeOnly(BuildConfig.SPARK_DEPENDENCY)
                 implementation("com.github.Fox2Code.FoxLoader:common:${foxLoaderVersion}")
@@ -283,8 +286,6 @@ class GradlePlugin implements Plugin<Project> {
 
     static class FoxLoaderConfig {
         boolean decompileSources = true
-        boolean localTesting = false
-        boolean forceReload = false
         boolean includeClient = true
         boolean includeServer = true
         String username = Normalizer.normalize(System.getProperty("user.name"),
@@ -298,5 +299,9 @@ class GradlePlugin implements Plugin<Project> {
         public String modDesc
         public String modWebsite
         public String preClassTransformer
+        // Fox testing only
+        public String foxLoaderLibVersionOverride
+        boolean localTesting = false
+        boolean forceReload = false
     }
 }
