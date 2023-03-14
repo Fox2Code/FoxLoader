@@ -1,5 +1,7 @@
 package com.fox2code.foxloader.launcher;
 
+import com.fox2code.foxloader.launcher.utils.SourceUtil;
+
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
@@ -23,8 +25,7 @@ public class FoxLauncher {
         }
     }
 
-    public static final File foxLoaderFile = new File(
-            LoggerHelper.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+    public static final File foxLoaderFile = SourceUtil.getSourceFile(FoxLauncher.class);
     public static final HashMap<String, Object> mixinProperties = new HashMap<>();
     private static boolean client;
     static FoxClassLoader foxClassLoader;

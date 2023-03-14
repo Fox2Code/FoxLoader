@@ -1,5 +1,7 @@
 package com.fox2code.foxloader.launcher;
 
+import com.fox2code.foxloader.launcher.utils.SourceUtil;
+
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -8,8 +10,7 @@ import java.net.MalformedURLException;
 import java.util.Map;
 
 public class ClientMain {
-    private static final File currentLoaderFile = new File(
-            ClientMain.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+    private static final File currentLoaderFile = SourceUtil.getSourceFile(ClientMain.class);
     public static boolean hasBetaCraftDiscordRPC = false;
 
     /**

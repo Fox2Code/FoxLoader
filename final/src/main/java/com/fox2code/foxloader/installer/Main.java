@@ -3,6 +3,7 @@ package com.fox2code.foxloader.installer;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.ServerMain;
+import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -10,8 +11,7 @@ import java.util.Arrays;
 
 public class Main {
     static final File currentWorkingDir = new File("").getAbsoluteFile();
-    static final File currentInstallerFile = new File(
-            Main.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+    static final File currentInstallerFile = SourceUtil.getSourceFile(Main.class);
     public static void main(String[] args) throws ReflectiveOperationException, MalformedURLException {
         if (args.length >= 1) {
             boolean test = false;
