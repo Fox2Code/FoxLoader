@@ -6,6 +6,11 @@ plugins {
 group 'com.fox2code'
 version project['foxloader.version']
 
+configurations {
+    include
+    compileOnly.extendsFrom(include)
+}
+
 dependencies {
     compileOnly gradleApi()
     compileOnly localGroovy()
@@ -13,9 +18,17 @@ dependencies {
     api 'com.github.QuiltMC:quiltflower:1.8.1'
     api 'com.google.code.gson:gson:2.2.4'
     api 'org.ow2.asm:asm-commons:9.4'
-    api(project(":common")) {
+    include(project(":common")) {
         transitive = false
     }
 }
 
 jar.dependsOn(":common:jar")
+
+afterEvaluate {
+    jar {
+        from(configurations.include.collect { it.isDirectory() ? it : zipTree(it) }) {
+            exclude("module-info.class")
+        }
+    }
+}
