@@ -1,0 +1,36 @@
+{
+    "+traits": [
+        "texturepacks"
+    ],
+    "assetIndex": {
+        "id": "pre-1.6",
+        "sha1": "3d8e55480977e32acd9844e545177e69a52f594b",
+        "size": 74091,
+        "totalSize": 49505710,
+        "url": "https://piston-meta.mojang.com/v1/packages/3d8e55480977e32acd9844e545177e69a52f594b/pre-1.6.json"
+    },
+    "compatibleJavaMajors": [
+        8,
+        16,
+        17,
+        19
+    ],
+    "formatVersion": 1,
+    "mainJar": {
+        "MMC-displayname": "foxloader-#foxloader_version#",
+        "MMC-hint": "local",
+        "name": "custom:foxloader:#foxloader_version#"
+    },
+    "name": "FoxLoader",
+    "requires": [
+        {
+            "suggests": "2.9.4-nightly-20150209",
+            "uid": "org.lwjgl"
+        }
+    ],
+    "mainClass": "com.fox2code.foxloader.launcher.ClientMain",
+    "minecraftArguments": "${auth_player_name} ${auth_access_token} --gameDir ${game_directory}",
+    "type": "old_beta",
+    "uid": "com.fox2code.foxloader",
+    "version": "#version#"
+}

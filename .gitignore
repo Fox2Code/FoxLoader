@@ -1,0 +1,15 @@
+*.iml
+/.idea
+/build
+/.gradle/
+/.settings/
+/bin/
+/*/build
+/run
+/run2
+
+/.project
+/.classpath
+
+/client/libs/*.jar
+/server/libs/*.jar

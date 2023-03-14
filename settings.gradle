@@ -1,0 +1,8 @@
+rootProject.name = 'ReIndevFoxLoader'
+include 'client'
+include 'server'
+include 'common'
+include 'final'
+include 'betacraft'
+include 'dev'
+

@@ -1,0 +1,21 @@
+// Dev build.gradle
+plugins {
+    id 'groovy'
+}
+
+group 'com.fox2code'
+version project['foxloader.version']
+
+dependencies {
+    compileOnly gradleApi()
+    compileOnly localGroovy()
+    // Cannot use quilt flower 1.9+ cause it require java 11
+    api 'com.github.QuiltMC:quiltflower:1.8.1'
+    api 'com.google.code.gson:gson:2.2.4'
+    api 'org.ow2.asm:asm-commons:9.4'
+    api(project(":common")) {
+        transitive = false
+    }
+}
+
+jar.dependsOn(":common:jar")

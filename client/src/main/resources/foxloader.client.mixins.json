@@ -1,0 +1,30 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.fox2code.foxloader.client.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinBlock",
+    "MixinBlockFire",
+    "MixinChunk",
+    "MixinChunkBlockMap",
+    "MixinContainerCreative",
+    "MixinEntityClientPlayerMP",
+    "MixinEntityPlayerSP",
+    "MixinGuiChat",
+    "MixinGuiContainer",
+    "MixinGuiDebug",
+    "MixinGuiMainMenu",
+    "MixinItem",
+    "MixinItemStack",
+    "MixinMinecraft",
+    "MixinNetClientHandler",
+    "MixinPacket",
+    "MixinPacket103SetSlot",
+    "MixinPacket104WindowItems",
+    "MixinPacket2Handshake",
+    "MixinPlayerCommandHandler",
+    "MixinStringTranslate",
+    "MixinTextureMap"
+  ]
+}

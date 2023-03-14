@@ -1,0 +1,50 @@
+// Final build.gradle
+group 'com.fox2code'
+version project['foxloader.version']
+
+configurations {
+    include
+    implementation.extendsFrom(include)
+}
+
+dependencies {
+    include(project(":common")) {
+        transitive = false
+    }
+    include(project(":client")) {
+        transitive = false
+    }
+    include(project(":server")) {
+        transitive = false
+    }
+    include(project(":dev")) {
+        transitive = false
+    }
+}
+
+jar.dependsOn(":betacraft:jar")
+jar.dependsOn(":client:jar")
+jar.dependsOn(":common:jar")
+jar.dependsOn(":server:jar")
+jar.dependsOn(":dev:jar")
+
+jar {
+    from "LICENSE"
+
+    manifest {
+        attributes 'Main-Class': 'com.fox2code.foxloader.installer.Main'
+        attributes 'FoxLoader-Version': project['foxloader.version']
+        attributes 'ReIndev-Version': project['reindev.version']
+    }
+}
+
+afterEvaluate {
+    jar {
+        from(configurations.include.collect { it.isDirectory() ? it : zipTree(it) }) {
+            exclude("module-info.class")
+        }
+        from(project(":betacraft").buildDir.getAbsolutePath() + File.separator + "libs") {
+            include("betacraft-" + project['foxloader.version'] + ".jar")
+        }
+    }
+}

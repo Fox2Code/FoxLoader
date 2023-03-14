@@ -1,0 +1,11 @@
+group 'com.fox2code'
+version project['foxloader.version']
+
+dependencies {
+    // compileOnly("com.github.Vatuu:discord-rpc:1.6.2")
+    // compileOnly("aaaaaaaa:bbbbbbb:1.0.0") something.repo/aaaaaaaa/bbbbbbb/1.0.0/bbbbbbb-1.0.0.pom
+}
+
+tasks.withType(Jar) {
+    exclude('org/betacraft/*')
+}

@@ -1,0 +1,98 @@
+plugins {
+    id 'java-base'
+}
+
+group 'com.fox2code'
+version '1.0-SNAPSHOT'
+
+tasks.register('publishToMavenLocal', Task)
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = "Modrinth"
+            url = "https://api.modrinth.com/maven"
+            content {
+                includeGroup "maven.modrinth"
+            }
+        }
+        maven {
+            url 'https://repo.spongepowered.org/maven'
+        }
+        maven {
+            url 'https://jitpack.io/'
+        }
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+
+        withSourcesJar()
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    rootProject.tasks.publishToMavenLocal.dependsOn(publishToMavenLocal)
+
+    afterEvaluate {
+        publishing {
+            publications {
+                release(MavenPublication) {
+                    from components.java
+                    groupId = "com.github.Fox2Code.FoxLoader"
+                    artifactId = project.name
+                    version = '1.0' // JitPack only work with "1.0" as version
+                }
+            }
+        }
+    }
+}
+
+
+// We need to download client and server to be able to compile the project.
+// Let's do that there really quick.
+static void download(URL url, File file) {
+    file.getParentFile().mkdirs()
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY)
+    String javaVendor = System.getProperty("java.vendor")
+    String javaVersion = System.getProperty("java.version")
+    String javaVendorVersion = System.getProperty("java.vm.version")
+    String osName = System.getProperty("os.name")
+    String osVersion = System.getProperty("os.version")
+    String osArch = System.getProperty("os.arch")
+    connection.setConnectTimeout(5000)
+    connection.setRequestProperty("Connection", "keep-alive")
+    connection.setRequestProperty("User-Agent", String.format("Gradle/7.5.1 (%s;%s;%s) (%s;%s;%s)",
+            osName, osVersion, osArch, javaVendor, javaVersion, javaVendorVersion))
+    file.withOutputStream { fileOut ->
+        fileOut << connection.getInputStream()
+    }
+}
+
+File clientFile = new File(project.rootDir, "client" + File.separator +
+        "libs" + File.separator + project['reindev.clientJar'])
+
+if (!clientFile.exists()) {
+    println("Downloading client...")
+    download(new URL(project['reindev.clientUrl'] as String), clientFile)
+}
+
+File serverFile = new File(project.rootDir, "server" + File.separator +
+        "libs" + File.separator + project['reindev.serverJar'])
+
+if (!serverFile.exists()) {
+    println("Downloading server...")
+    download(new URL(project['reindev.serverUrl'] as String), serverFile)
+}

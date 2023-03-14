@@ -1,0 +1,13 @@
+// Server build.gradle
+group 'com.fox2code'
+version project['reindev.version']
+
+dependencies {
+    api(project(":common"))
+
+    // Do not use API here
+    implementation(fileTree(dir: 'libs', include: ['*.jar']))
+
+    // Do no expose spark APIs to mods
+    implementation(project['spark.dependency'] as String)
+}
