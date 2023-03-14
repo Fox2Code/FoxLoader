@@ -127,7 +127,7 @@ class GradlePlugin implements Plugin<Project> {
                 }
             }
             process(project, foxLoaderCache, config)
-            final String foxLoaderVersion = config.localTesting ?
+            String foxLoaderVersion = config.localTesting ?
                     "1.0" : BuildConfig.FOXLOADER_VERSION // Full release will be 1.0.0 to avoid conflicts.
             if (config.foxLoaderLibVersionOverride != null) {
                 foxLoaderVersion = config.foxLoaderLibVersionOverride
