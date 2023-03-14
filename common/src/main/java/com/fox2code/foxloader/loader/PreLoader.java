@@ -83,6 +83,7 @@ public class PreLoader {
             throw new RuntimeException(e);
         }
         FoxLauncher.getFoxClassLoader().addCoreModURL(url);
+        FoxLauncher.getFoxClassLoader().addURL(url);
     }
 
     static void initializePrePatch(boolean client) {

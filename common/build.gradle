@@ -26,6 +26,8 @@ final File buildConfigSrc = new File(buildDir,
 
 static void generateBuildConfig0(File buildConfigSrc, Project project) {
     buildConfigSrc.getParentFile().mkdirs()
+    final String FOXLOADER_TRANSFORMER_VERSION =
+            project['foxloader.lastReIndevTransformerChanges']
     final String FOXLOADER_VERSION = project['foxloader.version']
     final String SPARK_DEPENDENCY = project['spark.dependency']
     final String REINDEV_VERSION = project['reindev.version']
@@ -39,6 +41,9 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
         printStream.println()
         printStream.println("public final class BuildConfig {")
         printStream.println("    private BuildConfig() {}")
+        printStream.println( // We don't want devs to patch + decompile every update
+                "    public static final String FOXLOADER_TRANSFORMER_VERSION = \"" +
+                        FOXLOADER_TRANSFORMER_VERSION + "\";")
         printStream.println("    public static final String FOXLOADER_VERSION = \"" + FOXLOADER_VERSION + "\";")
         printStream.println("    public static final String SPARK_DEPENDENCY = \"" + SPARK_DEPENDENCY + "\";")
         printStream.println("    public static final String REINDEV_VERSION = \"" + REINDEV_VERSION + "\";")

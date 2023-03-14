@@ -217,7 +217,8 @@ class GradlePlugin implements Plugin<Project> {
                         sideName + "-" + version + ".pom")
         injectPom(pom, "net.silveros", sideName, version)
         DependencyHelper.loadDevDependencies(foxLoaderCache, client)
-        final String versionFox = version + "-rfl_" + BuildConfig.FOXLOADER_VERSION
+        final String versionFox = version + "-rfl_" +
+                BuildConfig.FOXLOADER_TRANSFORMER_VERSION
         File jarFox = new File(foxLoaderCache,
                 "net/silveros/" + sideName + "/" + versionFox + "/" +
                         sideName + "-" + versionFox + ".jar")
