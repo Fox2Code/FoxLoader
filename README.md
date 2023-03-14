@@ -2,6 +2,10 @@
 
 ModLoader for Minecraft ReIndev
 
+## Community
+
+You can join the official ReIndev Discord [here](https://discord.gg/38Vfes6NpR)
+
 ## Documentation
 
 For mixins usage check here: https://github.com/2xsaiko/mixin-cheatsheet
