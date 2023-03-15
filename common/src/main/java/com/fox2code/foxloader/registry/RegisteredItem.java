@@ -4,11 +4,11 @@ package com.fox2code.foxloader.registry;
  * Interface implemented by sided mixins.
  */
 public interface RegisteredItem extends GameRegistry.Ingredient {
-    RegisteredBlock asRegisteredBlock();
+    default RegisteredBlock asRegisteredBlock() { throw new RuntimeException(); }
 
-    RegisteredItemStack newRegisteredItemStack();
+    default RegisteredItemStack newRegisteredItemStack() { throw new RuntimeException(); }
 
-    int getRegisteredItemId();
+    default int getRegisteredItemId() { throw new RuntimeException(); }
 
-    int getRegisteredItemMaxStackSize();
+    default int getRegisteredItemMaxStackSize() { throw new RuntimeException(); }
 }

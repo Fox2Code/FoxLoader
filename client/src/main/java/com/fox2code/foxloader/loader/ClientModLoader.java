@@ -109,5 +109,11 @@ public final class ClientModLoader extends Mod {
             // StatList.initStats();
             PlayerCommandHandler.instance.reloadCommands();
         }
+
+        public static void notifyCameraAndRenderUpdated(float partialTick) {
+            for (ModContainer modContainer : ModLoader.modContainers.values()) {
+                modContainer.notifyCameraAndRenderUpdated(partialTick);
+            }
+        }
     }
 }

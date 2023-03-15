@@ -11,36 +11,36 @@ public interface NetworkPlayer {
     /**
      * Get the connection type of the object.
      */
-    ConnectionType getConnectionType();
+    default ConnectionType getConnectionType() { throw new RuntimeException(); }
 
     /**
      * Send network data to remote player, if {@link #hasFoxLoader()} return false,
      * this method do not perform any specific actions.
      */
-    void sendNetworkData(ModContainer modContainer, byte[] data);
+    default void sendNetworkData(ModContainer modContainer, byte[] data) { throw new RuntimeException(); }
 
     /**
      * Send/Display chat message to the user screen.
      */
-    void displayChatMessage(String chatMessage);
+    default void displayChatMessage(String chatMessage) { throw new RuntimeException(); }
 
     /**
      * @return if the remote party has the mod loader,
      * always return true for a single player world.
      */
-    boolean hasFoxLoader();
+    default boolean hasFoxLoader() { throw new RuntimeException(); }
 
     /**
      * @return the player name
      */
-    String getPlayerName();
+    default String getPlayerName() { throw new RuntimeException(); }
 
     /**
      * @return if the player as operator permission.
      *
      * Always false client-side when connected to a server.
      */
-    boolean isOperator();
+    default boolean isOperator() { throw new RuntimeException(); }
 
     enum ConnectionType {
         SINGLE_PLAYER(true, true), CLIENT_ONLY(true, false), SERVER_ONLY(false, true);

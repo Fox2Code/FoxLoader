@@ -95,6 +95,7 @@ public class PreLoader {
     }
 
     static void loadPrePatches(boolean client) {
+        preTransformers.clear();
         registerPrePatch(new RegistryTransformer());
         if (client) {
             registerPrePatch(new FrustrumHelperTransformer());
@@ -107,6 +108,7 @@ public class PreLoader {
         if (FoxLauncher.getFoxClassLoader() != null)
             throw new IllegalStateException("Not in development environment!");
         loadPrePatches(client);
+        registerPrePatch(new DevelopmentModeTransformer());
         patchJar(in, out);
     }
 

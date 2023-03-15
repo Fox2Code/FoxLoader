@@ -25,6 +25,7 @@ public final class ModContainer {
     public final String id;
     public final String name;
     public final String version;
+    public final String description;
     public final Logger logger;
     private final boolean injected;
     String prePatch;
@@ -38,11 +39,12 @@ public final class ModContainer {
     String clientModCls;
     String clientMixins;
 
-    ModContainer(File file, String id, String name, String version, boolean injected) {
+    ModContainer(File file, String id, String name, String version, String description, boolean injected) {
         this.file = file;
         this.id = id;
         this.name = name;
         this.version = version;
+        this.description = description;
         this.logger = Logger.getLogger(name);
         this.injected = injected;
         if (ModLoader.DEV_MODE) {
@@ -66,6 +68,10 @@ public final class ModContainer {
         Mod mod = FoxLauncher.isClient() ?
                 clientMod : serverMod;
         return mod != null ? mod : commonMod;
+    }
+
+    public String getFileName() {
+        return this.file == null ? "built-in" : this.file.getName();
     }
 
     void applyPrePatch() throws ReflectiveOperationException {
@@ -216,5 +222,14 @@ public final class ModContainer {
             clientMod.onTick();
         if (serverMod != null)
             serverMod.onTick();
+    }
+
+    void notifyCameraAndRenderUpdated(float partialTick) {
+        if (commonMod != null)
+            commonMod.onCameraAndRenderUpdated(partialTick);
+        if (clientMod != null)
+            clientMod.onCameraAndRenderUpdated(partialTick);
+        if (serverMod != null)
+            serverMod.onCameraAndRenderUpdated(partialTick);
     }
 }

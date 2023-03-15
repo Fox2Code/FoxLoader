@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.launcher.*;
+import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.network.NetworkPlayer;
@@ -30,8 +31,8 @@ public class ModLoader {
     public static final String FOX_LOADER_MOD_ID = "foxloader";
     public static final String FOX_LOADER_VERSION = BuildConfig.FOXLOADER_VERSION;
     static final ModContainer foxLoader = new ModContainer(
-            FoxLauncher.foxLoaderFile, FOX_LOADER_MOD_ID, "FoxLoader", FOX_LOADER_VERSION, false);
-    static final ModContainer spark = new ModContainer(null, "spark", "Spark", FOX_LOADER_VERSION, false);
+            FoxLauncher.foxLoaderFile, FOX_LOADER_MOD_ID, "FoxLoader", FOX_LOADER_VERSION,
+            "ReIndev mod loader with foxes!!!", false);
     static final LinkedList<File> coreMods = new LinkedList<>();
     // Use LinkedHashMap to keep track in which order mods were loaded.
     static final LinkedHashMap<String, ModContainer> modContainers = new LinkedHashMap<>();
@@ -41,6 +42,7 @@ public class ModLoader {
     private static final Attributes.Name MOD_ID = new Attributes.Name("ModId");
     private static final Attributes.Name MOD_NAME = new Attributes.Name("ModName");
     private static final Attributes.Name MOD_VERSION = new Attributes.Name("ModVersion");
+    private static final Attributes.Name MOD_DESC = new Attributes.Name("ModDesc");
     private static final Attributes.Name PRE_PATCH = new Attributes.Name("PreClassTransformer");
     private static final Attributes.Name CLIENT_MOD = new Attributes.Name("ClientMod");
     private static final Attributes.Name SERVER_MOD = new Attributes.Name("ServerMod");
@@ -92,9 +94,12 @@ public class ModLoader {
         if (DEV_MODE && INJECT_MOD != null && !INJECT_MOD.isEmpty()) {
             loadModContainerFrom(new File(INJECT_MOD).getAbsoluteFile(), true);
         }
-        if (!modContainers.containsKey(spark.id) && !disableSpark &&
+        if (!modContainers.containsKey("spark") && !disableSpark &&
                 DependencyHelper.loadDependencySafe(DependencyHelper.sparkDependency)) {
             foxLoader.logger.info("Injecting spark using FoxLoader adapter.");
+            ModContainer spark = new ModContainer(SourceUtil.getSourceFileOfClassName(
+                    "me.lucko.spark.common.SparkPlugin"), "spark", "Spark",
+                    BuildConfig.SPARK_VERSION, "spark is a performance profiling mod.", false);
             spark.clientModCls = "com.fox2code.foxloader.spark.FoxLoaderClientSparkPlugin";
             spark.serverModCls = "com.fox2code.foxloader.spark.FoxLoaderServerSparkPlugin";
             modContainers.put(spark.id, spark);
@@ -150,12 +155,16 @@ public class ModLoader {
         String id = attributes.getValue(MOD_ID);
         String name = attributes.getValue(MOD_NAME);
         String version = attributes.getValue(MOD_VERSION);
+        String desc = attributes.getValue(MOD_DESC);
         if (id == null || id.isEmpty()) {
             foxLoader.logger.warning("Unable to load " + file.getName() +
                     " because it doesn't have a mod-id (Is it a core mod?)");
             return;
         }
         if (FOX_LOADER_MOD_ID.equals(id) || "minecraft".equals(id) || "reindev".equals(id) || "null".equals(id)) {
+            if (injected && "null".equals(id)) { // Crash directly if we
+                throw new RuntimeException("Please define a modId in gradle");
+            }
             foxLoader.logger.warning("Unable to load " + file.getName() +
                     " because it used the reserved mod id: " + id);
             return;
@@ -166,13 +175,16 @@ public class ModLoader {
         if (version == null) {
             version = "1.0";
         }
+        if (desc == null || desc.isEmpty()) {
+            desc = "...";
+        }
         ModContainer modContainer = modContainers.get(id);
         if (modContainer != null) {
             foxLoader.logger.warning("Unable to load " + file.getName() + " because " +
                     modContainer.file.getName() + " already uses the same mod id: " + id);
             return;
         }
-        modContainer = new ModContainer(file, id, name, version, injected);
+        modContainer = new ModContainer(file, id, name, version, desc, injected);
         modContainer.prePatch = attributes.getValue(PRE_PATCH);
         modContainer.clientModCls = attributes.getValue(CLIENT_MOD);
         modContainer.serverModCls = attributes.getValue(SERVER_MOD);
@@ -190,6 +202,10 @@ public class ModLoader {
 
     public static ModContainer getModContainer(String id) {
         return modContainers.get(id);
+    }
+
+    public static Collection<ModContainer> getModContainers() {
+        return Collections.unmodifiableCollection(modContainers.values());
     }
 
     public static boolean areAllModsLoaded() {

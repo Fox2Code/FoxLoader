@@ -30,6 +30,7 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
             project['foxloader.lastReIndevTransformerChanges']
     final String FOXLOADER_VERSION = project['foxloader.version']
     final String SPARK_DEPENDENCY = project['spark.dependency']
+    final String SPARK_VERSION = project['spark.version']
     final String REINDEV_VERSION = project['reindev.version']
     final String CLIENT_URL = project['reindev.clientUrl']
     final String SERVER_URL = project['reindev.serverUrl']
@@ -46,6 +47,7 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
                         FOXLOADER_TRANSFORMER_VERSION + "\";")
         printStream.println("    public static final String FOXLOADER_VERSION = \"" + FOXLOADER_VERSION + "\";")
         printStream.println("    public static final String SPARK_DEPENDENCY = \"" + SPARK_DEPENDENCY + "\";")
+        printStream.println("    public static final String SPARK_VERSION = \"" + SPARK_VERSION + "\";")
         printStream.println("    public static final String REINDEV_VERSION = \"" + REINDEV_VERSION + "\";")
         printStream.println("    public static final String CLIENT_URL = \"" + CLIENT_URL + "\";")
         printStream.println("    public static final String SERVER_URL = \"" + SERVER_URL + "\";")

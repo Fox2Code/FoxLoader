@@ -81,6 +81,15 @@ public final class EnumReflectTranslator<E extends Enum<E>, T> implements Iterab
         return (EnumReflectTranslator<E, ? extends I>) this;
     }
 
+    public void fillCache() {
+        final E[] elements = this.enumType.getEnumConstants();
+        if (elements.length != this.cache.size()) {
+            for (E e : elements) {
+                this.translate(e);
+            }
+        }
+    }
+
     public interface ReflectEnum {
         String[] getReflectNames();
     }

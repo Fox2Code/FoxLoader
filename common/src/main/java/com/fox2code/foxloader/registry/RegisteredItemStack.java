@@ -1,17 +1,17 @@
 package com.fox2code.foxloader.registry;
 
 public interface RegisteredItemStack extends GameRegistry.Ingredient {
-    RegisteredItem getRegisteredItem();
+    default RegisteredItem getRegisteredItem() { throw new RuntimeException(); }
 
-    int getRegisteredStackSize();
+    default int getRegisteredStackSize() { throw new RuntimeException(); }
 
-    void setRegisteredStackSize(int stackSize);
+    default void setRegisteredStackSize(int stackSize) { throw new RuntimeException(); }
 
-    int getRegisteredDamage();
+    default int getRegisteredDamage() { throw new RuntimeException(); }
 
-    void setRegisteredDamage(int damage);
+    default void setRegisteredDamage(int damage) { throw new RuntimeException(); }
 
-    String getRegisteredDisplayName();
+    default String getRegisteredDisplayName() { throw new RuntimeException(); }
 
-    void setRegisteredDisplayName(String displayName);
+    default void setRegisteredDisplayName(String displayName) { throw new RuntimeException(); }
 }

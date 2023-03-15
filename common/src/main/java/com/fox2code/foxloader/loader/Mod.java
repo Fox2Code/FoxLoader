@@ -43,6 +43,11 @@ public abstract class Mod implements LifecycleListener {
     public void onTick() {}
 
     /**
+     * Called when camera and render updated! (Only called client side)
+     */
+    public void onCameraAndRenderUpdated(float partialTick) {}
+
+    /**
      * When server receive client packet.
      */
     public void onReceiveClientPacket(NetworkPlayer networkPlayer, byte[] data) {}
@@ -85,6 +90,36 @@ public abstract class Mod implements LifecycleListener {
     public void onServerStop(NetworkPlayer.ConnectionType connectionType) {}
 
     // GameRegistry mirror
+
+    /**
+     * @see GameRegistry#getRegisteredItem(int)
+     */
+    public RegisteredItem getRegisteredItem(int id) {
+        return GameRegistry.getInstance().getRegisteredItem(id);
+    }
+
+    /**
+     * @see GameRegistry#getRegisteredItem(String)
+     */
+    public RegisteredItem getRegisteredItem(String name) {
+        if (name.indexOf(':') == -1) name = getModContainer().id + ":" + name;
+        return GameRegistry.getInstance().getRegisteredItem(name);
+    }
+
+    /**
+     * @see GameRegistry#getRegisteredBlock(int)
+     */
+    public RegisteredBlock getRegisteredBlock(int id) {
+        return GameRegistry.getInstance().getRegisteredBlock(id);
+    }
+
+    /**
+     * @see GameRegistry#getRegisteredBlock(String)
+     */
+    public RegisteredBlock getRegisteredBlock(String name) {
+        if (name.indexOf(':') == -1) name = getModContainer().id + ":" + name;
+        return GameRegistry.getInstance().getRegisteredBlock(name);
+    }
 
     /**
      * @see GameRegistry#registerNewItem(String, ItemBuilder)
