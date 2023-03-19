@@ -39,6 +39,7 @@ public class ModLoader {
     static Thread gameThread;
     public static final String FOX_LOADER_HEADER = "\0RFL";
     public static final int MAX_MOD_ID_LENGTH = 32;
+    private static final Manifest nullManifest = new Manifest();
     private static final Attributes.Name MOD_ID = new Attributes.Name("ModId");
     private static final Attributes.Name MOD_NAME = new Attributes.Name("ModName");
     private static final Attributes.Name MOD_VERSION = new Attributes.Name("ModVersion");
@@ -150,6 +151,9 @@ public class ModLoader {
         } catch (IOException ioe) {
             ioe.printStackTrace();
             return;
+        }
+        if (manifest == null) {
+            manifest = nullManifest;
         }
         Attributes attributes = manifest.getMainAttributes();
         String id = attributes.getValue(MOD_ID);
