@@ -1,9 +1,8 @@
 package com.fox2code.foxloader.client.gui;
 
-import net.minecraft.src.client.gui.FontRenderer;
-import net.minecraft.src.client.gui.GuiButton;
-import net.minecraft.src.client.gui.GuiScreen;
-import net.minecraft.src.client.gui.StringTranslate;
+import com.fox2code.foxloader.loader.ModLoader;
+import net.minecraft.src.client.gui.*;
+import org.lwjgl.Sys;
 
 public class GuiModList extends GuiScreen {
     private final GuiScreen parent;
@@ -18,9 +17,13 @@ public class GuiModList extends GuiScreen {
         super.initGui();
         this.modListContainer = new GuiModListContainer(this);
         this.modListContainer.registerScrollButtons(this.controlList, 4, 5);
-        this.controlList.add(new GuiButton(0,
-                this.width / 2 + 4, this.height - 28, 150, 20,
-                StringTranslate.getInstance().translateKey("gui.cancel")));
+        StringTranslate st = StringTranslate.getInstance();
+        this.controlList.add(new GuiSmallButton(0,
+                this.width / 2 - 154, this.height - 48,
+                st.translateKey("mods.openFolder")));
+        this.controlList.add(new GuiSmallButton(1,
+                this.width / 2 + 4, this.height - 48,
+                st.translateKey("gui.done")));
     }
 
     @Override
@@ -32,10 +35,12 @@ public class GuiModList extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton var1) {
         if (var1.id == 0) {
+            Sys.openURL("file://" + ModLoader.mods);
+        } else if (var1.id == 1) {
             this.mc.displayGuiScreen(this.parent);
-            return;
+        } else {
+            this.modListContainer.actionPerformed(var1);
         }
-        this.modListContainer.actionPerformed(var1);
     }
 
     public FontRenderer getFontRenderer() {

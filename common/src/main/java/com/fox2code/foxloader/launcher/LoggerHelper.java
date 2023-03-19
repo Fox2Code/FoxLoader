@@ -43,25 +43,34 @@ final class LoggerHelper {
         if (installed) {
             final PrintStream out = System.out;
             out.flush(); // <- Make sure buffer is flushed
-            System.setOut(new FoxLoaderLogPrintStream(out, rootLogger, STDOUT));
-            System.setErr(new FoxLoaderLogPrintStream(out, rootLogger, STDERR));
+            System.setOut(new FoxLoaderLogPrintStream(out, rootLogger, STDOUT, false));
+            System.setErr(new FoxLoaderLogPrintStream(out, rootLogger, STDERR, true));
         }
         return installed;
     }
 
+    @SuppressWarnings({"UnnecessaryCallToStringValueOf", "StringOperationCanBeSimplified"})
     private static final class FoxLoaderLogPrintStream extends PrintStream {
         private final Logger rootLogger;
         private final Level level;
+        private final boolean doSkips;
+        private boolean skip;
 
-        public FoxLoaderLogPrintStream(@NotNull OutputStream out, Logger rootLogger, Level level) {
+        public FoxLoaderLogPrintStream(@NotNull OutputStream out, Logger rootLogger, Level level, boolean doSkips) {
             super(out, true);
             this.rootLogger = rootLogger;
             this.level = level;
+            this.doSkips = doSkips;
         }
 
         @Override
         public void println() {
             this.println("");
+        }
+
+        @Override
+        public void print(int i) {
+            this.print(String.valueOf(i));
         }
 
         @Override
@@ -71,9 +80,22 @@ final class LoggerHelper {
 
         @Override
         public void println(@Nullable String line) {
-            rootLogger.log(level, line);
+            if (line == null) line = "null";
+            if (doSkips && line.startsWith( // Normal on linux!
+                    "java.io.IOException: Cannot run program \"sensible-browser\"")) {
+                skip = true;
+            } else if (skip) {
+                if (!line.startsWith("\t") && !line.startsWith("    ")
+                        && !line.startsWith("Caused by:")) {
+                    skip = false;
+                }
+            }
+            if (!skip) {
+                rootLogger.log(level, line);
+            }
         }
     }
+
     private static class FoxLoaderLogFormatter extends SimpleFormatter {
         private final Date date = new Date();
 

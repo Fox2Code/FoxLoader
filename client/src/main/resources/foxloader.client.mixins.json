@@ -12,6 +12,7 @@
     "MixinEntityClientPlayerMP",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
+    "MixinGameSettings",
     "MixinGuiChat",
     "MixinGuiContainer",
     "MixinGuiDebug",

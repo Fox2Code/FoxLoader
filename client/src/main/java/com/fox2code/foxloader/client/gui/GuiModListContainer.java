@@ -15,7 +15,7 @@ public class GuiModListContainer extends GuiSlot {
         super(Minecraft.theMinecraft,
                 guiModList.width,
                 guiModList.height, 32,
-                guiModList.height - 64, 36);
+                guiModList.height - 51, 36);
         this.guiModList = guiModList;
         this.mods = ModLoader.getModContainers().toArray(new ModContainer[0]);
     }
