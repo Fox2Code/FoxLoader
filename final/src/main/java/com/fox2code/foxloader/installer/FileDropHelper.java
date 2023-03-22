@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.installer;
 
 import javax.swing.*;
+import javax.swing.plaf.UIResource;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.InvalidDnDOperationException;
@@ -9,7 +10,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class FileDropHelper extends TransferHandler {
+public final class FileDropHelper extends TransferHandler implements UIResource {
     private static final DataFlavor nixFileDataFlavor;
 
     private final JComponent component;

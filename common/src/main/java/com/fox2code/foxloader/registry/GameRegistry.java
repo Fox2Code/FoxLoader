@@ -109,7 +109,7 @@ public abstract class GameRegistry {
     }
 
     public static int convertItemIdToBlockId(int itemId) {
-        return itemId > MAXIMUM_BLOCK_ID ? -1 : // -1 means no block equivalent.
+        return itemId > MAXIMUM_TRANSLATED_BLOCK_ID ? -1 : // -1 means no block equivalent.
                 itemId > 255 ? itemId < 1000 ? -1 : itemId - 744 : itemId;
     }
 

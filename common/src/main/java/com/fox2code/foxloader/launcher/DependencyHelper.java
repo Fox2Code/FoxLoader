@@ -53,20 +53,6 @@ public class DependencyHelper {
     private static File mcLibraries;
 
     static void loadDependencies(boolean client) {
-        String mcLibrariesPath;
-        switch (Platform.getPlatform()) {
-            case WINDOWS:
-                mcLibrariesPath = System.getenv("APPDATA") + "\\.minecraft\\";
-                break;
-            case MACOS:
-                mcLibrariesPath = System.getProperty("user.home") + "/Library/Application Support/minecraft/";
-                break;
-            case LINUX:
-                mcLibrariesPath = System.getProperty("user.home") + "/.minecraft/";
-                break;
-            default:
-                throw new RuntimeException("Unsupported operating system");
-        }
         if (client) {
             URL url = DependencyHelper.class.getResource("/org/lwjgl/opengl/GLChecks.class");
             if (url != null) {
@@ -82,9 +68,7 @@ public class DependencyHelper {
                     }
                 } catch (IOException | URISyntaxException ignored) {}
             }
-            if (mcLibraries == null) {
-                mcLibraries = new File(mcLibrariesPath + "libraries");
-            }
+            setMCLibraryRoot();
         } else {
             mcLibraries = new File("libraries").getAbsoluteFile();
         }
@@ -93,6 +77,26 @@ public class DependencyHelper {
         }
         for (Dependency dependency : (client ? clientDependencies : serverDependencies)) {
             loadDependency(dependency, true, false);
+        }
+    }
+
+    public static void setMCLibraryRoot() {
+        if (mcLibraries == null) {
+            String mcLibrariesPath;
+            switch (Platform.getPlatform()) {
+                case WINDOWS:
+                    mcLibrariesPath = System.getenv("APPDATA") + "\\.minecraft\\";
+                    break;
+                case MACOS:
+                    mcLibrariesPath = System.getProperty("user.home") + "/Library/Application Support/minecraft/";
+                    break;
+                case LINUX:
+                    mcLibrariesPath = System.getProperty("user.home") + "/.minecraft/";
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported operating system");
+            }
+            mcLibraries = new File(mcLibrariesPath + "libraries");
         }
     }
 
@@ -106,7 +110,7 @@ public class DependencyHelper {
 
     public static boolean loadDependencySafe(Dependency dependency) {
         try {
-            loadDependency(dependency, false, false);
+            loadDependency(dependency, false, FoxLauncher.foxClassLoader == null);
             return true;
         } catch (Exception e) {
             return false;
@@ -114,7 +118,7 @@ public class DependencyHelper {
     }
 
     public static void loadDependency(Dependency dependency) {
-        loadDependency(dependency, false, false);
+        loadDependency(dependency, false, FoxLauncher.foxClassLoader == null);
     }
 
     private static void loadDependency(Dependency dependency, boolean minecraft, boolean dev) {

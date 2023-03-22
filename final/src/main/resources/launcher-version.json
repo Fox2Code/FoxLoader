@@ -8,6 +8,8 @@
   },
   "assets": "pre-1.6",
   "complianceLevel": 0,
+  "__note": "this is a hack to prevent legacy pojav launcher form crashing",
+  "#hack_releaseTime#": "2011-07-07T22:00:00+00:00",
   "id": "#version#",
   "javaVersion": {
     "component": "jre-legacy",

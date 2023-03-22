@@ -8,14 +8,17 @@ import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class Main {
     static final File currentWorkingDir = new File("").getAbsoluteFile();
     static final File currentInstallerFile = SourceUtil.getSourceFile(Main.class);
     public static void main(String[] args) throws ReflectiveOperationException, MalformedURLException {
+        boolean platform = false;
         if (args.length >= 1) {
             boolean test = false;
             boolean with = false;
+            boolean server = false;
             switch (args[0]) {
                 default:
                     System.out.println("Unknown argument: " + args[0]);
@@ -26,11 +29,15 @@ public class Main {
                     System.out.println("--with-server -> Start server with specified server jar");
                     System.out.println("--test-server -> Like --with-server but only load the strict necessary for ");
                     return;
+                case "--platform":
+                    platform = true;
+                    break;
                 case "--test-server":
                     test = true;
                 case "--with-server":
                     with = true;
                 case "--server":
+                    server = true;
             }
 
             if (test) {
@@ -44,12 +51,27 @@ public class Main {
                 }
                 FoxLauncher.setEarlyMinecraftURL(file.toURI().toURL());
             }
-            int move = test ? 2 : 1;
-            System.arraycopy(args, move, args, 0, args.length - move);
-            ServerMain.main(Arrays.copyOf(args, args.length - move));
-            return;
+            if (server) {
+                int move = test ? 2 : 1;
+                System.arraycopy(args, move, args, 0, args.length - move);
+                ServerMain.main(Arrays.copyOf(args, args.length - move));
+                return;
+            }
         }
 
-        new InstallerGUI().show();
+        InstallerPlatform installerPlatform = InstallerPlatform.DEFAULT;
+        if (isPojavLauncherHome(System.getProperty("user.home"))) {
+            installerPlatform = InstallerPlatform.POJAV_LAUNCHER;
+        }
+        if (platform) {
+            installerPlatform = InstallerPlatform.valueOf(args[1].toUpperCase(Locale.ROOT));
+        }
+        new InstallerGUI(installerPlatform).show();
+    }
+
+    public static boolean isPojavLauncherHome(String userHome) {
+        int index;
+        return (userHome.startsWith("/storage/emulated/") && (index = userHome.indexOf('/', 18)) != -1 &&
+                userHome.substring(index).startsWith("/Android/data/") || userHome.startsWith("/sdcard/Android/data/"));
     }
 }

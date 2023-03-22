@@ -108,7 +108,7 @@ final class LoggerHelper {
             }
             Throwable throwable = lr.getThrown();
             if (throwable != null) {
-                message += stringifyStackTrace(throwable);
+                message += "\n" + StackTraceStringifier.stringifyStackTrace(throwable);
             }
             date.setTime(lr.getMillis());
             return String.format(format, date,
@@ -162,43 +162,5 @@ final class LoggerHelper {
             setFormatter(new FoxLoaderConsoleLogFormatter());
             setLevel(Level.ALL);
         }
-    }
-
-    private static class StackTraceStringifier {
-        private final StringBuilder stringBuilder = new StringBuilder(2048).append("\n");
-        private final PrintWriter printWriter = new PrintWriter(new Writer() {
-            @Override
-            public void write(@NotNull char[] cbuf, int off, int len) throws IOException {
-                stringBuilder.append(cbuf, off, len);
-            }
-
-            @Override
-            public void flush() {}
-
-            @Override
-            public void close() {}
-        }, false);
-        private Throwable lastThrowable;
-
-        // We only have one instance per thread.
-        // So let's have thread unsafe code here
-        String stringify(Throwable throwable) {
-            if (lastThrowable == throwable) {
-                return stringBuilder.toString();
-            }
-            stringBuilder.setLength(1);
-            throwable.printStackTrace(new PrintWriter(this.printWriter));
-            this.printWriter.flush();
-            stringBuilder.setLength(
-                    stringBuilder.length() - 1);
-            lastThrowable = throwable;
-            return stringBuilder.toString();
-        }
-    }
-
-    private static final ThreadLocal<StackTraceStringifier> stringifier =
-            ThreadLocal.withInitial(StackTraceStringifier::new);
-    private static String stringifyStackTrace(Throwable throwable) {
-        return stringifier.get().stringify(throwable);
     }
 }

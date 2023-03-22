@@ -1,6 +1,8 @@
 package com.fox2code.foxloader.installer;
 
 import com.fox2code.foxloader.launcher.BuildConfig;
+import com.fox2code.foxloader.launcher.DependencyHelper;
+import com.fox2code.foxloader.launcher.StackTraceStringifier;
 import com.fox2code.foxloader.launcher.utils.Platform;
 
 import javax.swing.*;
@@ -30,6 +32,12 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             "For ReIndev " + BuildConfig.REINDEV_VERSION;
     private static final String CUSTOM_LABEL =
             "For ReIndev " + BuildConfig.REINDEV_VERSION + "?";
+    private static final String USER_INSTRUCTION = // I thought I would never need to add that.
+            " \n(You can select the FoxLoader version you want to use in the version list)";
+    private static final String FULLSCREEN_LABEL =
+            "FoxLoader " + BuildConfig.FOXLOADER_VERSION + " for ReIndev " + BuildConfig.REINDEV_VERSION;
+    private static final int PROGRESS_BAR_MAX = DependencyHelper.commonDependencies.length + 1;
+    private final InstallerPlatform installerPlatform;
     private final JFrame jFrame;
     private final Dimension minDimensions;
     private final JPanel globalContainer;
@@ -37,44 +45,76 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
     private final FileDropHelper dropHelper;
     private final JButton minecraftButton;
     private final JButton mmcButton;
+    private final JProgressBar progressBar;
     private boolean runningTask;
     private File reIndevSource;
     private String versionName;
 
-    public InstallerGUI() {
+    public InstallerGUI(InstallerPlatform installerPlatform) {
+        this.installerPlatform = installerPlatform;
         versionName = DEFAULT_VERSION_NAME;
         jFrame = new JFrame(DEFAULT_TITLE);
         jFrame.setMinimumSize(minDimensions = new Dimension(230, 30));
+        if (installerPlatform.fullscreen) {
+            jFrame.setUndecorated(true);
+        }
         globalContainer = makeContainer(null);
-        globalContainer.add(label = new JLabel(DEFAULT_LABEL));
+        label = new JLabel(installerPlatform.fullscreenLayout ? FULLSCREEN_LABEL : DEFAULT_LABEL);
         dropHelper = new FileDropHelper(globalContainer, this);
         JPanel clientContainer = makeContainer("Install Client");
-        minecraftButton = makeButton(clientContainer,
-                "Install on Minecraft Launcher", this::installMineCraft);
-        makeButton(clientContainer,
-                "Install on BetaCraft Launcher", this::installBetaCraft);
-        mmcButton = makeButton(clientContainer,
-                "Extract MultiMC Instance", this::extractMMCInstance);
-        JPanel serverContainer = makeContainer("Install Server");
-        // makeButton(serverContainer, "Install modded server here!", null);
-        serverContainer.add(new Label("You can add \"--server\" argument to"));
-        serverContainer.add(new Label("the installer to run the server."));
+        JButton minecraftButton;
+        JButton mmcButton;
+        if (installerPlatform.specialLauncher) {
+            minecraftButton = makeButton(clientContainer,
+                    "Install on " + installerPlatform.platformName + " Launcher", this::installMineCraft);
+            mmcButton = null;
+        } else {
+            minecraftButton = makeButton(clientContainer,
+                    "Install on Minecraft Launcher", this::installMineCraft);
+            makeButton(clientContainer,
+                    "Install on BetaCraft Launcher", this::installBetaCraft);
+            mmcButton = makeButton(clientContainer,
+                    "Extract MultiMC Instance", this::extractMMCInstance);
+        }
+        this.mmcButton = mmcButton;
+        this.minecraftButton = minecraftButton;
+        if (this.installerPlatform.fullscreenLayout) {
+            makeButton(clientContainer, "Exit installer", this::exitInstaller);
+        } else {
+            JPanel serverContainer = makeContainer("Install Server");
+            // makeButton(serverContainer, "Install modded server here!", null);
+            serverContainer.add(new Label("You can add \"--server\" argument to"));
+            serverContainer.add(new Label("the installer to run the server."));
+        }
+        progressBar = new JProgressBar();
+        progressBar.setMaximum(PROGRESS_BAR_MAX);
+        progressBar.setString("");
+        progressBar.setStringPainted(true);
+        if (this.installerPlatform.fullscreenLayout) {
+            globalContainer.add(progressBar);
+        }
+
         jFrame.setLayout(new BorderLayout());
+        jFrame.add(BorderLayout.NORTH, label);
         jFrame.add(BorderLayout.CENTER, globalContainer);
         jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         jFrame.setLocationRelativeTo(null);
-        jFrame.setResizable(false);
+        if (!this.installerPlatform.fullscreenLayout) {
+            jFrame.setResizable(false);
+        }
         jFrame.pack();
     }
 
     private JPanel makeContainer(final String text) {
         final JPanel container = new JPanel();
         if (text != null) {
-            container.setLayout(new GridLayout(0, 1, 0, 3));
+            container.setLayout(installerPlatform.fullscreenLayout ?
+                    new FlowLayout(FlowLayout.CENTER) : new GridLayout(0, 1, 0, 3));
             container.setBorder(BorderFactory.createTitledBorder(text));
             globalContainer.add(container);
         } else {
-            container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+            container.setLayout(installerPlatform.fullscreenLayout ?
+                    new VerticalGridBagLayout() : new BoxLayout(container, BoxLayout.Y_AXIS));
             container.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 4));
         }
         return container;
@@ -107,13 +147,33 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
     }
 
     public void show() {
-        this.dropHelper.enableDragAndDrop();
+        if (this.installerPlatform.fullscreen) {
+            this.jFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            this.jFrame.setAlwaysOnTop(true);
+        } else {
+            if (!this.installerPlatform.specialLauncher) {
+                this.dropHelper.enableDragAndDrop();
+            }
+            if (this.installerPlatform.fullscreenLayout) {
+                this.jFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }
+        }
         this.jFrame.setVisible(true);
+        if (this.installerPlatform.fullscreen) {
+            GraphicsDevice graphicsDevice = GraphicsEnvironment
+                    .getLocalGraphicsEnvironment().getScreenDevices()[0];
+            if (graphicsDevice.isFullScreenSupported()) {
+                graphicsDevice.setFullScreenWindow(this.jFrame);
+            } else {
+                this.jFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }
+        }
     }
 
     private boolean checkInstaller() {
         if (this.reIndevSource != null &&
                 !this.reIndevSource.exists()) {
+            // This cannot happen in true fullscreen
             JOptionPane.showMessageDialog(this.jFrame,
                     "Provided custom jar got deleted?",
                     this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
@@ -121,13 +181,12 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             return true;
         }
         if (Main.currentInstallerFile.isDirectory()) {
-            JOptionPane.showMessageDialog(this.jFrame,
-                    "Please run the compiled jar file to test the installation process",
-                    this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
+            showMessage("Please run the compiled jar file to test the installation process", true);
             return true;
         }
         if (!Main.currentInstallerFile.getName()
-                .toLowerCase(Locale.ROOT).endsWith(".jar")) {
+                .toLowerCase(Locale.ROOT).endsWith(".jar") &&
+                !this.installerPlatform.specialLauncher) {
             JOptionPane.showMessageDialog(this.jFrame,
                     "Why the file is not a \".jar\"??? TELL ME!!! WHY???",
                     this.jFrame.getTitle(), JOptionPane.QUESTION_MESSAGE);
@@ -140,15 +199,20 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         if (this.checkInstaller()) {
             return;
         }
+        if (this.installerPlatform.specialLauncher) {
+            DependencyHelper.setMCLibraryRoot();
+            for (int i = 0; i < DependencyHelper.commonDependencies.length; i++) {
+                DependencyHelper.loadDependency(DependencyHelper.commonDependencies[i]);
+                progressBar.setValue(i + 1);
+            }
+        }
         File minecraft = Platform.getAppDir("minecraft");
         File versions = new File(minecraft, "versions");
         File foxLoaderVersion = new File(versions, this.versionName);
         File foxLoaderVersionJar = new File(foxLoaderVersion, this.versionName + ".jar");
         File foxLoaderVersionJson = new File(foxLoaderVersion, this.versionName + ".json");
         if (!foxLoaderVersion.isDirectory() && !foxLoaderVersion.mkdirs()) {
-            JOptionPane.showMessageDialog(this.jFrame,
-                    "Unable to create version target directory!",
-                    this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
+            showMessage("Unable to create version target directory!", true);
             return;
         }
 
@@ -157,16 +221,20 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             copyAndClose(InstallerGUI.class.getResourceAsStream(
                     "/launcher-version.json"), byteArrayOutputStream);
             copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
-                    .replace("#version#", this.versionName).getBytes(StandardCharsets.UTF_8)),
+                            .replace(installerPlatform.specialLauncher ?
+                                    "#hack_releaseTime#" : "#no-op#", "releaseTime")
+                            .replace("#version#", this.versionName).getBytes(StandardCharsets.UTF_8)),
                     Files.newOutputStream(foxLoaderVersionJson.toPath()));
             Files.copy(Main.currentInstallerFile.toPath(),
                     foxLoaderVersionJar.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this.jFrame, e, this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
+            showError(e);
             return;
         }
-        JOptionPane.showMessageDialog(this.jFrame, "FoxLoader " + BuildConfig.FOXLOADER_VERSION +
-                " for ReIndev " + BuildConfig.REINDEV_VERSION + " has been successfully installed!");
+        progressBar.setValue(PROGRESS_BAR_MAX);
+        showMessage("FoxLoader " + BuildConfig.FOXLOADER_VERSION + " for ReIndev " +
+                BuildConfig.REINDEV_VERSION + " has been successfully installed!" +
+                USER_INSTRUCTION, false);
     }
 
     public void installBetaCraft() {
@@ -180,9 +248,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 "launcher" + File.separator + "launch-methods");
         if ((!versionsJsons.isDirectory() && !versionsJsons.mkdirs()) ||
                 (!launchMethods.isDirectory() && !launchMethods.mkdirs())) {
-            JOptionPane.showMessageDialog(this.jFrame,
-                    "Unable to create betacraft target directory!",
-                    this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
+            showMessage("Unable to create betacraft target directory!", true);
             return;
         }
         File foxLoaderVersionJar = new File(versions, this.versionName + ".jar");
@@ -211,11 +277,13 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                     "/betacraft-" + BuildConfig.FOXLOADER_VERSION + ".jar"),
                     Files.newOutputStream(foxLoaderBetaCraft.toPath()));
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this.jFrame, e, this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
+            showError(e);
             return;
         }
-        JOptionPane.showMessageDialog(this.jFrame, "FoxLoader " + BuildConfig.FOXLOADER_VERSION +
-                " for ReIndev " + BuildConfig.REINDEV_VERSION + " has been successfully installed!");
+        progressBar.setValue(PROGRESS_BAR_MAX);
+        showMessage("FoxLoader " + BuildConfig.FOXLOADER_VERSION +
+                " for ReIndev " + BuildConfig.REINDEV_VERSION + " has been successfully installed!" +
+                USER_INSTRUCTION, false);
     }
 
     public void extractMMCInstance() {
@@ -244,13 +312,40 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             }
             zipOutputStream.finish();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this.jFrame, e, this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
+            showError(e);
             return;
         }
-        JOptionPane.showMessageDialog(this.jFrame, "FoxLoader " + BuildConfig.FOXLOADER_VERSION +
+        progressBar.setValue(PROGRESS_BAR_MAX);
+        showMessage("FoxLoader " + BuildConfig.FOXLOADER_VERSION +
                 " for ReIndev " + BuildConfig.REINDEV_VERSION + " MMC Instance has been successfully extracted!\n" +
                 "(The file should be a \".zip\" next to the installer)\n\n" +
-                "To import a zip: Add Instance -> Import from zip -> Browse");
+                "To import a zip: Add Instance -> Import from zip -> Browse", false);
+    }
+
+    public void showError(Throwable throwable) {
+        throwable.printStackTrace(System.out);
+        if (this.installerPlatform.fullscreen) {
+            this.progressBar.setString(throwable.toString());
+        } else {
+            JOptionPane.showMessageDialog(this.jFrame.isVisible() ? this.jFrame : null,
+                    StackTraceStringifier.stringifyStackTrace(throwable),
+                    this.jFrame.getTitle(), JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void showMessage(String message, boolean error) {
+        System.out.println(message);
+        if (this.installerPlatform.fullscreen) {
+            this.progressBar.setString(message);
+        } else {
+            JOptionPane.showMessageDialog(this.jFrame.isVisible() ? this.jFrame : null,
+                    message, this.jFrame.getTitle(), error ?
+                            JOptionPane.ERROR_MESSAGE : JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    public void exitInstaller() {
+        System.exit(0);
     }
 
     private static void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
