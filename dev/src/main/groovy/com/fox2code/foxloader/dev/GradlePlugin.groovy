@@ -11,6 +11,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler
@@ -145,6 +146,9 @@ class GradlePlugin implements Plugin<Project> {
                 clientImplementation("org.lwjgl.lwjgl:lwjgl-platform:2.9.1")
             }
             Objects.requireNonNull(config.modId, "The mod id cannot be null!")
+            if (config.modVersion == null && project.version != null) {
+                config.modVersion = project.version.toString()
+            }
             (project.getTasks().getByName("jar") as Jar).manifest {
                 attributes 'For-FoxLoader-Version': BuildConfig.FOXLOADER_VERSION
                 attributes 'For-ReIndev-Version': BuildConfig.REINDEV_VERSION
@@ -161,7 +165,8 @@ class GradlePlugin implements Plugin<Project> {
                 if (config.modName != null) {
                     attributes 'ModName': config.modName
                 }
-                if (config.modVersion != null) {
+                if (config.modVersion != null &&
+                        !config.modVersion.isEmpty()) {
                     attributes 'ModVersion': config.modVersion
                 }
                 if (config.modDesc != null) {
@@ -197,6 +202,75 @@ class GradlePlugin implements Plugin<Project> {
             runServer.systemProperty("foxloader.inject-mod", mod.getAbsolutePath())
             runServer.systemProperty("foxloader.dev-mode", "true")
             runServer.workingDir = runDir
+            if (config.addJitPackCIPublish &&
+                    config.modVersion != null && !config.modVersion.isEmpty()) {
+                File root = project.rootProject.rootDir
+                File gitConfig = new File(root, ".git" + File.separator + "config")
+                if (gitConfig.exists()) {
+                    try (BufferedReader bufferedReader =
+                            new BufferedReader(new FileReader(gitConfig))) {
+                        String line
+                        String url = null
+                        boolean check = false
+                        while ((line = bufferedReader.readLine()) != null) {
+                            if (line == "[remote \"origin\"]") check = true
+                            else if (check) {
+                                line = line.trim()
+                                if (line.startsWith("url = ")) {
+                                    url = line.substring(6)
+                                    break
+                                } else if (line.startsWith("[")) {
+                                    break
+                                }
+                            }
+                        }
+                        if (url != null) {
+                            if (url.endsWith(".git")) {
+                                url = url.substring(0, url.length() - 4)
+                            }
+                            if (url.startsWith("git@github.com:")) {
+                                addJitPackPublishTask(project, config, url.substring(15))
+                            } else if (url.startsWith("https://github.com/")) {
+                                addJitPackPublishTask(project, config, url.substring(19))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    static void addJitPackPublishTask(Project project, FoxLoaderConfig config, String path) {
+        int i = path.indexOf('/')
+        if (i == -1) return
+        String owner = path.substring(0, i)
+        String repo = path.substring(i + 1)
+        Jar jar = (project.getTasks().getByName("jar") as Jar)
+        String modWebsite = config.modWebsite
+        if (modWebsite == null) {
+            modWebsite = "https://github.com/" + path
+            jar.manifest.attributes.put('ModWebsite', modWebsite)
+        }
+        jar.manifest.attributes.put('ModJitPack',
+                "com.github." + owner + ":" + repo)
+        if (System.getenv("JITPACK") == null) return
+        project.publishing {
+            publications {
+                release(MavenPublication) {
+                    from project.components.java
+                    groupId = "com.github." + owner
+                    artifactId = repo
+                    version = '1.0' // JitPack only work with "1.0" as version
+                    pom {
+                        url = modWebsite
+                        properties = [
+                                "foxloader.version": BuildConfig.FOXLOADER_VERSION,
+                                "reindev.version"  : BuildConfig.REINDEV_VERSION,
+                                "mod.version"      : config.modVersion,
+                        ]
+                    }
+                }
+            }
         }
     }
 
@@ -286,9 +360,11 @@ class GradlePlugin implements Plugin<Project> {
     }
 
     static class FoxLoaderConfig {
-        boolean decompileSources = true
+        boolean decompileSources = // Only decompile sources if we have no CI to not waste server time
+                System.getenv("CI") == null && System.getenv("JITPACK") == null
         boolean includeClient = true
         boolean includeServer = true
+        boolean addJitPackCIPublish = true
         String username = Normalizer.normalize(System.getProperty("user.name"),
                 Normalizer.Form.NFD).replaceAll("[^a-zA-Z0-9_]+","")
         public String commonMod

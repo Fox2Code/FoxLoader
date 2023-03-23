@@ -54,6 +54,13 @@ subprojects {
                     groupId = "com.github.Fox2Code.FoxLoader"
                     artifactId = project.name
                     version = '1.0' // JitPack only work with "1.0" as version
+                    pom {
+                        url = 'https://github.com/Fox2Code/FoxLoader'
+                        properties = [
+                                "foxloader.version": project['foxloader.version'] as String,
+                                "reindev.version"  : project['reindev.version'] as String,
+                        ]
+                    }
                 }
             }
         }

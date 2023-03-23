@@ -2,6 +2,8 @@ package com.fox2code.foxloader.registry;
 
 import com.fox2code.foxloader.loader.ModLoader;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -50,6 +52,13 @@ public abstract class GameRegistry {
         return registryEntry == null ? null :
                 this.getRegisteredBlock(
                         convertItemIdToBlockId(registryEntry.realId));
+    }
+
+    /**
+     * @return list of registered modded entries
+     */
+    public static Collection<RegistryEntry> getRegistryEntries() {
+        return Collections.unmodifiableCollection(registryEntries.values());
     }
 
     /**
