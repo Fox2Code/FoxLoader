@@ -14,10 +14,12 @@ import org.gradle.api.Task
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler
 
 import javax.swing.JOptionPane
 import java.nio.charset.StandardCharsets
+import java.nio.file.ClosedFileSystemException
+import java.nio.file.FileSystem
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.text.Normalizer
 
@@ -202,7 +204,7 @@ class GradlePlugin implements Plugin<Project> {
             runServer.systemProperty("foxloader.inject-mod", mod.getAbsolutePath())
             runServer.systemProperty("foxloader.dev-mode", "true")
             runServer.workingDir = runDir
-            if (config.addJitPackCIPublish &&
+            if (config.addJitPackCIPublish && project.rootProject == project &&
                     config.modVersion != null && !config.modVersion.isEmpty()) {
                 File root = project.rootProject.rootDir
                 File gitConfig = new File(root, ".git" + File.separator + "config")
@@ -306,16 +308,37 @@ class GradlePlugin implements Plugin<Project> {
             PreLoader.patchReIndevForDev(jar, jarFox, client)
         }
         if (config.decompileSources) {
+            File unpickedJarFox = new File(foxLoaderCache,
+                    "net/silveros/" + sideName + "/" + versionFox + "/" +
+                            sideName + "-" + versionFox + "-unpicked.jar")
             File sourcesJarFox = new File(foxLoaderCache,
                     "net/silveros/" + sideName + "/" + versionFox + "/" +
                             sideName + "-" + versionFox + "-sources.jar")
             if (config.forceReload && sourcesJarFox.exists()) sourcesJarFox.delete()
             if (!sourcesJarFox.exists()) {
-                System.out.println("Decompiling patched ReIndev " + logSideName)
-                ConsoleDecompiler.main(new String[]{
-                        "-asc=1", "-bsm=1", "-sef=1", "-jrt=1", "-nls=0", "-ind=    ",
-                        jarFox.getAbsolutePath(), sourcesJarFox.getAbsolutePath()
-                })
+                closeJarFileSystem(unpickedJarFox)
+                if (unpickedJarFox.exists()) unpickedJarFox.delete()
+                System.out.println("Unpicking ReIndev " + logSideName + " references for source")
+                PreLoader.patchDevReIndevForSource(jarFox, unpickedJarFox)
+                try {
+                    System.out.println("Decompiling patched ReIndev " + logSideName)
+                    new FoxLoaderDecompiler(unpickedJarFox, sourcesJarFox, client).decompile()
+                } catch (Throwable throwable) {
+                    try {
+                        closeJarFileSystem(unpickedJarFox)
+                        closeJarFileSystem(sourcesJarFox)
+                    } finally {
+                        unpickedJarFox.delete()
+                        sourcesJarFox.delete()
+                    }
+                    Throwable root = throwable
+                    while (root.getCause() != null)
+                        root = root.getCause()
+                    root.initCause(client ?
+                            UserMessage.FAIL_DECOMPILE_CLIENT :
+                            UserMessage.FAIL_DECOMPILE_SERVER)
+                    throw throwable
+                }
             }
         }
         if (client) {
@@ -325,6 +348,36 @@ class GradlePlugin implements Plugin<Project> {
         } else {
             project.dependencies {
                 serverImplementation("net.silveros:" + sideName + ":${versionFox}")
+            }
+        }
+    }
+
+    static void closeJarFileSystem(File file) {
+        URI uri = new URI("jar:file", null, file.toURI().getPath(), null)
+        FileSystem fileSystem = null
+        try {
+            fileSystem = FileSystems.getFileSystem(uri)
+            if (fileSystem != null) fileSystem.close()
+        } catch (Exception ignored) {}
+        if (fileSystem != null) {
+            try {
+                Files.exists(fileSystem.getPath("META-INF/MANIFEST.MF"))
+            } catch (ClosedFileSystemException e) {
+                new Thread("FoxLoader - Termination Thread") {
+                    @Override
+                    void run() {
+                        try {
+                            sleep(500L)
+                        } catch (Exception ignored) {}
+                        System.exit(-1)
+                    }
+                }.start()
+                Throwable root = e
+                while (root.getCause() != null) root = root.getCause()
+                if (!(root instanceof UserMessage)) {
+                    root.initCause(UserMessage.UNRECOVERABLE_STATE_DECOMPILE)
+                }
+                throw e
             }
         }
     }

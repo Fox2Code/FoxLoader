@@ -16,63 +16,14 @@ dependencies {
     // Dev annotations
     api 'org.jetbrains:annotations:13.0'
 
+    // Unpick transformer helper
+    compileOnly('org.lwjgl.lwjgl:lwjgl:2.9.3') {
+        transitive = false
+    }
+
     // Do no expose spark APIs to mods
     implementation(project['spark.dependency'] as String)
 }
 
-// Stuff for BuildConfig
-final File buildConfigSrc = new File(buildDir,
-        "generated/sources/foxloader/com/fox2code/foxloader/launcher/BuildConfig.java")
-
-static void generateBuildConfig0(File buildConfigSrc, Project project) {
-    buildConfigSrc.getParentFile().mkdirs()
-    final String FOXLOADER_TRANSFORMER_VERSION =
-            project['foxloader.lastReIndevTransformerChanges']
-    final String FOXLOADER_VERSION = project['foxloader.version']
-    final String SPARK_DEPENDENCY = project['spark.dependency']
-    final String SPARK_VERSION = project['spark.version']
-    final String REINDEV_VERSION = project['reindev.version']
-    final String CLIENT_URL = project['reindev.clientUrl']
-    final String SERVER_URL = project['reindev.serverUrl']
-    FileOutputStream fileOutputStream = new FileOutputStream(buildConfigSrc)
-    try {
-        PrintStream printStream = new PrintStream(fileOutputStream)
-        printStream.println("// Auto generated class, do not modify.")
-        printStream.println("package com.fox2code.foxloader.launcher;")
-        printStream.println()
-        printStream.println("public final class BuildConfig {")
-        printStream.println("    private BuildConfig() {}")
-        printStream.println( // We don't want devs to patch + decompile every update
-                "    public static final String FOXLOADER_TRANSFORMER_VERSION = \"" +
-                        FOXLOADER_TRANSFORMER_VERSION + "\";")
-        printStream.println("    public static final String FOXLOADER_VERSION = \"" + FOXLOADER_VERSION + "\";")
-        printStream.println("    public static final String SPARK_DEPENDENCY = \"" + SPARK_DEPENDENCY + "\";")
-        printStream.println("    public static final String SPARK_VERSION = \"" + SPARK_VERSION + "\";")
-        printStream.println("    public static final String REINDEV_VERSION = \"" + REINDEV_VERSION + "\";")
-        printStream.println("    public static final String CLIENT_URL = \"" + CLIENT_URL + "\";")
-        printStream.println("    public static final String SERVER_URL = \"" + SERVER_URL + "\";")
-        printStream.println("}")
-    } finally {
-        fileOutputStream.close()
-    }
-}
-
-tasks.register('generateBuildConfig') {
-    doLast {
-        generateBuildConfig0(buildConfigSrc, project)
-    }
-}
-
-if (!buildConfigSrc.exists()) {
-    generateBuildConfig0(buildConfigSrc, project)
-}
-
-compileJava.dependsOn('generateBuildConfig')
-
-sourceSets {
-    main {
-        java {
-            srcDir 'build/generated/sources/foxloader'
-        }
-    }
-}
+// Generated code is in another script to make code cleaner.
+apply from: "generate.gradle"

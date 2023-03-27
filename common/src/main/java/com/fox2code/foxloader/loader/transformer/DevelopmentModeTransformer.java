@@ -1,6 +1,8 @@
 package com.fox2code.foxloader.loader.transformer;
 
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.HashMap;
 
@@ -29,6 +31,15 @@ public class DevelopmentModeTransformer implements PreClassTransformer {
         String registeredInterface = interfacesFromMixin.get(className);
         if (registeredInterface != null) {
             classNode.interfaces.add(registeredInterface.replace('.', '/'));
+        }
+        for (MethodNode methodNode : classNode.methods) {
+            final Type[] args = Type.getArgumentTypes(methodNode.desc);
+            String desc;
+            if (args.length != 0 && ((desc = args[args.length - 1]
+                    .getDescriptor()).equals("[Ljava/lang/Object;") ||
+                    desc.equals("[Ljava/lang/String;"))) {
+                methodNode.access |= ACC_VARARGS;
+            }
         }
     }
 }

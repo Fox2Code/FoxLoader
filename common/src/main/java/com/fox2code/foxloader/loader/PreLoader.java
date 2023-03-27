@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.ClassNode;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,10 +30,14 @@ public class PreLoader {
     private static final PreLoadMetaJarHash preLoadMetaJarHash = new PreLoadMetaJarHash();
     private static ClassDataProvider classDataProviderOverride;
     private static boolean prePatchInitialized;
+    private static final String metaInfPath = "META-INF/MANIFEST.MF";
+    private static final byte[] metaInf = ("Manifest-Version: 1.0\n" +
+            "FoxLoader-Transformer-Version: " + BuildConfig.FOXLOADER_TRANSFORMER_VERSION +
+            "Multi-Release: true\n").getBytes(StandardCharsets.UTF_8);
 
     static {
         preLoadMetaJarHash.addString(BuildConfig.REINDEV_VERSION);
-        preLoadMetaJarHash.addString(BuildConfig.FOXLOADER_VERSION);
+        preLoadMetaJarHash.addString(BuildConfig.FOXLOADER_TRANSFORMER_VERSION);
         FoxClassLoader foxClassLoader = FoxLauncher.getFoxClassLoader();
         if (foxClassLoader != null) { // foxClassLoader is null in dev mode
             foxClassLoader.addClassTransformers((bytes, className) -> {
@@ -96,6 +101,7 @@ public class PreLoader {
 
     static void loadPrePatches(boolean client) {
         preTransformers.clear();
+        registerPrePatch(new VarNameTransformer());
         registerPrePatch(new RegistryTransformer());
         if (client) {
             registerPrePatch(new FrustrumHelperTransformer());
@@ -109,11 +115,20 @@ public class PreLoader {
             throw new IllegalStateException("Not in development environment!");
         loadPrePatches(client);
         registerPrePatch(new DevelopmentModeTransformer());
-        patchJar(in, out);
+        patchJar(in, out, false);
     }
 
-    private static void patchJar(File in, File out) throws IOException {
+    public static void patchDevReIndevForSource(File in, File out) throws IOException {
+        if (FoxLauncher.getFoxClassLoader() != null)
+            throw new IllegalStateException("Not in development environment!");
+        preTransformers.clear();
+        registerPrePatch(new DevelopmentSourceTransformer());
+        patchJar(in, out, true);
+    }
+
+    private static void patchJar(File in, File out, boolean ignoreFrames) throws IOException {
         LinkedHashMap<String, byte[]> hashMap = new LinkedHashMap<>();
+        hashMap.put(metaInfPath, metaInf); // Set META-INF first
         final byte[] empty = new byte[0];
         final byte[] buffer = new byte[2048];
         ZipEntry entry;
@@ -144,9 +159,12 @@ public class PreLoader {
                         entryName.length() - 6).replace('/', '.');
                 ClassReader classReader = new ClassReader(element.getValue());
                 ClassNode classNode = new ClassNode();
-                classReader.accept(classNode, 0);
+                classReader.accept(classNode,
+                        ignoreFrames ? ClassReader.SKIP_FRAMES : 0);
                 patchForMixin(classNode, entryName);
-                ClassWriter classWriter = classDataProviderOverride.newClassWriter();
+                ClassWriter classWriter = ignoreFrames ?
+                        new ClassWriter(ClassWriter.COMPUTE_MAXS) :
+                        classDataProviderOverride.newClassWriter();
                 classNode.accept(classWriter);
                 element.setValue(classWriter.toByteArray());
             }

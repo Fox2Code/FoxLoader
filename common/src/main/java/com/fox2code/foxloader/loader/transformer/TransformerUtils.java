@@ -1,8 +1,15 @@
 package com.fox2code.foxloader.loader.transformer;
 
 import com.fox2code.foxloader.launcher.ClassTransformer;
+import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceMethodVisitor;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -76,5 +83,38 @@ public class TransformerUtils {
             }
         }
         throw new NoSuchElementException(classNode.name + "." + fieldName);
+    }
+
+    public static AbstractInsnNode getNumberInsn(int number) {
+        if (number >= -1 && number <= 5)
+            return new InsnNode(number + 3);
+        else if (number >= -128 && number <= 127)
+            return new IntInsnNode(Opcodes.BIPUSH, number);
+        else if (number >= -32768 && number <= 32767)
+            return new IntInsnNode(Opcodes.SIPUSH, number);
+        else
+            return new LdcInsnNode(number);
+    }
+
+    public static String printInsnList(InsnList insnList) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        printInsnList(insnList, stringBuilder);
+        return stringBuilder.toString();
+    }
+
+    public static void printInsnList(final InsnList insnList,final StringBuilder stringBuilder) {
+        Textifier textifier = new Textifier();
+        MethodNode methodNode = new MethodNode(0, "insns", "()V", null, null);
+        methodNode.instructions = insnList;
+        methodNode.accept(new TraceMethodVisitor(textifier));
+        textifier.print(new PrintWriter(new Writer() {
+            @Override
+            public void write(@NotNull char[] cbuf, int off, int len) throws IOException {
+                stringBuilder.append(cbuf, off, len);
+            }
+
+            @Override public void flush() {}
+            @Override public void close() {}
+        }));
     }
 }

@@ -1,0 +1,258 @@
+import java.lang.reflect.Field
+import java.lang.reflect.Modifier
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // Unpick transformer helper
+        classpath('org.lwjgl.lwjgl:lwjgl:2.9.3') {
+            transitive = false
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'build/generated/sources/foxloader'
+        }
+    }
+}
+
+// BuildConfig stuff
+final File buildConfigSrc = new File(buildDir,
+        "generated/sources/foxloader/com/fox2code/foxloader/launcher/BuildConfig.java")
+
+static void generateBuildConfig0(File buildConfigSrc, Project project) {
+    buildConfigSrc.getParentFile().mkdirs()
+    final String FOXLOADER_TRANSFORMER_VERSION =
+            project['foxloader.lastReIndevTransformerChanges']
+    final String FOXLOADER_VERSION = project['foxloader.version']
+    final String SPARK_DEPENDENCY = project['spark.dependency']
+    final String SPARK_VERSION = project['spark.version']
+    final String REINDEV_VERSION = project['reindev.version']
+    final String CLIENT_URL = project['reindev.clientUrl']
+    final String SERVER_URL = project['reindev.serverUrl']
+    FileOutputStream fileOutputStream = new FileOutputStream(buildConfigSrc)
+    try {
+        PrintStream printStream = new PrintStream(fileOutputStream)
+        printStream.println("// Auto generated class, do not modify.")
+        printStream.println("package com.fox2code.foxloader.launcher;")
+        printStream.println()
+        printStream.println("public final class BuildConfig {")
+        printStream.println("    private BuildConfig() {}")
+        printStream.println( // We don't want devs to patch + decompile every update
+                "    public static final String FOXLOADER_TRANSFORMER_VERSION = \"" +
+                        FOXLOADER_TRANSFORMER_VERSION + "\";")
+        printStream.println("    public static final String FOXLOADER_VERSION = \"" + FOXLOADER_VERSION + "\";")
+        printStream.println("    public static final String SPARK_DEPENDENCY = \"" + SPARK_DEPENDENCY + "\";")
+        printStream.println("    public static final String SPARK_VERSION = \"" + SPARK_VERSION + "\";")
+        printStream.println("    public static final String REINDEV_VERSION = \"" + REINDEV_VERSION + "\";")
+        printStream.println("    public static final String CLIENT_URL = \"" + CLIENT_URL + "\";")
+        printStream.println("    public static final String SERVER_URL = \"" + SERVER_URL + "\";")
+        printStream.println("}")
+    } finally {
+        fileOutputStream.close()
+    }
+}
+
+tasks.register('generateBuildConfig') {
+    doLast {
+        generateBuildConfig0(buildConfigSrc, project)
+    }
+}
+
+if (!buildConfigSrc.exists()) {
+    generateBuildConfig0(buildConfigSrc, project)
+}
+
+compileJava.dependsOn('generateBuildConfig')
+
+// GeneratedConstantUnpick stuff
+final File generatedConstantUnpicksSrc = new File(buildDir,
+        "generated/sources/foxloader/com/fox2code/foxloader/loader/transformer/GeneratedConstantUnpicks.java")
+final String[] openGLSources = new String[]{"GL11", "GL12", "GL13", "GL14", "GL15", "GL20", "GL21"}
+final HashSet<String> explicitlyExcludedEntries = new HashSet<>(Arrays.asList(
+        // Skip Generic entries
+        "GL11#GL_ZERO", "GL11#GL_ONE", "GL11#GL_TRUE", "GL11#GL_FALSE", "GL11#GL_NONE", "GL11#GL_NO_ERROR",
+        // Ignore duplicates
+        "GL11#GL_LOGIC_OP", "GL11#GL_TEXTURE_COMPONENTS",
+        "GL12#GL_SMOOTH_POINT_SIZE_RANGE", "GL12#GL_SMOOTH_POINT_SIZE_GRANULARITY",
+        "GL12#GL_SMOOTH_LINE_WIDTH_RANGE", "GL12#GL_SMOOTH_LINE_WIDTH_GRANULARITY",
+        "GL15#GL_FOG_COORD_SRC", "GL15#GL_FOG_COORD", "GL15#GL_CURRENT_FOG_COORD",
+        "GL15#GL_FOG_COORD_ARRAY_TYPE", "GL15#GL_FOG_COORD_ARRAY_STRIDE",
+        "GL15#GL_FOG_COORD_ARRAY_POINTER", "GL15#GL_FOG_COORD_ARRAY",
+        "GL15#GL_FOG_COORD_ARRAY_BUFFER_BINDING",
+        "GL15#GL_SRC0_RGB", "GL15#GL_SRC1_RGB", "GL15#GL_SRC2_RGB",
+        "GL15#GL_SRC0_ALPHA", "GL15#GL_SRC1_ALPHA", "GL15#GL_SRC2_ALPHA",
+        "GL20#GL_BLEND_EQUATION_RGB",
+))
+
+void verifyConstantUnpickCollisions0(String[] openGLSources, HashSet<String> explicitlyExcludedEntries) {
+    final String RESET = "\033[0m";
+    final String RED = "\033[0;31m";
+    final String GREEN = "\033[0;32m";
+    final String YELLOW = "\033[0;33m";
+    final String BLUE = "\033[0;34m";
+    HashMap<Integer, String> integerHashSet = new HashMap<>()
+    int entryCount = 0
+    boolean configValid = true
+    for (String openGLSource : openGLSources) {
+        Class<?> aClass = Class.forName("org.lwjgl.opengl." + openGLSource)
+        for (Field field : aClass.getDeclaredFields()) {
+            if ((field.getModifiers() & (Modifier.PUBLIC | Modifier.STATIC))
+                    != (Modifier.PUBLIC | Modifier.STATIC)) continue
+            if (field.getName().endsWith("_BIT")) continue
+            if (field.getType() != int.class) continue
+            Integer value = Integer.valueOf(field.getInt(null))
+            final String entryName = openGLSource + "#" + field.getName()
+            if (explicitlyExcludedEntries.contains(entryName)) continue
+            String collision = integerHashSet.putIfAbsent(value, entryName)
+            if (collision != null) {
+                project.println(RED + "Collision detected: " + collision + " == " + entryName + RESET)
+                configValid = false
+            }
+            entryCount++
+        }
+    }
+    for (String exclusion : explicitlyExcludedEntries) {
+        int i = exclusion.indexOf('#')
+        if (i == -1) {
+            project.println(YELLOW + "Exclusion does not contain class name: " + exclusion + RESET)
+            continue
+        }
+        Class<?> aClass = Class.forName("org.lwjgl.opengl." + exclusion.substring(0, i))
+        try {
+            Field field = aClass.getDeclaredField(exclusion.substring(i + 1))
+            String collision = integerHashSet.get(field.getInt(null))
+            if (collision == null) {
+                project.println(YELLOW + "No collision found fo exclusion: " + exclusion + RESET)
+            } else {
+                project.println(BLUE + "Exclusion " + exclusion + GREEN +
+                        " is good" + BLUE + " because of " + collision + RESET)
+            }
+        } catch (Exception e) {
+            project.println(YELLOW + "Field no longer exists for exclusion: " + exclusion + RESET)
+        }
+    }
+    if (!configValid) {
+        project.println(RED + "Config is not valid because of collisions!" + RESET)
+    } else {
+        project.println(GREEN + "Config has " + entryCount + " entries!" + RESET)
+    }
+}
+
+static void generateUnpickStart(PrintStream printStream) {
+    printStream.println("        @Override")
+    printStream.println("        public FieldInsnNode unpick(int value) {")
+    printStream.println("            //noinspection DanglingJavadoc")
+    printStream.println("            switch(value) {")
+    printStream.println("                default:")
+    printStream.println("                    return null;")
+}
+
+static void generateUnpickEnd(PrintStream printStream) {
+    printStream.println("            }")
+    printStream.println("        }")
+}
+
+static void generatedConstantUnpick0(File generatedConstantUnpicksSrc, String[] openGLSources,
+                                     HashSet<String> explicitlyExcludedEntries) {
+    generatedConstantUnpicksSrc.getParentFile().mkdirs()
+    FileOutputStream fileOutputStream = new FileOutputStream(generatedConstantUnpicksSrc)
+    try {
+        PrintStream printStream = new PrintStream(fileOutputStream)
+        printStream.println("// Auto generated class, do not modify.")
+        printStream.println("package com.fox2code.foxloader.loader.transformer;")
+        printStream.println()
+        printStream.println("import static org.objectweb.asm.Opcodes.GETSTATIC;")
+        printStream.println("import org.objectweb.asm.tree.FieldInsnNode;")
+        printStream.println()
+        for (String openGLSource : openGLSources) {
+            printStream.println("import org.lwjgl.opengl." + openGLSource + ";")
+        }
+        printStream.println("import org.lwjgl.input.Keyboard;")
+        printStream.println()
+        printStream.println("public final class GeneratedConstantUnpicks {")
+        printStream.println("    private GeneratedConstantUnpicks() {}")
+        printStream.println()
+        printStream.println("    public static final DevelopmentSourceTransformer.ConstantUnpick " +
+                "openGLConstantUnpick = new OpenGLConstantUnpick();")
+        printStream.println("    public static final DevelopmentSourceTransformer.ConstantUnpick " +
+                "keyboardConstantUnpick = new KeyboardConstantUnpick();")
+        // OpenGL
+        printStream.println()
+        printStream.println("    // Auto generated class, do not modify.")
+        printStream.println("    private static final class OpenGLConstantUnpick")
+        printStream.println("            extends DevelopmentSourceTransformer.GeneratedStaticConstantUnpick {")
+        for (String openGLSource : openGLSources) {
+            printStream.println("        private static final String " + openGLSource +
+                    " = \"org/lwjgl/opengl/" + openGLSource + "\";")
+        }
+        printStream.println()
+        generateUnpickStart(printStream)
+        for (String openGLSource : openGLSources) {
+            Class<?> aClass = Class.forName("org.lwjgl.opengl." + openGLSource)
+            for (Field field : aClass.getDeclaredFields()) {
+                if ((field.getModifiers() & (Modifier.PUBLIC | Modifier.STATIC))
+                        != (Modifier.PUBLIC | Modifier.STATIC)) continue
+                if (field.getName().endsWith("_BIT")) continue
+                if (field.getType() != int.class) continue
+                final String entryName = openGLSource + "#" + field.getName()
+                if (explicitlyExcludedEntries.contains(entryName)) continue
+                int value = field.getInt(null)
+                printStream.println("                case " + value + ": /** {@link " + entryName + "} */")
+                printStream.println("                    return " +
+                        "new FieldInsnNode(GETSTATIC, " + openGLSource + ", \"" + field.getName() + "\", \"I\");")
+            }
+        }
+        generateUnpickEnd(printStream)
+        printStream.println("    }")
+        // KeyBoard
+        printStream.println()
+        printStream.println("    // Auto generated class, do not modify.")
+        printStream.println("    private static final class KeyboardConstantUnpick")
+        printStream.println("            extends DevelopmentSourceTransformer.GeneratedStaticConstantUnpick {")
+        Class<?> aClass = Class.forName("org.lwjgl.input.Keyboard")
+        printStream.println("        private static final String KEYBOARD = \"org/lwjgl/input/Keyboard\";")
+        printStream.println()
+        generateUnpickStart(printStream)
+        for (Field field : aClass.getDeclaredFields()) {
+            if ((field.getModifiers() & (Modifier.PUBLIC | Modifier.STATIC))
+                    != (Modifier.PUBLIC | Modifier.STATIC)) continue
+            if (!field.getName().startsWith("KEY_")) continue
+            if (field.getName().endsWith("WIN")) continue
+            if (field.getType() != int.class) continue
+            int value = field.getInt(null)
+            printStream.println("                case " + value + ": /** {@link Keyboard#" + field.getName() + "} */")
+            printStream.println("                    return " +
+                    "new FieldInsnNode(GETSTATIC, KEYBOARD, \"" + field.getName() + "\", \"I\");")
+        }
+        generateUnpickEnd(printStream)
+        printStream.println("    }")
+        // End
+        printStream.println("}")
+    } finally {
+        fileOutputStream.close()
+    }
+}
+
+tasks.register('verifyConstantUnpickCollisions') {
+    doLast {
+        verifyConstantUnpickCollisions0(openGLSources, explicitlyExcludedEntries)
+    }
+}
+
+tasks.register('generateConstantUnpicksSrc') {
+    doLast {
+        generatedConstantUnpick0(generatedConstantUnpicksSrc, openGLSources, explicitlyExcludedEntries)
+    }
+}
+
+if (!generatedConstantUnpicksSrc.exists()) {
+    generatedConstantUnpick0(generatedConstantUnpicksSrc, openGLSources, explicitlyExcludedEntries)
+}
+
+compileJava.dependsOn('generateConstantUnpicksSrc')

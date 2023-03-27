@@ -1,6 +1,6 @@
 // Server build.gradle
 group 'com.fox2code'
-version project['reindev.version']
+version project['foxloader.version']
 
 dependencies {
     api(project(":common"))
