@@ -2,8 +2,10 @@ package com.fox2code.foxloader.installer;
 
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.DependencyHelper;
+import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.StackTraceStringifier;
 import com.fox2code.foxloader.launcher.utils.Platform;
+import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -38,6 +41,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             "FoxLoader " + BuildConfig.FOXLOADER_VERSION + " for ReIndev " + BuildConfig.REINDEV_VERSION;
     private static final int PROGRESS_BAR_MAX = DependencyHelper.commonDependencies.length + 1;
     private final InstallerPlatform installerPlatform;
+    private final LauncherType launcherType;
     private final JFrame jFrame;
     private final Dimension minDimensions;
     private final JPanel globalContainer;
@@ -52,6 +56,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
 
     public InstallerGUI(InstallerPlatform installerPlatform) {
         this.installerPlatform = installerPlatform;
+        this.launcherType = null;
         versionName = DEFAULT_VERSION_NAME;
         jFrame = new JFrame(DEFAULT_TITLE);
         jFrame.setMinimumSize(minDimensions = new Dimension(230, 30));
@@ -103,6 +108,20 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             jFrame.setResizable(false);
         }
         jFrame.pack();
+    }
+
+    public InstallerGUI(InstallerPlatform installerPlatform, LauncherType launcherType) {
+        this.installerPlatform = installerPlatform;
+        this.launcherType = launcherType;
+        jFrame = null;
+        minDimensions = null;
+        globalContainer = null;
+        label = null;
+        dropHelper = null;
+        minecraftButton = null;
+        mmcButton = null;
+        progressBar = new JProgressBar();
+        progressBar.setMaximum(PROGRESS_BAR_MAX);
     }
 
     private JPanel makeContainer(final String text) {
@@ -173,6 +192,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
     private boolean checkInstaller() {
         if (this.reIndevSource != null &&
                 !this.reIndevSource.exists()) {
+            if (this.jFrame == null) return true;
             // This cannot happen in true fullscreen
             JOptionPane.showMessageDialog(this.jFrame,
                     "Provided custom jar got deleted?",
@@ -187,6 +207,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         if (!Main.currentInstallerFile.getName()
                 .toLowerCase(Locale.ROOT).endsWith(".jar") &&
                 !this.installerPlatform.specialLauncher) {
+            if (this.jFrame == null) return true;
             JOptionPane.showMessageDialog(this.jFrame,
                     "Why the file is not a \".jar\"??? TELL ME!!! WHY???",
                     this.jFrame.getTitle(), JOptionPane.QUESTION_MESSAGE);
@@ -322,8 +343,52 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 "To import a zip: Add Instance -> Import from zip -> Browse", false);
     }
 
+    public void doSilentInstall() throws IOException {
+        if (this.checkInstaller()) {
+            return;
+        }
+        switch (this.launcherType) {
+            default: {
+                System.out.println("Unsupported launcherType: " + this.launcherType);
+                return;
+            }
+            case BETA_CRAFT: {
+                this.installBetaCraft();
+                if (progressBar.getValue() != PROGRESS_BAR_MAX) {
+                    System.exit(-1);
+                    return;
+                }
+                break;
+            }
+            case VANILLA_LIKE: {
+                this.installMineCraft();
+                if (progressBar.getValue() != PROGRESS_BAR_MAX) {
+                    System.exit(-1);
+                    return;
+                }
+                break;
+            }
+            case MMC_LIKE: {
+                File patches = new File(Main.currentInstallerFile.getParentFile().getParentFile(), "patches");
+                File patch = new File(patches, "com.fox2code.foxloader.json");
+                if (!patch.exists()) {
+                    System.exit(-1);
+                    return;
+                }
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                copyAndClose(InstallerGUI.class.getResourceAsStream(
+                        "/mmc/patches/com.fox2code.foxloader.json"), byteArrayOutputStream);
+                copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
+                        .replace("#version#", this.versionName)
+                        .replace("#foxloader_version#", BuildConfig.FOXLOADER_VERSION)
+                        .getBytes(StandardCharsets.UTF_8)), Files.newOutputStream(patch.toPath()));
+            }
+        }
+    }
+
     public void showError(Throwable throwable) {
         throwable.printStackTrace(System.out);
+        if (this.jFrame == null) return;
         if (this.installerPlatform.fullscreen) {
             this.progressBar.setString(throwable.toString());
         } else {
@@ -335,6 +400,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
 
     public void showMessage(String message, boolean error) {
         System.out.println(message);
+        if (this.jFrame == null) return;
         if (this.installerPlatform.fullscreen) {
             this.progressBar.setString(message);
         } else {

@@ -7,10 +7,13 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import org.gradle.api.Action
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.component.SoftwareComponent
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.tasks.Jar
@@ -256,24 +259,22 @@ class GradlePlugin implements Plugin<Project> {
         jar.manifest.attributes.put('ModJitPack',
                 "com.github." + owner + ":" + repo)
         if (System.getenv("JITPACK") == null) return
-        project.publishing {
-            publications {
-                release(MavenPublication) {
-                    from project.components.java
-                    groupId = "com.github." + owner
-                    artifactId = repo
-                    version = '1.0' // JitPack only work with "1.0" as version
-                    pom {
-                        url = modWebsite
-                        properties = [
-                                "foxloader.version": BuildConfig.FOXLOADER_VERSION,
-                                "reindev.version"  : BuildConfig.REINDEV_VERSION,
-                                "mod.version"      : config.modVersion,
-                        ]
-                    }
-                }
+        (project.getExtensions().getByName("publishing") as PublishingExtension).publications.register(
+                "release", MavenPublication, new Action<MavenPublication>() {
+            @Override
+            void execute(MavenPublication mavenPublication) {
+                mavenPublication.from(project.components.java as SoftwareComponent)
+                mavenPublication.groupId = "com.github." + owner
+                mavenPublication.artifactId = repo
+                mavenPublication.version = '1.0' // JitPack only work with "1.0" as version
+                mavenPublication.pom.url = modWebsite
+                mavenPublication.pom.properties = [
+                        "foxloader.version": BuildConfig.FOXLOADER_VERSION,
+                        "reindev.version"  : BuildConfig.REINDEV_VERSION,
+                        "mod.version"      : config.modVersion,
+                ]
             }
-        }
+        })
     }
 
     static void process(Project project, File foxLoaderCache, FoxLoaderConfig config) {

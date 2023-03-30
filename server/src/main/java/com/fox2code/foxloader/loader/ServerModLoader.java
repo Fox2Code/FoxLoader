@@ -5,6 +5,7 @@ import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.GameRegistryServer;
 import com.fox2code.foxloader.server.ServerCommandWrapper;
+import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.game.stats.StatList;
@@ -30,6 +31,7 @@ public final class ServerModLoader extends Mod {
         public static void notifyRun() {
             GameRegistryServer.initialize();
             ModLoader.initializeMods(false);
+            UpdateManager.getInstance().initialize();
             GameRegistryServer.freeze();
             ModLoader.postInitializeMods();
             GameRegistryServer.freezeRecipes();

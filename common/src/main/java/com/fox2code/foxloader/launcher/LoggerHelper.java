@@ -12,9 +12,11 @@ final class LoggerHelper {
     private static final String format = "[%1$tT] [%2$-7s] %3$s";
     private static final Level STDOUT = new Level("STDOUT", 800, Level.INFO.getResourceBundleName()) {};
     private static final Level STDERR = new Level("STDERR", 1000, Level.INFO.getResourceBundleName()) {};
-    static boolean consoleSupportColor = Boolean.getBoolean("foxloader.dev-mode") || // Assume true if dev-mode.
+    static boolean devEnvironment = Boolean.getBoolean("foxloader.dev-mode") || // Assume true if dev-mode.
             FoxLauncher.foxLoaderFile.getAbsolutePath().replace('\\', '/').endsWith( // Also check for IDE launch.
                     "/common/build/libs/common-" + BuildConfig.FOXLOADER_VERSION + ".jar");
+    private static final boolean consoleSupportColor = devEnvironment ||
+            Boolean.getBoolean("foxloader.console-support-color");
 
     static boolean install(File logFile) {
         if (System.out.getClass() != PrintStream.class) {

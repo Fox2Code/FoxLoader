@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.client.gui.GuiModList;
+import com.fox2code.foxloader.client.gui.GuiUpdateButton;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import net.minecraft.src.client.gui.*;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinGuiMainMenu extends GuiScreen {
     @Inject(method = "initGui", at = @At(value = "RETURN"))
     public void onInitGui(CallbackInfo ci) {
-        this.controlList.add(new GuiSmallButton(500, this.width - 61, 25, 60, 20, "Mods"));
+        this.controlList.add(new GuiUpdateButton(500, this.width - 61, 25, 60, 20, "Mods"));
     }
 
     @Inject(method = "actionPerformed", at = @At(value = "HEAD"), cancellable = true)

@@ -1,18 +1,19 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.GameRegistryClient;
+import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.src.client.gui.StringTranslate;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
@@ -78,6 +79,35 @@ public final class ClientModLoader extends Mod {
         networkPlayer.sendNetworkData(ModLoader.foxLoader, clientHello);
     }
 
+    @Override
+    void loaderHandleDoFoxLoaderUpdate(String version, String url) throws IOException {
+        File dest = null;
+        String[] args;
+        LauncherType launcherType = FoxLauncher.getLauncherType();
+        switch (launcherType) {
+            default:
+                return;
+            case MMC_LIKE:
+                File libraries = ModLoader.foxLoader.file.getParentFile();
+                dest = new File(libraries, "foxloader-" + version + ".jar");
+            case BETA_CRAFT:
+            case VANILLA_LIKE:
+                args = new String[]{null, "--update", launcherType.name()};
+        }
+        if (dest == null) {
+            if (!ModLoader.updateTmp.exists() && !ModLoader.updateTmp.mkdirs()) {
+                this.getLogger().warning("Unable to create update tmp folder.");
+                return;
+            }
+            dest = new File(ModLoader.updateTmp, "foxloader-" + version + ".jar");
+        }
+        try (FileOutputStream fileOutputStream = new FileOutputStream(dest)) {
+            NetUtils.downloadTo(url, fileOutputStream);
+        }
+        args[0] = dest.getAbsolutePath();
+        new ProcessBuilder(args).inheritIO().directory(ModLoader.updateTmp).start();
+    }
+
     public static class Internal {
         public static byte[] networkChunkBytes = null;
         private static final HashMap<String, Properties> translationsCache = new HashMap<>();
@@ -101,6 +131,7 @@ public final class ClientModLoader extends Mod {
         public static void notifyRun() {
             GameRegistryClient.initialize();
             ModLoader.initializeMods(true);
+            UpdateManager.getInstance().initialize();
             GameRegistryClient.freeze();
             ModLoader.postInitializeMods();
             StringTranslate.reloadKeys();
@@ -108,6 +139,7 @@ public final class ClientModLoader extends Mod {
             // StatList.initBreakableStats();
             // StatList.initStats();
             PlayerCommandHandler.instance.reloadCommands();
+            UpdateManager.getInstance().checkUpdates();
         }
 
         public static void notifyCameraAndRenderUpdated(float partialTick) {

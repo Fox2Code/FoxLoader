@@ -33,10 +33,15 @@ public class ClientMain {
                 throw new RuntimeException(e);
             }
         }
+        FoxLauncher.launcherType = LauncherType.BETA_CRAFT;
         main(params.get("username"), params.get("sessionid"), "--gameFolder", gameFolder);
     }
 
     public static void main(String... args) throws ReflectiveOperationException {
+        if (FoxLauncher.launcherType == LauncherType.UNKNOWN &&
+                currentLoaderFile.getParentFile().getName().equals("libraries")) {
+            FoxLauncher.launcherType = LauncherType.MMC_LIKE;
+        }
         FoxLauncher.initForClientFromArgs(args);
         FoxLauncher.runClientWithArgs(args);
     }

@@ -5,8 +5,12 @@ import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.updater.JitPackUpdater;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.jetbrains.annotations.NotNull;
+import org.semver4j.Range;
+import org.semver4j.Semver;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,13 +30,16 @@ public class ModLoader {
     public static final File modsVersioned = new File(mods, "ReIndev" + BuildConfig.REINDEV_VERSION);
     public static final File coremods = new File(FoxLauncher.getGameDir(), "coremods");
     public static final File config = new File(FoxLauncher.getGameDir(), "config");
+    static final File updateTmp = new File(config, "update-tmp");
     private static final boolean disableSpark = Boolean.getBoolean("foxloader.disable-spark");
     private static boolean launched = false, allModsLoaded = false;
     public static final String FOX_LOADER_MOD_ID = "foxloader";
     public static final String FOX_LOADER_VERSION = BuildConfig.FOXLOADER_VERSION;
     static final ModContainer foxLoader = new ModContainer(
             FoxLauncher.foxLoaderFile, FOX_LOADER_MOD_ID, "FoxLoader", FOX_LOADER_VERSION,
-            "ReIndev mod loader with foxes!!!", false);
+            "ReIndev mod loader with foxes!!!", "com.github.Fox2Code.FoxLoader:final");
+    // https://www.jitpack.io/com/github/Fox2Code/FoxLoader/final/0.3.0/final-0.3.0.pom
+    // https://www.jitpack.io/com/github/Fox2Code/FoxLoader/final/maven-metadata.xml
     static final LinkedList<File> coreMods = new LinkedList<>();
     // Use LinkedHashMap to keep track in which order mods were loaded.
     static final LinkedHashMap<String, ModContainer> modContainers = new LinkedHashMap<>();
@@ -51,6 +58,8 @@ public class ModLoader {
     private static final Attributes.Name CLIENT_MIXIN = new Attributes.Name("ClientMixin");
     private static final Attributes.Name SERVER_MIXIN = new Attributes.Name("ServerMixin");
     private static final Attributes.Name COMMON_MIXIN = new Attributes.Name("CommonMixin");
+    private static final Attributes.Name MOD_JITPACK = new Attributes.Name("ModJitPack");
+    private static final Semver INITIAL_SEMVER = new Semver("1.0.0");
     static final ClassDataProvider classDataProvider;
 
     static {
@@ -100,7 +109,7 @@ public class ModLoader {
             foxLoader.logger.info("Injecting spark using FoxLoader adapter.");
             ModContainer spark = new ModContainer(SourceUtil.getSourceFileOfClassName(
                     "me.lucko.spark.common.SparkPlugin"), "spark", "Spark",
-                    BuildConfig.SPARK_VERSION, "spark is a performance profiling mod.", false);
+                    BuildConfig.SPARK_VERSION, "spark is a performance profiling mod.", null);
             spark.clientModCls = "com.fox2code.foxloader.spark.FoxLoaderClientSparkPlugin";
             spark.serverModCls = "com.fox2code.foxloader.spark.FoxLoaderServerSparkPlugin";
             modContainers.put(spark.id, spark);
@@ -176,9 +185,22 @@ public class ModLoader {
         if (name == null || name.isEmpty()) {
             name = id.substring(0, 1).toLowerCase(Locale.ROOT) + id.substring(1);
         }
-        if (version == null) {
+        if (version == null || (version = version.trim()).isEmpty()) {
             version = "1.0";
         }
+        Semver semver = "1.0".equals(version) || "1.0.0".equals(version) ?
+                INITIAL_SEMVER : Semver.parse(version);
+        if (semver == null) {
+            int verExt = version.indexOf('-');
+            if (verExt != -1) {
+                version = version.substring(0, verExt);
+            }
+            semver = Semver.coerce(version);
+        }
+        if (semver == null) {
+            semver = INITIAL_SEMVER;
+        }
+
         if (desc == null || desc.isEmpty()) {
             desc = "...";
         }
@@ -188,7 +210,9 @@ public class ModLoader {
                     modContainer.file.getName() + " already uses the same mod id: " + id);
             return;
         }
-        modContainer = new ModContainer(file, id, name, version, desc, injected);
+        String jitpack = attributes.getValue(MOD_JITPACK);
+        if (jitpack != null && jitpack.isEmpty()) jitpack = null;
+        modContainer = new ModContainer(file, id, name, version, semver, desc, jitpack, injected);
         modContainer.prePatch = attributes.getValue(PRE_PATCH);
         modContainer.clientModCls = attributes.getValue(CLIENT_MOD);
         modContainer.serverModCls = attributes.getValue(SERVER_MOD);
@@ -204,10 +228,22 @@ public class ModLoader {
         }
     }
 
+    public static boolean checkSemVerMatch(String value, String accept) {
+        if (accept == null) return true;
+        if (value == null) return false;
+        Semver semver = Semver.coerce(value);
+        if (semver == null) {
+            return value.equals(accept);
+        } else {
+            return semver.satisfies(accept);
+        }
+    }
+
     public static ModContainer getModContainer(String id) {
         return modContainers.get(id);
     }
 
+    @NotNull
     public static Collection<ModContainer> getModContainers() {
         return Collections.unmodifiableCollection(modContainers.values());
     }

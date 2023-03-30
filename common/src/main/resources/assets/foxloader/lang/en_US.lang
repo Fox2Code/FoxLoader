@@ -3,3 +3,6 @@ chat.link.warning=Never open links from people that you don't trust!
 chat.link.open=Open in Browser
 chat.copy=Copy to Clipboard
 mods.openFolder=Open mods folder
+mods.updateAllMods=Update all mods
+mods.updateMod=Update mod
+mods.configureMod=Configure mod

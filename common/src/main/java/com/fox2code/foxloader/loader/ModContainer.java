@@ -8,13 +8,16 @@ import com.fox2code.foxloader.registry.BlockBuilder;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.GameRegistry;
 import com.fox2code.foxloader.registry.RegisteredBlock;
+import org.semver4j.Semver;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,7 +28,9 @@ public final class ModContainer {
     public final String id;
     public final String name;
     public final String version;
+    public final Semver semver;
     public final String description;
+    public final String jitpack;
     public final Logger logger;
     private final boolean injected;
     String prePatch;
@@ -39,12 +44,19 @@ public final class ModContainer {
     String clientModCls;
     String clientMixins;
 
-    ModContainer(File file, String id, String name, String version, String description, boolean injected) {
-        this.file = file;
+    ModContainer(File file, String id, String name, String version, String description, String jitpack) {
+        this(file, id, name, version, Semver.coerce(version), description, jitpack, false);
+    }
+
+    ModContainer(File file, String id, String name, String version,
+                 Semver semver, String description, String jitpack, boolean injected) {
+        this.file = Objects.requireNonNull(file);
         this.id = id;
         this.name = name;
         this.version = version;
+        this.semver = semver;
         this.description = description;
+        this.jitpack = jitpack;
         this.logger = Logger.getLogger(name);
         this.injected = injected;
         if (ModLoader.DEV_MODE) {

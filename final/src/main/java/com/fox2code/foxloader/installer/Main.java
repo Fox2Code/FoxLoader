@@ -1,11 +1,14 @@
 package com.fox2code.foxloader.installer;
 
 import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.ServerMain;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Locale;
@@ -15,6 +18,7 @@ public class Main {
     static final File currentInstallerFile = SourceUtil.getSourceFile(Main.class);
     public static void main(String[] args) throws ReflectiveOperationException, MalformedURLException {
         boolean platform = false;
+        boolean update = false;
         if (args.length >= 1) {
             boolean test = false;
             boolean with = false;
@@ -31,6 +35,9 @@ public class Main {
                     return;
                 case "--platform":
                     platform = true;
+                    break;
+                case "--update":
+                    update = true;
                     break;
                 case "--test-server":
                     test = true;
@@ -65,6 +72,15 @@ public class Main {
         }
         if (platform) {
             installerPlatform = InstallerPlatform.valueOf(args[1].toUpperCase(Locale.ROOT));
+        }
+        if (update) {
+            LauncherType launcherType = LauncherType.valueOf(args[1].toUpperCase(Locale.ROOT));
+            try {
+                new InstallerGUI(installerPlatform, launcherType).doSilentInstall();
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(-1);
+            }
         }
         new InstallerGUI(installerPlatform).show();
     }

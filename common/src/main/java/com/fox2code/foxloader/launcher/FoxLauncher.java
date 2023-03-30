@@ -27,6 +27,7 @@ public class FoxLauncher {
 
     public static final File foxLoaderFile = SourceUtil.getSourceFile(FoxLauncher.class);
     public static final HashMap<String, Object> mixinProperties = new HashMap<>();
+    static LauncherType launcherType = LauncherType.UNKNOWN;
     private static boolean client;
     static FoxClassLoader foxClassLoader;
     static File gameDir;
@@ -61,6 +62,9 @@ public class FoxLauncher {
         }
         System.setProperty("user.dir", gameDir.getPath());
         FoxLauncher.gameDir = gameDir;
+        if (LoggerHelper.devEnvironment) {
+            launcherType = LauncherType.GRADLE;
+        }
         foxClassLoader = new FoxClassLoader();
         foxClassLoader.addTransformerExclusion("org.lwjgl.");
         foxClassLoader.addTransformerExclusion("org.objectweb.asm.");
@@ -75,12 +79,15 @@ public class FoxLauncher {
     static void initForServerFromArgs(String[] args) {
         if (foxClassLoader != null)
             throw new IllegalStateException("FoxClassLoader already initialized!");
+        client = false;
         FoxLauncher.gameDir = new File("").getAbsoluteFile();
         // Special case for development environment.
         if (isDirGradle(gameDir)) {
             throw new RuntimeException("You should not run a server inside a gradle project!");
         }
-        client = false;
+        if (LoggerHelper.devEnvironment) {
+            launcherType = LauncherType.GRADLE;
+        }
         foxClassLoader = new FoxClassLoader();
         foxClassLoader.addTransformerExclusion("org.objectweb.asm.");
         foxClassLoader.addTransformerExclusion("org.spongepowered.asm.");
@@ -94,9 +101,8 @@ public class FoxLauncher {
     private static void installLoggerHelper() {
         boolean installed = false;
         try {
-            File logFile = new File(gameDir, (LoggerHelper.consoleSupportColor ?
+            File logFile = new File(gameDir, (LoggerHelper.devEnvironment ?
                     (client ? "client-latest.log" : "server-latest.log") : "latest.log"));
-            LoggerHelper.consoleSupportColor |= Boolean.getBoolean("foxloader.console-color");
             installed = LoggerHelper.install(logFile);
         } catch (Throwable ignored) {}
         if (!installed) {
@@ -140,5 +146,9 @@ public class FoxLauncher {
 
     public static boolean isClient() {
         return client;
+    }
+
+    public static LauncherType getLauncherType() {
+        return launcherType;
     }
 }
