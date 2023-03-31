@@ -43,6 +43,7 @@ public final class ModContainer {
     Mod clientMod;
     String clientModCls;
     String clientMixins;
+    Object configObject;
 
     ModContainer(File file, String id, String name, String version, String description, String jitpack) {
         this(file, id, name, version, Semver.coerce(version), description, jitpack, false);
@@ -84,6 +85,10 @@ public final class ModContainer {
 
     public String getFileName() {
         return this.file == null ? "built-in" : this.file.getName();
+    }
+
+    public Object getConfigObject() {
+        return configObject;
     }
 
     void applyPrePatch() throws ReflectiveOperationException {
@@ -151,16 +156,17 @@ public final class ModContainer {
 
     private Mod initializeMod(String clsName) throws ReflectiveOperationException {
         if (clsName == null) return null;
-        tmp = this;
         Mod mod;
+        Class<? extends Mod> cls = Class.forName(clsName, false,
+                FoxLauncher.getFoxClassLoader()).asSubclass(Mod.class);
         try {
-            mod = Class.forName(clsName, false, FoxLauncher.getFoxClassLoader())
-                    .asSubclass(Mod.class).newInstance();
-            LifecycleListener.register(mod);
-            mod.modContainer = this;
+            tmp = this;
+            mod = cls.newInstance();
         } finally {
             tmp = null;
         }
+        LifecycleListener.register(mod);
+        mod.modContainer = this;
         return mod;
     }
 

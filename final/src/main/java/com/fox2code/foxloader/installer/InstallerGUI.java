@@ -320,7 +320,9 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             copy(Files.newInputStream(Main.currentInstallerFile.toPath()), zipOutputStream);
             zipOutputStream.closeEntry();
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            for (String entry : new String[]{"patches/com.fox2code.foxloader.json", "instance.cfg", "mmc-pack.json"}) {
+            for (String entry : new String[]{"patches/com.fox2code.foxloader.json",
+                    "patches/net.minecraft.json", "patches/net.minecraftforge.json",
+                    "instance.cfg", "mmc-pack.json"}) {
                 zipOutputStream.putNextEntry(new ZipEntry(entry));
                 byteArrayOutputStream.reset();
                 copyAndClose(InstallerGUI.class.getResourceAsStream(

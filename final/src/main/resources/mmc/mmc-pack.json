@@ -20,6 +20,30 @@
             "important": true,
             "uid": "com.fox2code.foxloader",
             "version": "#version#"
+        },
+        {
+            "cachedName": "Workaround to prevent MultiMC Crash",
+            "cachedRequires": [
+                {
+                    "uid": "com.fox2code.foxloader"
+                }
+            ],
+            "cachedVersion": "no-op",
+            "disabled": true,
+            "uid": "net.minecraft",
+            "version": "no-op"
+        },
+        {
+            "cachedName": "Workaround to display CoreMods tab",
+            "cachedRequires": [
+                {
+                    "uid": "com.fox2code.foxloader"
+                }
+            ],
+            "cachedVersion": "no-op",
+            "disabled": true,
+            "uid": "net.minecraftforge",
+            "version": "no-op"
         }
     ],
     "formatVersion": 1
