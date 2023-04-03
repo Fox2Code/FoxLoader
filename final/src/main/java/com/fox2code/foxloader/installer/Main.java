@@ -74,13 +74,16 @@ public class Main {
             installerPlatform = InstallerPlatform.valueOf(args[1].toUpperCase(Locale.ROOT));
         }
         if (update) {
+            System.setErr(System.out); // Redirect errors to stdout
             LauncherType launcherType = LauncherType.valueOf(args[1].toUpperCase(Locale.ROOT));
             try {
+                System.out.println("Updating...");
                 new InstallerGUI(installerPlatform, launcherType).doSilentInstall();
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(-1);
             }
+            return;
         }
         new InstallerGUI(installerPlatform).show();
     }

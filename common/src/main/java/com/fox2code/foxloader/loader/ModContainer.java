@@ -123,12 +123,14 @@ public final class ModContainer {
     }
 
     void applyMod(boolean client) throws ReflectiveOperationException {
-        if (client) {
-            this.clientMod = initializeMod(this.clientModCls);
-        } else {
-            this.serverMod = initializeMod(this.serverModCls);
+        if (!this.id.equals(ModLoader.FOX_LOADER_MOD_ID)) {
+            if (client) {
+                this.clientMod = initializeMod(this.clientModCls);
+            } else {
+                this.serverMod = initializeMod(this.serverModCls);
+            }
+            this.commonMod = initializeMod(this.commonModCls);
         }
-        this.commonMod = initializeMod(this.commonModCls);
         try (InputStream inputStream = ModContainer.class.getResourceAsStream("/assets/" + id + "/lang/en_US.lang")) {
             if (inputStream != null) {
                 logger.log(Level.FINE, "Loaded /assets/" + id + "/lang/en_US.lang");

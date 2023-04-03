@@ -167,7 +167,9 @@ public abstract class Mod implements LifecycleListener {
     // For internal use only
     void loaderHandleServerHello(NetworkPlayer networkPlayer, ServerHello serverHello) {}
     void loaderHandleClientHello(NetworkPlayer networkPlayer, ClientHello clientHello) {}
-    void loaderHandleDoFoxLoaderUpdate(String version, String url) throws IOException {}
+    void loaderHandleDoFoxLoaderUpdate(String version, String url) throws IOException {
+        System.err.println("Unhandled loaderHandleDoFoxLoaderUpdate()");
+    }
 
     interface SidedMod {
         ModContainer getModContainer();

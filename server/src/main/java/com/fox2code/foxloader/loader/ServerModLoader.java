@@ -10,10 +10,13 @@ import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.game.stats.StatList;
 
+import java.util.Objects;
+
 public final class ServerModLoader extends Mod {
     public static void launchModdedServer(String... args) {
         ModLoader.foxLoader.serverMod = new ServerModLoader();
         ModLoader.foxLoader.serverMod.modContainer = ModLoader.foxLoader;
+        Objects.requireNonNull(ModLoader.foxLoader.getMod(), "WTF???");
         ModLoader.initializeModdedInstance(false);
         ServerSelfTest.selfTest();
         MinecraftServer.main(args);

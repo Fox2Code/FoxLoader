@@ -113,6 +113,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
     public InstallerGUI(InstallerPlatform installerPlatform, LauncherType launcherType) {
         this.installerPlatform = installerPlatform;
         this.launcherType = launcherType;
+        versionName = DEFAULT_VERSION_NAME;
         jFrame = null;
         minDimensions = null;
         globalContainer = null;

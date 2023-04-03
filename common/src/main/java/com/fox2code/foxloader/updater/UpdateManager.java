@@ -105,10 +105,10 @@ public final class UpdateManager {
             abstractUpdater.updateConsumed = true;
             if (abstractUpdater.hasUpdate()) {
                 try {
-                    abstractUpdater.findLatestVersion();
+                    abstractUpdater.doUpdate();
                 } catch (IOException e) {
                     ModLoader.getModContainer(ModLoader.FOX_LOADER_MOD_ID)
-                            .logger.log(Level.WARNING, "Update check failed!");
+                            .logger.log(Level.WARNING, "Update failed!", e);
                 }
             }
         }
@@ -120,6 +120,12 @@ public final class UpdateManager {
         if (abstractUpdater != null && abstractUpdater.hasUpdate()
                 && !abstractUpdater.updateConsumed) {
             abstractUpdater.updateConsumed = true;
+            try {
+                abstractUpdater.doUpdate();
+            } catch (IOException e) {
+                ModLoader.getModContainer(ModLoader.FOX_LOADER_MOD_ID)
+                        .logger.log(Level.WARNING, "Update failed!", e);
+            }
         }
     }
 

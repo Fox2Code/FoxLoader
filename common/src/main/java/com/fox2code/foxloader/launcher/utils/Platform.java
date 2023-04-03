@@ -9,9 +9,9 @@ import java.nio.file.Files;
 import java.util.Locale;
 
 public enum Platform {
-    WINDOWS(new String[]{"lwjgl.dll", "lwjgl64.dll", "OpenAL32.dll", "OpenAL64.dll"}, "start"),
-    MACOS(new String[]{"liblwjgl.jnilib", "openal.dylib"}, "open"),
-    LINUX(new String[]{"liblwjgl.so", "liblwjgl64.so", "libopenal.so", "libopenal64.so"}, "xdg-open");
+    WINDOWS(new String[]{"lwjgl.dll", "lwjgl64.dll", "OpenAL32.dll", "OpenAL64.dll"}, "start", "\\bin\\java.exe"),
+    MACOS(new String[]{"liblwjgl.jnilib", "openal.dylib"}, "open", "/bin/java"),
+    LINUX(new String[]{"liblwjgl.so", "liblwjgl64.so", "libopenal.so", "libopenal64.so"}, "xdg-open", "/bin/java");
 
     private static final Platform platform;
 
@@ -33,10 +33,12 @@ public enum Platform {
 
     private final String[] natives;
     public final String open;
+    public final File javaBin;
 
-    Platform(String[] natives, String open) {
+    Platform(String[] natives, String open, String javaBin) {
         this.natives = natives;
         this.open = open;
+        this.javaBin = new File(System.getProperty("java.home") + javaBin).getAbsoluteFile();
     }
 
     public static Platform getPlatform() {

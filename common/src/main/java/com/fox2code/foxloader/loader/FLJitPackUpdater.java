@@ -6,6 +6,7 @@ import com.fox2code.foxloader.updater.JitPackUpdater;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public final class FLJitPackUpdater extends JitPackUpdater {
     public FLJitPackUpdater() {
@@ -24,12 +25,17 @@ public final class FLJitPackUpdater extends JitPackUpdater {
 
     @Override
     protected void doUpdate() throws IOException {
+        Objects.requireNonNull(ModLoader.foxLoader.getMod(), "WTF???");
         String latestVersion = this.getLatestVersion();
         if (FoxLauncher.getLauncherType() == LauncherType.GRADLE) {
             System.out.println("Change the dev plugin version to " + latestVersion + " to update FoxLoader");
             return;
         }
-        ModLoader.foxLoader.getMod().loaderHandleDoFoxLoaderUpdate(
+        System.out.println("Calling loaderHandleDoFoxLoaderUpdate");
+        Mod mod = ModLoader.foxLoader.getMod();
+        if (mod == null)
+            throw new AssertionError("mod == null");
+        mod.loaderHandleDoFoxLoaderUpdate(
                 latestVersion, this.getUrlForLatestJar());
     }
 }

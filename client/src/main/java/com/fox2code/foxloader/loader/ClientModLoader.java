@@ -14,9 +14,7 @@ import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.src.client.gui.StringTranslate;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Function;
 
 public final class ClientModLoader extends Mod {
@@ -29,6 +27,7 @@ public final class ClientModLoader extends Mod {
     public static void launchModdedClient(String... args) {
         ModLoader.foxLoader.clientMod = new ClientModLoader();
         ModLoader.foxLoader.clientMod.modContainer = ModLoader.foxLoader;
+        Objects.requireNonNull(ModLoader.foxLoader.getMod(), "WTF???");
         ModLoader.initializeModdedInstance(true);
         Platform.getPlatform().setupLwjgl2();
         ClientSelfTest.selfTest();
@@ -84,6 +83,7 @@ public final class ClientModLoader extends Mod {
         File dest = null;
         String[] args;
         LauncherType launcherType = FoxLauncher.getLauncherType();
+        getLogger().info("Updating to " + version + " from " + launcherType + " launcher");
         switch (launcherType) {
             default:
                 return;
@@ -92,7 +92,7 @@ public final class ClientModLoader extends Mod {
                 dest = new File(libraries, "foxloader-" + version + ".jar");
             case BETA_CRAFT:
             case VANILLA_LIKE:
-                args = new String[]{null, "--update", launcherType.name()};
+                args = new String[]{null, "-jar", null, "--update", launcherType.name()};
         }
         if (dest == null) {
             if (!ModLoader.updateTmp.exists() && !ModLoader.updateTmp.mkdirs()) {
@@ -104,8 +104,26 @@ public final class ClientModLoader extends Mod {
         try (FileOutputStream fileOutputStream = new FileOutputStream(dest)) {
             NetUtils.downloadTo(url, fileOutputStream);
         }
-        args[0] = dest.getAbsolutePath();
-        new ProcessBuilder(args).inheritIO().directory(ModLoader.updateTmp).start();
+        args[0] = Platform.getPlatform().javaBin.getPath();
+        args[2] = dest.getAbsolutePath();
+        getLogger().info("Command: " + Arrays.toString(args));
+        final Process process = new ProcessBuilder(args).directory(dest.getParentFile()).start();
+        if (process.isAlive()) {
+            new Thread(() -> {
+                Scanner scanner = new Scanner(process.getInputStream());
+                String line;
+                while (process.isAlive() &&
+                        (line = scanner.next()) != null) {
+                    System.out.println("Update: " + line);
+                    Thread.yield();
+                }
+                if (!process.isAlive()) {
+                    System.out.println("Updated with exit code " + process.exitValue());
+                }
+            }, "Output log thread");
+        } else {
+            System.out.println("Updated with exit code " + process.exitValue());
+        }
     }
 
     public static class Internal {
