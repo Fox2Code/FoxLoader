@@ -17,4 +17,14 @@ public final class ClientCommandWrapper extends Command {
     public void onExecute(String[] args, EntityPlayerSP commandExecutor) {
         this.commandCompat.onExecute(args, (NetworkPlayer) commandExecutor);
     }
+
+    @Override
+    public void printHelpInformation(EntityPlayerSP entityPlayerSP) {
+        this.commandCompat.printHelpInformation((NetworkPlayer) entityPlayerSP);
+    }
+
+    @Override
+    public String commandSyntax() {
+        return this.commandCompat.commandSyntax();
+    }
 }

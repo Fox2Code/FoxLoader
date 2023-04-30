@@ -1,5 +1,8 @@
 package com.fox2code.foxloader.registry;
 
+import com.fox2code.foxloader.loader.ModLoader;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -11,6 +14,7 @@ import java.util.function.Function;
  * Enum implementing {@link ReflectEnum} can define custom field names.
  */
 public final class EnumReflectTranslator<E extends Enum<E>, T> implements Iterable<T> {
+    private static final boolean PREFILL_CACHE = ModLoader.PREFILL_CACHE;
     private final Function<E, T> provider;
     private final EnumMap<E, T> cache;
     private final Class<E> enumType;
@@ -27,6 +31,9 @@ public final class EnumReflectTranslator<E extends Enum<E>, T> implements Iterab
         this.enumType = e;
         this.type = type;
         this.target = target;
+        if (PREFILL_CACHE) {
+            fillCache();
+        }
     }
 
     private T provideElement(E e) {
@@ -45,13 +52,15 @@ public final class EnumReflectTranslator<E extends Enum<E>, T> implements Iterab
                 lastError = ex;
             }
         }
-        throw new RuntimeException("Failed to get element " + e.name(), lastError);
+        throw new RuntimeException("Failed to get element " +
+                e.name() + " on " + this.target.getName(), lastError);
     }
 
     public T translate(E e) {
         return this.cache.computeIfAbsent(e, this.provider);
     }
 
+    @NotNull
     @Override
     public Iterator<T> iterator() {
         final E[] elements = this.enumType.getEnumConstants();

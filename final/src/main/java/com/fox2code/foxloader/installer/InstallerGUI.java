@@ -5,7 +5,6 @@ import com.fox2code.foxloader.launcher.DependencyHelper;
 import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.StackTraceStringifier;
 import com.fox2code.foxloader.launcher.utils.Platform;
-import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;

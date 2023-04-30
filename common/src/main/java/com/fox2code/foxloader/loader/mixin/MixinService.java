@@ -12,7 +12,6 @@ import org.spongepowered.asm.logging.LoggerAdapterJava;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.transformer.IMixinTransformerFactory;
 import org.spongepowered.asm.service.*;
-import org.spongepowered.asm.mixin.transformer.Config;
 
 import java.io.IOException;
 import java.io.InputStream;

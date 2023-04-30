@@ -5,11 +5,9 @@ import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.network.NetworkPlayer;
-import com.fox2code.foxloader.updater.JitPackUpdater;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
-import org.semver4j.Range;
 import org.semver4j.Semver;
 
 import java.io.File;
@@ -22,9 +20,11 @@ import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 public class ModLoader {
+    public static final boolean I_AM_EXPERIMENTAL = false; // Show text on client main menu
     public static final boolean TEST_MODE = Boolean.getBoolean("foxloader.test-mode");
     private static final String INJECT_MOD = System.getProperty("foxloader.inject-mod");
     public static final boolean DEV_MODE = Boolean.getBoolean("foxloader.dev-mode");
+    public static final boolean PREFILL_CACHE = DEV_MODE || Boolean.getBoolean("foxloader.prefill-cache");
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     public static final File mods = new File(FoxLauncher.getGameDir(), "mods");
     public static final File modsVersioned = new File(mods, "ReIndev" + BuildConfig.REINDEV_VERSION);
@@ -37,7 +37,7 @@ public class ModLoader {
     public static final String FOX_LOADER_VERSION = BuildConfig.FOXLOADER_VERSION;
     static final ModContainer foxLoader = new ModContainer(
             FoxLauncher.foxLoaderFile, FOX_LOADER_MOD_ID, "FoxLoader", FOX_LOADER_VERSION,
-            "ReIndev mod loader with foxes!!!", "com.github.Fox2Code.FoxLoader:final");
+            "ReIndev mod loader with foxes!!!", "com.github.Fox2Code.FoxLoader:final", false);
     // https://www.jitpack.io/com/github/Fox2Code/FoxLoader/final/0.3.0/final-0.3.0.pom
     // https://www.jitpack.io/com/github/Fox2Code/FoxLoader/final/maven-metadata.xml
     static final LinkedList<File> coreMods = new LinkedList<>();
@@ -59,6 +59,7 @@ public class ModLoader {
     private static final Attributes.Name SERVER_MIXIN = new Attributes.Name("ServerMixin");
     private static final Attributes.Name COMMON_MIXIN = new Attributes.Name("CommonMixin");
     private static final Attributes.Name MOD_JITPACK = new Attributes.Name("ModJitPack");
+    private static final Attributes.Name UNOFFICIAL = new Attributes.Name("Unofficial");
     private static final Semver INITIAL_SEMVER = new Semver("1.0.0");
     static final ClassDataProvider classDataProvider;
 
@@ -109,7 +110,7 @@ public class ModLoader {
             foxLoader.logger.info("Injecting spark using FoxLoader adapter.");
             ModContainer spark = new ModContainer(SourceUtil.getSourceFileOfClassName(
                     "me.lucko.spark.common.SparkPlugin"), "spark", "Spark",
-                    BuildConfig.SPARK_VERSION, "spark is a performance profiling mod.", null);
+                    BuildConfig.SPARK_VERSION, "spark is a performance profiling mod.", null, true);
             spark.clientModCls = "com.fox2code.foxloader.spark.FoxLoaderClientSparkPlugin";
             spark.serverModCls = "com.fox2code.foxloader.spark.FoxLoaderServerSparkPlugin";
             modContainers.put(spark.id, spark);
@@ -212,7 +213,8 @@ public class ModLoader {
         }
         String jitpack = attributes.getValue(MOD_JITPACK);
         if (jitpack != null && jitpack.isEmpty()) jitpack = null;
-        modContainer = new ModContainer(file, id, name, version, semver, desc, jitpack, injected);
+        boolean unofficial = Boolean.parseBoolean(attributes.getValue(UNOFFICIAL));
+        modContainer = new ModContainer(file, id, name, version, semver, desc, jitpack, unofficial, injected);
         modContainer.prePatch = attributes.getValue(PRE_PATCH);
         modContainer.clientModCls = attributes.getValue(CLIENT_MOD);
         modContainer.serverModCls = attributes.getValue(SERVER_MOD);
@@ -228,15 +230,16 @@ public class ModLoader {
         }
     }
 
+    public static boolean checkSemVerMismatch(String value, String accept) {
+        return accept == null || !checkSemVerMatch(value, accept);
+    }
+
     public static boolean checkSemVerMatch(String value, String accept) {
         if (accept == null) return true;
         if (value == null) return false;
         Semver semver = Semver.coerce(value);
-        if (semver == null) {
-            return value.equals(accept);
-        } else {
-            return semver.satisfies(accept);
-        }
+        return value.equals(accept) || // Always check strict equality
+                (semver != null && semver.satisfies(accept));
     }
 
     public static ModContainer getModContainer(String id) {

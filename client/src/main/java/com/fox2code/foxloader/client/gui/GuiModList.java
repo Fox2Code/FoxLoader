@@ -3,6 +3,7 @@ package com.fox2code.foxloader.client.gui;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.updater.UpdateManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.gui.*;
 import org.lwjgl.Sys;
 
@@ -11,6 +12,7 @@ public class GuiModList extends GuiScreen {
     private GuiModListContainer modListContainer;
     private GuiSmallButton guiUpdateAll, guiConfigureMod;
     private boolean doSingleUpdate;
+    private GuiScreen guiScreen;
 
     public GuiModList(GuiScreen parent) {
         this.parent = parent;
@@ -55,6 +57,8 @@ public class GuiModList extends GuiScreen {
         } else if (var1.id == 3) {
             if (this.doSingleUpdate) {
                 UpdateManager.getInstance().doUpdates();
+            } else if (this.guiScreen != null) {
+                Minecraft.getInstance().displayGuiScreen(this.guiScreen);
             }
         } else {
             this.modListContainer.actionPerformed(var1);
@@ -70,11 +74,15 @@ public class GuiModList extends GuiScreen {
         final ModContainer modContainer = this.modListContainer.getSelectedModContainer();
         this.guiUpdateAll.enabled = UpdateManager.getInstance().hasUpdates();
         this.doSingleUpdate = false;
+        this.guiScreen = null;
         this.guiConfigureMod.displayString = st.translateKey("mods.configureMod");
         if (UpdateManager.getInstance().hasUpdate(modContainer.id)) {
             this.doSingleUpdate = true;
             this.guiConfigureMod.enabled = true;
             this.guiConfigureMod.displayString = st.translateKey("mods.updateMod");
+        } else if (modContainer.getConfigObject() instanceof GuiScreen) {
+            this.guiScreen = (GuiScreen) modContainer.getConfigObject();
+            this.guiConfigureMod.enabled = true;
         } else {
             this.guiConfigureMod.enabled = false;
         }

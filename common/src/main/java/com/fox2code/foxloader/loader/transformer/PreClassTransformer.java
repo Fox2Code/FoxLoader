@@ -5,9 +5,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
-
-import java.util.function.Function;
 
 public interface PreClassTransformer extends ClassTransformer, Opcodes {
     default byte[] transform(byte[] bytes,String className) {

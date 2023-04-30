@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 
 public final class BlockBuilder {
+    public Class<? extends RegisteredBlock> gameBlockSource;
     @Nullable
     public ItemBuilder itemBuilder;
     @NotNull
@@ -33,6 +34,12 @@ public final class BlockBuilder {
 
     public BlockBuilder() {}
 
+    public BlockBuilder setGameBlockSource(Class<? extends RegisteredBlock> gameBlockSource) {
+        this.builtInBlockType = GameRegistry.BuiltInBlockType.CUSTOM;
+        this.gameBlockSource = gameBlockSource;
+        return this;
+    }
+
     public BlockBuilder setItemBlock(@Nullable ItemBuilder itemBuilder) {
         this.itemBuilder = itemBuilder;
         return this;
@@ -40,6 +47,7 @@ public final class BlockBuilder {
 
     public BlockBuilder setBlockType(@NotNull GameRegistry.BuiltInBlockType builtInBlockType) {
         this.builtInBlockType = builtInBlockType;
+        this.gameBlockSource = null;
         return this;
     }
 

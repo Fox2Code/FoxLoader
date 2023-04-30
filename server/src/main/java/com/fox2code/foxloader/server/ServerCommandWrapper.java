@@ -17,4 +17,14 @@ public final class ServerCommandWrapper extends Command {
     public void onExecute(String[] args, EntityPlayerMP commandExecutor) {
         this.commandCompat.onExecute(args, (NetworkPlayer) commandExecutor);
     }
+
+    @Override
+    public void printHelpInformation(EntityPlayerMP entityPlayerSP) {
+        this.commandCompat.printHelpInformation((NetworkPlayer) entityPlayerSP);
+    }
+
+    @Override
+    public String commandSyntax() {
+        return this.commandCompat.commandSyntax();
+    }
 }

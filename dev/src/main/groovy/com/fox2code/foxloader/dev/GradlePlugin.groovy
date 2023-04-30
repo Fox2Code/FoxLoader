@@ -17,6 +17,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.tasks.Jar
+import org.gradle.internal.os.OperatingSystem
 
 import javax.swing.JOptionPane
 import java.nio.charset.StandardCharsets
@@ -144,11 +145,42 @@ class GradlePlugin implements Plugin<Project> {
                 clientImplementation("com.github.Fox2Code.FoxLoader:client:${foxLoaderVersion}")
                 serverImplementation("com.github.Fox2Code.FoxLoader:server:${foxLoaderVersion}")
             }
-            project.dependencies {
-                clientImplementation("net.java.jinput:jinput:2.0.5")
-                clientImplementation("org.lwjgl.lwjgl:lwjgl:2.9.1")
-                clientImplementation("org.lwjgl.lwjgl:lwjgl_util:2.9.1")
-                clientImplementation("org.lwjgl.lwjgl:lwjgl-platform:2.9.1")
+            if (config.useLWJGLX) {
+                String lwjglNatives
+
+                switch (OperatingSystem.current()) {
+                    case OperatingSystem.LINUX:
+                        def osArch = System.getProperty("os.arch")
+                        lwjglNatives = osArch.startsWith("arm") || osArch.startsWith("aarch64")
+                                ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
+                                : "natives-linux"
+                        break
+                    case OperatingSystem.MAC_OS:
+                        lwjglNatives = "natives-macos"
+                        break
+                    case OperatingSystem.WINDOWS:
+                        def osArch = System.getProperty("os.arch")
+                        lwjglNatives = osArch.contains("64")
+                                ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
+                                : "natives-windows-x86"
+                        break
+                }
+
+                project.dependencies {
+                    clientImplementation(platform("org.lwjgl:lwjgl-bom:${config.LWJGLXLWJGLVersion}"))
+                    clientImplementation("com.github.Fox2Code:lwjglx:${config.LWJGLXVersion}")
+                    clientRuntimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+                    clientRuntimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+                    clientRuntimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+                    clientRuntimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+                }
+            } else {
+                project.dependencies {
+                    clientImplementation("net.java.jinput:jinput:2.0.5")
+                    clientImplementation("org.lwjgl.lwjgl:lwjgl:2.9.1")
+                    clientImplementation("org.lwjgl.lwjgl:lwjgl_util:2.9.1")
+                    clientImplementation("org.lwjgl.lwjgl:lwjgl-platform:2.9.1")
+                }
             }
             Objects.requireNonNull(config.modId, "The mod id cannot be null!")
             if (config.modVersion == null && project.version != null) {
@@ -182,6 +214,9 @@ class GradlePlugin implements Plugin<Project> {
                 }
                 if (config.preClassTransformer != null) {
                     attributes 'PreClassTransformer': config.preClassTransformer
+                }
+                if (config.unofficial) {
+                    attributes 'Unofficial': 'true'
                 }
             }
             File mod = ((Jar) project.getTasks().getByName("jar")).getArchiveFile().get().getAsFile()
@@ -432,7 +467,11 @@ class GradlePlugin implements Plugin<Project> {
         public String preClassTransformer
         // Fox testing only
         public String foxLoaderLibVersionOverride
-        boolean localTesting = false
-        boolean forceReload = false
+        public boolean localTesting = false
+        public boolean forceReload = false
+        public boolean unofficial = false
+        public boolean useLWJGLX = false
+        public String LWJGLXVersion = "0.21"
+        public String LWJGLXLWJGLVersion = "3.3.1"
     }
 }

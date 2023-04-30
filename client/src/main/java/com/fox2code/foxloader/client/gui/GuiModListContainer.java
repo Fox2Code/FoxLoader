@@ -54,7 +54,11 @@ public class GuiModListContainer extends GuiSlot {
         ModContainer modContainer = this.mods[i];
 
         String name = UpdateManager.getInstance().getUpdateState(modContainer.id).colorPrefix +
-                modContainer.name + " " + modContainer.version + ChatColors.RESET;
+                modContainer.name + " " + modContainer.version;
+        if (modContainer.unofficial) {
+            name += ChatColors.GRAY + " (Unofficial)";
+        }
+        name += ChatColors.RESET;
         String id = modContainer.description;
         String file = modContainer.getFileName() + " (id: " + modContainer.id + ")";
 

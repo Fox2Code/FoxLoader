@@ -1,19 +1,21 @@
+import com.fox2code.foxloader.launcher.ClientMain;
 import org.betacraft.Wrapper;
 
 import java.awt.*;
 import java.io.*;
-import java.net.Proxy;
 import java.net.URL;
-import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Properties;
 
 public class FoxLoader extends Wrapper {
     static {
         System.clearProperty("http.proxyHost");
         System.clearProperty("http.proxyPort");
         System.out.println("FoxLoader BetaCraft wrapper loaded!");
+    }
+
+    public static void main(String[] args) throws Exception {
+        ClientMain.main(args);
     }
 
     private static boolean checkAllowDiscordRpc(String mainFolder) {

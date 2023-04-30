@@ -28,7 +28,7 @@ public interface ServerMod extends Mod.SidedMod {
 
     @SuppressWarnings("unchecked")
     static List<? extends NetworkPlayer> getOnlineNetworkPlayers() {
-        return getGameInstance().configManager.playerEntities;
+        return (List<? extends NetworkPlayer>) (Object) getGameInstance().configManager.playerEntities;
     }
 
     @SuppressWarnings("DataFlowIssue")

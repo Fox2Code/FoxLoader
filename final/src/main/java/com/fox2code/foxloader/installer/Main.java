@@ -2,12 +2,10 @@ package com.fox2code.foxloader.installer;
 
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
-import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.ServerMain;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
@@ -28,7 +26,7 @@ public class Main {
                     System.out.println("Unknown argument: " + args[0]);
                     return;
                 case "--help":
-                    System.out.println("--help -> This this page");
+                    System.out.println("--help -> Show this page");
                     System.out.println("--server -> Start server");
                     System.out.println("--with-server -> Start server with specified server jar");
                     System.out.println("--test-server -> Like --with-server but only load the strict necessary for ");

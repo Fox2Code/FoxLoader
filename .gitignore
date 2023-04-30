@@ -1,6 +1,7 @@
 *.iml
 /.idea
 /build
+/lib/*
 /.gradle/
 /.settings/
 /bin/

@@ -2,10 +2,7 @@ package com.fox2code.foxloader.registry;
 
 import com.fox2code.foxloader.loader.ModLoader;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.*;
 
 public abstract class GameRegistry {
     static final HashMap<String, RegistryEntry> registryEntries = new HashMap<>();
@@ -29,6 +26,24 @@ public abstract class GameRegistry {
         return gameRegistry;
     }
 
+    private static final ThreadLocal<int[]> blockIntArrayLocal =
+            ThreadLocal.withInitial(() -> new int[gameRegistry.getMaxBlockId() + 1]);
+
+    /**
+     * @return array to be temporary used in block calculations.
+     */
+    public static int[] getTemporaryBlockIntArray() {
+        if (gameRegistry.isFrozen()) {
+            int[] array = blockIntArrayLocal.get();
+            Arrays.fill(array, 0);
+            return array;
+        }
+        return new int[gameRegistry.getMaxBlockId() + 1];
+    }
+
+    /**
+     * This is instanced by the mod loaded and should just be a static interface to interact with the game.
+     */
     GameRegistry() {
         if (gameRegistry != null)
             throw new IllegalStateException("Only one registry can exists at a time");
@@ -60,6 +75,11 @@ public abstract class GameRegistry {
     public static Collection<RegistryEntry> getRegistryEntries() {
         return Collections.unmodifiableCollection(registryEntries.values());
     }
+
+    /**
+     * @return maximum expected block id
+     */
+    public abstract int getMaxBlockId();
 
     /**
      * @return a registered item with the corresponding id
@@ -170,18 +190,18 @@ public abstract class GameRegistry {
     }
 
     public enum BuiltInStepSounds implements EnumReflectTranslator.ReflectEnum {
-        POWDER("soundPowderFootstep"),
-        WOOD("soundWoodFootstep"),
-        GRAVEL("soundGravelFootstep"),
-        GRASS("soundGrassFootstep"),
-        STONE("soundStoneFootstep"),
-        METAL("soundMetalFootstep"),
-        GLASS("soundGlassFootstep"),
-        CLOTH("soundClothFootstep"),
-        SAND("soundSandFootstep"),
-        BUSH("soundBushFootstep"),
-        SNOW("soundSnowFootstep"),
-        SLIME("soundSlimeFootstep");
+        POWDER("soundPowder", "soundPowderFootstep", /* Why? */ "soundUnused"),
+        WOOD("soundWood", "soundWoodFootstep"),
+        GRAVEL("soundGravel", "soundGravelFootstep"),
+        GRASS("soundGrass", "soundGrassFootstep"),
+        STONE("soundStone", "soundStoneFootstep"),
+        METAL("soundMetal", "soundMetalFootstep"),
+        GLASS("soundGlass", "soundGlassFootstep"),
+        CLOTH("soundCloth", "soundClothFootstep"),
+        SAND("soundSand", "soundSandFootstep"),
+        BUSH("soundBush", "soundBushFootstep"),
+        SNOW("soundSnow", "soundSnowFootstep"),
+        SLIME("soundSlime", "soundSlimeFootstep");
         private final String[] reflectNames;
 
         BuiltInStepSounds(String... reflectNames) {
@@ -195,7 +215,7 @@ public abstract class GameRegistry {
     }
 
     public enum BuiltInBlockType {
-        BLOCK, GLASS, WORKBENCH, FALLING, SLAB("_full"), STAIRS;
+        CUSTOM, BLOCK, GLASS, WORKBENCH, FALLING, SLAB("_full"), STAIRS;
 
         public final String secRegistryExt;
 

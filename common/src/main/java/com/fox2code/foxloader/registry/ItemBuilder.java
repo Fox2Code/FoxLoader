@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 
 public final class ItemBuilder {
+    public Class<? extends RegisteredItem> gameItemSource;
     public int maxStackSize = 64;
     @Nullable
     public String itemName;
@@ -16,6 +17,11 @@ public final class ItemBuilder {
     public boolean hideFromCreativeInventory;
 
     public ItemBuilder() {}
+
+    public ItemBuilder setGameItemSource(Class<? extends RegisteredItem> gameItemSource) {
+        this.gameItemSource = gameItemSource;
+        return this;
+    }
 
     public ItemBuilder setMaxStackSize(int maxStackSize) {
         this.maxStackSize = maxStackSize;

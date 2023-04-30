@@ -3,7 +3,6 @@ package com.fox2code.foxloader.loader;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.item.ItemStack;
 
 public interface ClientMod extends Mod.SidedMod {

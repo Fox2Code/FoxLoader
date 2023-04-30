@@ -8,7 +8,6 @@ import com.fox2code.foxloader.server.ServerCommandWrapper;
 import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.src.game.stats.StatList;
 
 import java.util.Objects;
 

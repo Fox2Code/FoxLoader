@@ -1,11 +1,12 @@
 package com.fox2code.foxloader.client.mixins;
 
-import com.fox2code.foxloader.client.network.Packet250PluginMessage;
+import com.fox2code.foxloader.client.network.NetClientHandlerExtensions;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.Session;
 import net.minecraft.src.client.packets.NetClientHandler;
+import net.minecraft.src.client.packets.Packet250PluginMessage;
 import net.minecraft.src.client.player.EntityClientPlayerMP;
 import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.level.World;
@@ -26,7 +27,7 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
     @Inject(at = @At("RETURN"), method = "<init>")
     public void onNewMixinEntityClientPlayerMP(
             Minecraft var1, World var2, Session var3, NetClientHandler var4, CallbackInfo ci) {
-        Packet250PluginMessage.isSupported = false;
+
     }
 
     @Override
@@ -36,9 +37,7 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
 
     @Override
     public void sendNetworkData(ModContainer modContainer, byte[] data) {
-        if (Packet250PluginMessage.isSupported) {
-            sendQueue.addToSendQueue(new Packet250PluginMessage(modContainer.id, data));
-        }
+        sendQueue.addToSendQueue(new Packet250PluginMessage(modContainer.id, data));
     }
 
     @Override
@@ -48,7 +47,7 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
 
     @Override
     public boolean hasFoxLoader() {
-        return Packet250PluginMessage.isSupported;
+        return sendQueue != null && ((NetClientHandlerExtensions) sendQueue).isFoxLoader();
     }
 
     @Override

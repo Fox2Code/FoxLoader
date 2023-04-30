@@ -15,17 +15,18 @@ public class DependencyHelper {
 
     // Extra dependencies not included in ReIndev
     public static final Dependency[] commonDependencies = new Dependency[]{
-            new Dependency("org.ow2.asm:asm:9.4", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),
-            new Dependency("org.ow2.asm:asm-tree:9.4", MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode"),
-            new Dependency("org.ow2.asm:asm-analysis:9.4", MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer"),
-            new Dependency("org.ow2.asm:asm-commons:9.4", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
-            new Dependency("org.ow2.asm:asm-util:9.4", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
+            new Dependency("org.ow2.asm:asm:9.5", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),
+            new Dependency("org.ow2.asm:asm-tree:9.5", MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode"),
+            new Dependency("org.ow2.asm:asm-analysis:9.5", MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer"),
+            new Dependency("org.ow2.asm:asm-commons:9.5", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
+            new Dependency("org.ow2.asm:asm-util:9.5", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
             new Dependency("com.google.code.gson:gson:2.2.4", MAVEN_CENTRAL, "com.google.gson.Gson"),
             new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files"),
             new Dependency("org.semver4j:semver4j:4.3.0", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("com.github.LlamaLad7:MixinExtras:0.2.0-beta.4", JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
+            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.6",
+                    JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
     };
 
     public static final Dependency sparkDependency =

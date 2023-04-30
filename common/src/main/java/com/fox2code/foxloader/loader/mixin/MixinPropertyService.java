@@ -4,8 +4,6 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 import org.spongepowered.asm.service.IGlobalPropertyService;
 import org.spongepowered.asm.service.IPropertyKey;
 
-import java.util.HashMap;
-
 public class MixinPropertyService implements IGlobalPropertyService {
     static class Key implements IPropertyKey {
 

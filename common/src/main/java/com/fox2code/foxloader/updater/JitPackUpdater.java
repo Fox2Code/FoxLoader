@@ -62,8 +62,11 @@ public class JitPackUpdater extends AbstractUpdater {
         }
         manifest = NetUtils.downloadAsString(getUrlForVersionAndExt(latestVersion, ".pom"));
         String reIndevVersion = getTagValue(manifest, "reindev.version");
-        if (!ModLoader.checkSemVerMatch(BuildConfig.REINDEV_VERSION, reIndevVersion)) {
-            return null;
+        if (ModLoader.checkSemVerMismatch(BuildConfig.REINDEV_VERSION, reIndevVersion)) {
+            reIndevVersion = getTagValue(manifest, "reindev.version.allowFrom");
+            if (ModLoader.checkSemVerMismatch(BuildConfig.REINDEV_VERSION, reIndevVersion)) {
+                return null;
+            }
         }
         String latestModVersionReal = getTagValue(manifest, this.jitPackModVersionTag);
         if (latestModVersionReal == null || latestModVersionReal.equals(modContainer.version)) {
@@ -77,6 +80,7 @@ public class JitPackUpdater extends AbstractUpdater {
         return latestModVersionReal;
     }
 
+    @Nullable
     public static String getTagValue(String manifest, String tag) {
         int start = manifest.indexOf("<" + tag + ">");
         if (start == -1) return null;

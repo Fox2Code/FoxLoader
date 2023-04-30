@@ -14,6 +14,8 @@ import net.minecraft.src.game.item.ItemBlockSlab;
 import net.minecraft.src.game.item.ItemStack;
 import net.minecraft.src.game.recipe.*;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
@@ -79,6 +81,11 @@ public class GameRegistryClient extends GameRegistry {
     private GameRegistryClient() {}
 
     // START Common code //
+    @Override
+    public int getMaxBlockId() {
+        return nextBlockId - 1;
+    }
+
     @Override
     public RegisteredItem getRegisteredItem(int id) {
         return (RegisteredItem) Item.itemsList[id];
@@ -153,6 +160,19 @@ public class GameRegistryClient extends GameRegistry {
         switch (blockBuilder.builtInBlockType) {
             default:
                 throw new IllegalArgumentException("Invalid block type " + blockBuilder.builtInBlockType);
+            case CUSTOM:
+                try {
+                    Constructor<? extends Block> constructor = blockBuilder.
+                            gameBlockSource.asSubclass(Block.class).getConstructor(int.class);
+                    block = constructor.newInstance(blockId);
+                    if (block.blockID != blockId) {
+                        throw new RuntimeException("Block didn't ended up with id it was given to " +
+                                "(given " + blockId + " got " + block.blockID + ")");
+                    }
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException("Custom block must accept an id as a parameter", e);
+                }
+                break;
             case BLOCK:
                 block = new Block(blockId, material) {};
                 break;
@@ -166,7 +186,16 @@ public class GameRegistryClient extends GameRegistry {
                 block = new BlockFalling(blockId, material);
                 break;
             case SLAB:
-                block = new BlockSlab(blockId, !primary, blockType, material);
+                EnumSlab slabType = EnumSlab.BRICK;
+                for (EnumSlab enumSlabCandidate : EnumSlab.values()) {
+                    if (enumSlabCandidate.hasBottomSide && enumSlabCandidate.hasTopSide &&
+                            enumSlabCandidate.material == material) {
+                        slabType = enumSlabCandidate;
+                        break;
+                    }
+                }
+
+                block = new BlockSlab(blockId, !primary, slabType);
                 selfNotify = true;
                 break;
             case STAIRS:
@@ -217,7 +246,32 @@ public class GameRegistryClient extends GameRegistry {
             itemId = convertBlockIdToItemId(block.blockID);
         }
         final int pItemId = itemId - PARAM_ITEM_ID_DIFF;
-        if (blockPrimary != null &&
+        if (itemBuilder.gameItemSource != null) {
+            Class<? extends Item> itemCls = itemBuilder.gameItemSource.asSubclass(Item.class);
+            if (block != null) {
+                try {
+                    item = itemCls.getConstructor(Block.class, int.class).newInstance(block, itemId);
+                } catch (NoSuchMethodException runtimeException) {
+                    try {
+                        item = itemCls.getConstructor(int.class).newInstance(itemId);
+                    } catch (ReflectiveOperationException e) {
+                        throw new RuntimeException("Unable t initialize item", e);
+                    }
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException("Unable t initialize item", e);
+                }
+            } else {
+                try {
+                    item = itemCls.getConstructor(int.class).newInstance(itemId);
+                } catch (ReflectiveOperationException e) {
+                    throw new RuntimeException("Unable t initialize item", e);
+                }
+            }
+            if (item.itemID != itemId) {
+                throw new RuntimeException("Item didn't ended up with id it was given to " +
+                        "(given " + itemId + " got " + item.itemID + ")");
+            }
+        } else if (blockPrimary != null &&
                 blockSecondary != null) {
             item = new ItemBlockSlab(pItemId, block.blockID, blockPrimary, blockSecondary, !primary);
         } else if (block != null) {
@@ -262,17 +316,17 @@ public class GameRegistryClient extends GameRegistry {
 
     @Override
     public void addFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
-        FurnaceRecipes.smelting().addSmelting(input.getRegisteredItemId(), toItemStack(output));
+        FurnaceRecipes.instance.addSmelting(input.getRegisteredItemId(), toItemStack(output));
     }
 
     @Override
     public void addBlastFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
-        BlastFurnaceRecipes.smelting().addSmelting(input.getRegisteredItemId(), toItemStack(output));
+        BlastFurnaceRecipes.instance.addSmelting(input.getRegisteredItemId(), toItemStack(output));
     }
 
     @Override
     public void addFreezerRecipe(RegisteredItem input, RegisteredItemStack output) {
-        RefridgifreezerRecipes.smelting().addSmelting(input.getRegisteredItemId(), toItemStack(output));
+        RefridgifreezerRecipes.instance.addSmelting(input.getRegisteredItemId(), toItemStack(output));
     }
 
     public static void freezeRecipes() {

@@ -6,7 +6,7 @@ dependencies {
     api(project(":common"))
 
     // Do not use API here
-    implementation(fileTree(dir: 'libs', include: ['*.jar']))
+    implementation(fileTree(dir: 'libs', include: [project['reindev.serverJar'] as String]))
 
     // Do no expose spark APIs to mods
     implementation(project['spark.dependency'] as String)

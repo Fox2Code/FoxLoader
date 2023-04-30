@@ -5,7 +5,6 @@ import com.fox2code.foxloader.network.NetworkPlayer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class CommandCompat {
     private static final HashMap<String, CommandCompat> commandsMap = new HashMap<>();
@@ -52,4 +51,12 @@ public class CommandCompat {
     }
 
     public void onExecute(String[] args, NetworkPlayer commandExecutor) {}
+
+    public void printHelpInformation(NetworkPlayer commandExecutor) {
+
+    }
+
+    public String commandSyntax() {
+        return this.name;
+    }
 }

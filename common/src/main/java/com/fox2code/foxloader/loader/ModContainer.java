@@ -4,10 +4,6 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.transformer.PreClassTransformer;
 import com.fox2code.foxloader.network.NetworkPlayer;
-import com.fox2code.foxloader.registry.BlockBuilder;
-import com.fox2code.foxloader.registry.CommandCompat;
-import com.fox2code.foxloader.registry.GameRegistry;
-import com.fox2code.foxloader.registry.RegisteredBlock;
 import org.semver4j.Semver;
 
 import java.io.File;
@@ -16,8 +12,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +26,7 @@ public final class ModContainer {
     public final String description;
     public final String jitpack;
     public final Logger logger;
+    public final boolean unofficial;
     private final boolean injected;
     String prePatch;
     Mod commonMod;
@@ -45,12 +40,13 @@ public final class ModContainer {
     String clientMixins;
     Object configObject;
 
-    ModContainer(File file, String id, String name, String version, String description, String jitpack) {
-        this(file, id, name, version, Semver.coerce(version), description, jitpack, false);
+    ModContainer(File file, String id, String name, String version,
+                 String description, String jitpack, boolean unofficial) {
+        this(file, id, name, version, Semver.coerce(version), description, jitpack, unofficial, false);
     }
 
     ModContainer(File file, String id, String name, String version,
-                 Semver semver, String description, String jitpack, boolean injected) {
+                 Semver semver, String description, String jitpack, boolean unofficial, boolean injected) {
         this.file = Objects.requireNonNull(file);
         this.id = id;
         this.name = name;
@@ -59,6 +55,7 @@ public final class ModContainer {
         this.description = description;
         this.jitpack = jitpack;
         this.logger = Logger.getLogger(name);
+        this.unofficial = unofficial;
         this.injected = injected;
         if (ModLoader.DEV_MODE) {
             this.logger.setLevel(injected ? Level.ALL : Level.FINE);

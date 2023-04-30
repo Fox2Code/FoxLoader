@@ -4,7 +4,9 @@ ModLoader for Minecraft ReIndev
 
 ## Community
 
-You can join the official ReIndev Discord [here](https://discord.gg/38Vfes6NpR)
+You can [join the official ReIndev Discord here](https://discord.gg/38Vfes6NpR)
+
+A feature missing to make your mod? [Just open an issue!](https://github.com/Fox2Code/FoxLoader/issues)
 
 ## Documentation
 
