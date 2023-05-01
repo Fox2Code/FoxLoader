@@ -42,6 +42,13 @@ public interface NetworkPlayer {
      */
     default boolean isOperator() { throw new RuntimeException(); }
 
+    /**
+     * Will kick the player.
+     *
+     * @throws IllegalStateException if used client side.
+     */
+    default void kick(String message) { throw new RuntimeException(); }
+
     enum ConnectionType {
         SINGLE_PLAYER(true, true), CLIENT_ONLY(true, false), SERVER_ONLY(false, true);
 

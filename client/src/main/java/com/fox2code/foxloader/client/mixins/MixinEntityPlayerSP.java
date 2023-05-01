@@ -38,4 +38,9 @@ public abstract class MixinEntityPlayerSP implements NetworkPlayer {
     public boolean isOperator() {
         return ((Entity) (Object) this).worldObj.worldInfo.isCheatsEnabled();
     }
+
+    @Override
+    public void kick(String message) {
+        throw new IllegalStateException("kick cannot be used client-side");
+    }
 }

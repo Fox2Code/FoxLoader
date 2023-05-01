@@ -24,8 +24,8 @@ public class GameRegistryServer extends GameRegistry {
     public static final int[] abilityToCatchFire = new int[MAXIMUM_BLOCK_ID];
     public static final EnumReflectTranslator<BuiltInMaterial, Material> MATERIAL =
             new EnumReflectTranslator<>(BuiltInMaterial.class, Material.class);
-    public static final EnumReflectTranslator<BuiltInStepSounds, StepSound> STEP_SOUND =
-            new EnumReflectTranslator<>(BuiltInStepSounds.class, StepSound.class, Block.class);
+    public static final EnumReflectTranslator<BuiltInStepSounds, StepSound> STEP_SOUND = // Server doesn't contain all the sounds
+            new EnumReflectTranslator<>(BuiltInStepSounds.class, StepSound.class, Block.class, BuiltInStepSounds.POWDER);
     // Common entries end
     private static byte[] serverHello;
 

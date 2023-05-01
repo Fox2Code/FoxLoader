@@ -20,17 +20,24 @@ public final class EnumReflectTranslator<E extends Enum<E>, T> implements Iterab
     private final Class<E> enumType;
     private final Class<T> type;
     private final Class<?> target;
+    private final T defaultElement;
 
     public EnumReflectTranslator(Class<E> e, Class<T> type) {
-        this(e, type, type);
+        this(e, type, type, null);
     }
 
     public EnumReflectTranslator(Class<E> e, Class<T> type, Class<?> target) {
+        this(e, type, target, null);
+    }
+
+    public EnumReflectTranslator(Class<E> e, Class<T> type, Class<?> target, E defaultElement) {
         this.provider = this::provideElement;
         this.cache = new EnumMap<>(e);
         this.enumType = e;
         this.type = type;
         this.target = target;
+        this.defaultElement = defaultElement == null ?
+                null : translate(defaultElement);
         if (PREFILL_CACHE) {
             fillCache();
         }
@@ -52,8 +59,12 @@ public final class EnumReflectTranslator<E extends Enum<E>, T> implements Iterab
                 lastError = ex;
             }
         }
-        throw new RuntimeException("Failed to get element " +
-                e.name() + " on " + this.target.getName(), lastError);
+        if (this.defaultElement == null) {
+            throw new RuntimeException("Failed to get element " +
+                    e.name() + " on " + this.target.getName(), lastError);
+        } else {
+            return this.defaultElement;
+        }
     }
 
     public T translate(E e) {

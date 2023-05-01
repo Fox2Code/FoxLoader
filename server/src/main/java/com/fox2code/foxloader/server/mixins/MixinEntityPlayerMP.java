@@ -55,6 +55,11 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
     }
 
     @Override
+    public void kick(String message) {
+        this.playerNetServerHandler.kickPlayer(message);
+    }
+
+    @Override
     public void notifyHasFoxLoader() {
         this.hasFoxLoader = true;
     }
