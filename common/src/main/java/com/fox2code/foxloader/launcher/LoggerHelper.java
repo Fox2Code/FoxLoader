@@ -20,6 +20,12 @@ final class LoggerHelper {
 
     static boolean install(File logFile) {
         if (System.out.getClass() != PrintStream.class) {
+            System.out.println("System out has been modified, skipping install.");
+            try (PrintStream printStream = new PrintStream(Files.newOutputStream(logFile.toPath()))){
+                new CantInstallLoggerHelperException( // Help with debugging
+                        "Failed to install LoggerHelper cause the current output class is " +
+                                System.out.getClass().getName()).printStackTrace(printStream);
+            } catch (IOException ignored) {}
             // If System.out already has been replaced just ignore the replacement.
             return false;
         }
@@ -163,6 +169,12 @@ final class LoggerHelper {
             setOutputStream(System.out);
             setFormatter(new FoxLoaderConsoleLogFormatter());
             setLevel(Level.ALL);
+        }
+    }
+
+    private static class CantInstallLoggerHelperException extends Exception {
+        CantInstallLoggerHelperException(String message) {
+            super(message);
         }
     }
 }

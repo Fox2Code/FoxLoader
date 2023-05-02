@@ -58,7 +58,7 @@ public class FoxLoader extends Wrapper {
         PrintStream errOrig = System.err;
         // Silence a normal thing to happen on launch.
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PrintStream printStream = new PrintStream(byteArrayOutputStream);
+        final PrintStream printStream = new PrintStream(byteArrayOutputStream);
         System.setErr(printStream);
         System.setOut(printStream);
         try {
@@ -70,8 +70,10 @@ public class FoxLoader extends Wrapper {
             System.setOut(outOrig);
             System.setErr(errOrig);
         } finally {
-            System.setOut(outOrig);
-            System.setErr(errOrig);
+            if (System.out == printStream)
+                System.setOut(outOrig);
+            if (System.err == printStream)
+                System.setErr(errOrig);
         }
     }
 }

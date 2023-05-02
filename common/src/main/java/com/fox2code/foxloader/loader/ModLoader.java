@@ -81,6 +81,7 @@ public class ModLoader {
         if (!coremods.exists() && !coremods.mkdirs())
             throw new RuntimeException("Cannot create coremods folder");
         modContainers.put(foxLoader.id, foxLoader);
+        foxLoader.logger.info("Running FoxLoader " + BuildConfig.FOXLOADER_VERSION);
         if (TEST_MODE) {
             foxLoader.logger.info("Skipping mod loading because we are in test mode.");
         } else {

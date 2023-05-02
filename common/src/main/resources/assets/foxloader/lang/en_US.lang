@@ -7,3 +7,31 @@ mods.updateAllMods=Update all mods
 mods.updateMod=Update mod
 mods.configureMod=Configure mod
 mods.pack=Mods Pack
+
+
+# Installer strings (Note: Usable by mods too)
+installer.lang=English
+installer.for-reindev=For ReIndev %s
+installer.install-client=Install Client
+installer.install-special=Install on %s Launcher
+installer.install-minecraft=Install on Minecraft Launcher
+installer.install-betacraft=Install on BetaCraft Launcher
+installer.extract-multimc=Extract MultiMC Instance
+installer.exit-installer=Exit installer
+installer.install-server=Install Server
+installer.install-server.text.1=You can add "--server" argument to
+installer.install-server.text.2=the installer to run the server.
+installer.error.run-from-ide=Please run the compiled jar file to test the installation process
+installer.error.invalid-extension=Why the file is not a ".jar"??? TELL ME!!! WHY???
+installer.error.create-target-directory=Unable to create %s target directory!
+installer.error.not-reindev-client=Provided jar file is not a ReIndev client!
+installer.error.invalid-jar-file=Provided file is not a valid jar file!
+installer.success=FoxLoader %s for ReIndev %s has been successfully installed!
+installer.multimc.text.1=FoxLoader %s for ReIndev %s MMC Instance has been successfully extracted!
+installer.multimc.text.2=(The file should be a ".zip" next to the installer)
+installer.multimc.text.3=
+installer.multimc.text.4=To import a zip: Add Instance -> Import from zip -> Browse
+installer.multimc.text.5=You can also drag and drop the zip file onto your MMC main launcher GUI to create the new instance.
+installer.multimc.text.6=
+installer.multimc.text.7=MMM = MultiMC based launcher (MultiMC/PolyMC/PrismLauncher)
+installer.comment=(You can select the FoxLoader version you want to use in the version list)
