@@ -11,6 +11,7 @@ mods.pack=Mods Pack
 
 # Installer strings (Note: Usable by mods too)
 installer.lang=English
+installer.language=Language
 installer.for-reindev=For ReIndev %s
 installer.install-client=Install Client
 installer.install-special=Install on %s Launcher
