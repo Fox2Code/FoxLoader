@@ -342,7 +342,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 " for ReIndev " + BuildConfig.REINDEV_VERSION + " MMC Instance has been successfully extracted!\n" +
                 "(The file should be a \".zip\" next to the installer)\n\n" +
                 "To import a zip: Add Instance -> Import from zip -> Browse\n" +
-                "You can also drag and drop the zip file onto your MMC launcher GUI.\n\n" +
+                "You can also drag and drop the zip file onto your MMC main launcher GUI to create the new instance.\n\n" +
                 "MMM = MultiMC based launcher (MultiMC/PolyMC/PrismLauncher)", false);
     }
 
