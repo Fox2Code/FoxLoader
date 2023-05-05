@@ -57,37 +57,42 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         this.launcherType = null;
         versionName = DEFAULT_VERSION_NAME;
         jFrame = new JFrame(DEFAULT_TITLE);
-        jFrame.setMinimumSize(minDimensions = new Dimension(230, 30));
+        jFrame.setMinimumSize(minDimensions = new Dimension(260, 30));
+        TranslateEngine.updateOnTranslate(jFrame);
         if (installerPlatform.fullscreen) {
             jFrame.setUndecorated(true);
         }
         globalContainer = makeContainer(null);
-        label = new JLabel(installerPlatform.fullscreenLayout ? FULLSCREEN_LABEL : DEFAULT_LABEL);
+        label = new JLabel(DEFAULT_LABEL);
+        TranslateEngine.installOnFormat(label, "installer.for-reindev", BuildConfig.REINDEV_VERSION);
         dropHelper = new FileDropHelper(globalContainer, this);
-        JPanel clientContainer = makeContainer("Install Client");
+        JPanel languageContainer = makeContainer("installer.language");
+        languageContainer.add(TranslateEngine.makeLanguageSelectComponent());
+        JPanel clientContainer = makeContainer("installer.install-client");
         JButton minecraftButton;
         JButton mmcButton;
         if (installerPlatform.specialLauncher) {
             minecraftButton = makeButton(clientContainer,
-                    "Install on " + installerPlatform.platformName + " Launcher", this::installMineCraft);
+                    "installer.install-special", this::installMineCraft, installerPlatform.platformName);
             mmcButton = null;
         } else {
             minecraftButton = makeButton(clientContainer,
-                    "Install on Minecraft Launcher", this::installMineCraft);
+                    "installer.install-minecraft", this::installMineCraft);
             makeButton(clientContainer,
-                    "Install on BetaCraft Launcher", this::installBetaCraft);
+                    "installer.install-betacraft", this::installBetaCraft);
             mmcButton = makeButton(clientContainer,
-                    "Extract MultiMC Instance", this::extractMMCInstance);
+                    "installer.extract-multimc", this::extractMMCInstance);
         }
         this.mmcButton = mmcButton;
         this.minecraftButton = minecraftButton;
         if (this.installerPlatform.fullscreenLayout) {
-            makeButton(clientContainer, "Exit installer", this::exitInstaller);
+            makeButton(clientContainer, "installer.exit-installer", this::exitInstaller);
         } else {
-            JPanel serverContainer = makeContainer("Install Server");
+            JPanel serverContainer = makeContainer("installer.install-server");
             // makeButton(serverContainer, "Install modded server here!", null);
-            serverContainer.add(new Label("You can add \"--server\" argument to"));
-            serverContainer.add(new Label("the installer to run the server."));
+            //serverContainer.add(new Label("You can add \"--server\" argument to"));
+            //serverContainer.add(new Label("the installer to run the server."));
+            serverContainer.add(new SelectableTranslatableLabel("installer.install-server.text.*"));
         }
         progressBar = new JProgressBar();
         progressBar.setMaximum(PROGRESS_BAR_MAX);
@@ -128,7 +133,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         if (text != null) {
             container.setLayout(installerPlatform.fullscreenLayout ?
                     new FlowLayout(FlowLayout.CENTER) : new GridLayout(0, 1, 0, 3));
-            container.setBorder(BorderFactory.createTitledBorder(text));
+            container.setBorder(TranslateEngine.createTitledBorder(text));
             globalContainer.add(container);
         } else {
             container.setLayout(installerPlatform.fullscreenLayout ?
@@ -138,8 +143,13 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         return container;
     }
 
-    private JButton makeButton(final JPanel panel,final String text,final Runnable action) {
+    private JButton makeButton(final JPanel panel,final String text,final Runnable action,final String... extra) {
         final JButton button = new JButton(text);
+        if (extra.length == 0) {
+            TranslateEngine.installOn(button, text);
+        } else {
+            TranslateEngine.installOnFormat(button, text, extra);
+        }
         button.setFocusPainted(false);
         button.setMinimumSize(minDimensions);
         button.setPreferredSize(minDimensions);
@@ -200,7 +210,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             return true;
         }
         if (Main.currentInstallerFile.isDirectory()) {
-            showMessage("Please run the compiled jar file to test the installation process", true);
+            showMessage(TranslateEngine.getTranslation("installer.error.run-from-ide"), true);
             return true;
         }
         if (!Main.currentInstallerFile.getName()
@@ -208,7 +218,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 !this.installerPlatform.specialLauncher) {
             if (this.jFrame == null) return true;
             JOptionPane.showMessageDialog(this.jFrame,
-                    "Why the file is not a \".jar\"??? TELL ME!!! WHY???",
+                    TranslateEngine.getTranslation("installer.error.invalid-extension"),
                     this.jFrame.getTitle(), JOptionPane.QUESTION_MESSAGE);
             return true;
         }
@@ -232,7 +242,8 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         File foxLoaderVersionJar = new File(foxLoaderVersion, this.versionName + ".jar");
         File foxLoaderVersionJson = new File(foxLoaderVersion, this.versionName + ".json");
         if (!foxLoaderVersion.isDirectory() && !foxLoaderVersion.mkdirs()) {
-            showMessage("Unable to create version target directory!", true);
+            showMessage(TranslateEngine.getTranslationFormat(
+                    "installer.error.create-target-directory", "version"), true);
             return;
         }
 
@@ -252,9 +263,9 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             return;
         }
         progressBar.setValue(PROGRESS_BAR_MAX);
-        showMessage("FoxLoader " + BuildConfig.FOXLOADER_VERSION + " for ReIndev " +
-                BuildConfig.REINDEV_VERSION + " has been successfully installed!" +
-                USER_INSTRUCTION, false);
+        showMessage(TranslateEngine.getTranslationFormat(
+                "installer.success", BuildConfig.FOXLOADER_VERSION, BuildConfig.REINDEV_VERSION) + "\n" +
+                TranslateEngine.getTranslation("installer.comment"), false);
     }
 
     public void installBetaCraft() {
@@ -268,7 +279,8 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 "launcher" + File.separator + "launch-methods");
         if ((!versionsJsons.isDirectory() && !versionsJsons.mkdirs()) ||
                 (!launchMethods.isDirectory() && !launchMethods.mkdirs())) {
-            showMessage("Unable to create betacraft target directory!", true);
+            showMessage(TranslateEngine.getTranslationFormat(
+                    "installer.error.create-target-directory", "betacraft"), true);
             return;
         }
         File foxLoaderVersionJar = new File(versions, this.versionName + ".jar");
@@ -301,9 +313,9 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             return;
         }
         progressBar.setValue(PROGRESS_BAR_MAX);
-        showMessage("FoxLoader " + BuildConfig.FOXLOADER_VERSION +
-                " for ReIndev " + BuildConfig.REINDEV_VERSION + " has been successfully installed!" +
-                USER_INSTRUCTION, false);
+        showMessage(TranslateEngine.getTranslationFormat(
+                "installer.success", BuildConfig.FOXLOADER_VERSION, BuildConfig.REINDEV_VERSION) + "\n" +
+                TranslateEngine.getTranslation("installer.comment"), false);
     }
 
     public void extractMMCInstance() {
@@ -338,12 +350,8 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             return;
         }
         progressBar.setValue(PROGRESS_BAR_MAX);
-        showMessage("FoxLoader " + BuildConfig.FOXLOADER_VERSION +
-                " for ReIndev " + BuildConfig.REINDEV_VERSION + " MMC Instance has been successfully extracted!\n" +
-                "(The file should be a \".zip\" next to the installer)\n\n" +
-                "To import a zip: Add Instance -> Import from zip -> Browse\n" +
-                "You can also drag and drop the zip file onto your MMC main launcher GUI to create the new instance.\n\n" +
-                "MMM = MultiMC based launcher (MultiMC/PolyMC/PrismLauncher)", false);
+        showMessage(TranslateEngine.getTranslationFormat(
+                "installer.multimc.text.*", BuildConfig.FOXLOADER_VERSION, BuildConfig.REINDEV_VERSION), false);
     }
 
     public void doSilentInstall() throws IOException {
@@ -457,12 +465,12 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 if (zipFile.getEntry("net/minecraft/client/Minecraft.class") == null ||
                         zipFile.getEntry("net/minecraft/mitask/PlayerCommandHandler.class") == null) {
                     JOptionPane.showMessageDialog(this.jFrame,
-                            "Provided jar file is not a ReIndev client!");
+                            TranslateEngine.getTranslation("installer.error.not-reindev-client"));
                     return false;
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this.jFrame,
-                        "Provided file is not a valid jar file!");
+                        TranslateEngine.getTranslation("installer.error.invalid-jar-file"));
                 return false;
             }
 
