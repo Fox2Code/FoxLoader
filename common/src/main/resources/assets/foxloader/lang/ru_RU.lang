@@ -1,0 +1,38 @@
+chat.link.confirm=Вы уверены, что хотите открыть данный веб-сайт?
+chat.link.warning=Никогда не переходите по ссылкам от людей, которым вы не доверяете!
+chat.link.open=Открыть в браузере
+chat.copy=Копировать в буфер обмена
+mods.openFolder=Папка с модами
+mods.updateAllMods=Обновить все моды
+mods.updateMod=Обновить мод
+mods.configureMod=Настроить мод
+mods.pack=Модпаки
+
+
+# Installer strings (Note: Usable by mods too)
+installer.lang=Русский
+installer.language=Язык
+installer.for-reindev=Для ReIndev %s
+installer.install-client=Установить клиент
+installer.install-special=Установить на %s лаунчер
+installer.install-minecraft=Установить на Minecraft лаунчер
+installer.install-betacraft=Установить на BetaCraft лаунчер
+installer.extract-multimc=Извлечь сборку MultiMC
+installer.exit-installer=Выйти из программы установки
+installer.install-server=Установить сервер
+installer.install-server.text.1=Вы можете добавить аргумент "--server" в
+installer.install-server.text.2=программу установки, чтобы запустить сервер.
+installer.error.run-from-ide=Пожалуйста, запустите скомпилированный jar-файл для проверки процесса установки
+installer.error.invalid-extension=Почему файл не является ".jar"?????? СКАЖИ МНЕ!!! ПОЧЕМУ????
+installer.error.create-target-directory=Не удается создать целевой каталог %s!
+installer.error.not-reindev-client=Предоставленный jar-файл не является клиентом ReIndev!
+installer.error.invalid-jar-file=Предоставленный файл не является действительным jar-файлом!
+installer.success=FoxLoader %s для ReIndev %s был успешно установлен!
+installer.multimc.text.1=FoxLoader %s для ReIndev %s сборка для MMC усешно извлечена!
+installer.multimc.text.2=(Файл должен быть в формате ".zip" рядом с программой установки)
+installer.multimc.text.3=
+installer.multimc.text.4=Распакуйте zip-архив в папку "\instances", а после запустите его как обычную сборку.
+installer.multimc.text.5=Вы также можете перетащить zip-архив в интерфейс MMC для создания новой сборки.
+installer.multimc.text.6=
+installer.multimc.text.7=MMM = Основной лаунчер MultiMC (MultiMC/PolyMC/PrismLauncher)
+installer.comment=(Вы можете выбрать версию FoxLoader, которую хотите использовать, в списке ниже)
