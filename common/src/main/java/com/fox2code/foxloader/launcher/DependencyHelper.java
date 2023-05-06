@@ -4,14 +4,20 @@ import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 
 import java.io.*;
+import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
 import java.net.*;
 import java.nio.file.Files;
+import java.util.jar.JarFile;
 
 public class DependencyHelper {
     public static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2";
     public static final String SPONGE_POWERED = "https://repo.spongepowered.org/maven";
     public static final String JITPACK = "https://jitpack.io";
     public static final String MODRINTH = "https://api.modrinth.com/maven";
+
+    public static final Dependency GSON_DEPENDENCY = // Used by installer.
+            new Dependency("com.google.code.gson:gson:2.2.4", MAVEN_CENTRAL, "com.google.gson.Gson");
 
     // Extra dependencies not included in ReIndev
     public static final Dependency[] commonDependencies = new Dependency[]{
@@ -20,8 +26,7 @@ public class DependencyHelper {
             new Dependency("org.ow2.asm:asm-analysis:9.5", MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer"),
             new Dependency("org.ow2.asm:asm-commons:9.5", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
             new Dependency("org.ow2.asm:asm-util:9.5", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
-            new Dependency("com.google.code.gson:gson:2.2.4", MAVEN_CENTRAL, "com.google.gson.Gson"),
-            new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files"),
+            GSON_DEPENDENCY, new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files"),
             new Dependency("org.semver4j:semver4j:4.3.0", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
@@ -68,7 +73,7 @@ public class DependencyHelper {
             loadDependency(dependency);
         }
         for (Dependency dependency : (client ? clientDependencies : serverDependencies)) {
-            loadDependency(dependency, true, false);
+            loadDependencyImpl(dependency, true, false);
         }
     }
 
@@ -99,13 +104,13 @@ public class DependencyHelper {
         if (FoxLauncher.getFoxClassLoader() != null) return; // Why???
         mcLibraries = cacheRoot;
         for (Dependency dependency : (client ? clientDependencies : serverDependencies)) {
-            loadDependency(dependency, true, true);
+            loadDependencyImpl(dependency, true, true);
         }
     }
 
     public static boolean loadDependencySafe(Dependency dependency) {
         try {
-            loadDependency(dependency, false, FoxLauncher.foxClassLoader == null);
+            loadDependencyImpl(dependency, false, FoxLauncher.foxClassLoader == null);
             return true;
         } catch (Exception e) {
             return false;
@@ -113,11 +118,11 @@ public class DependencyHelper {
     }
 
     public static void loadDependency(Dependency dependency) {
-        loadDependency(dependency, false, FoxLauncher.foxClassLoader == null);
+        loadDependencyImpl(dependency, false, FoxLauncher.foxClassLoader == null);
     }
 
-    private static void loadDependency(Dependency dependency, boolean minecraft, boolean dev) {
-        if (!dev && hasClass(dependency.classCheck)) return;
+    private static File loadDependencyImpl(Dependency dependency, boolean minecraft, boolean dev) {
+        if (!dev && hasClass(dependency.classCheck)) return null;
         String postURL = resolvePostURL(dependency.name);
         File file = new File(mcLibraries, fixUpPath(postURL));
         boolean justDownloaded = false;
@@ -135,7 +140,7 @@ public class DependencyHelper {
                 throw new RuntimeException("Cannot download " + dependency.name, ioe);
             }
         }
-        if (dev) return; // We don't have a FoxClass loader in dev environment.
+        if (dev) return file; // We don't have a FoxClass loader in dev environment.
         try {
             if (minecraft) {
                 FoxLauncher.getFoxClassLoader().setMinecraftURL(file.toURI().toURL());
@@ -150,7 +155,7 @@ public class DependencyHelper {
                     // Assume file is corrupted if load failed.
                     if (file.exists() && !file.delete()) file.deleteOnExit();
                     loadDependency(dependency);
-                    return;
+                    return file;
                 }
                 throw new RuntimeException("Failed to load " +
                         dependency.name + " -> " + file.getPath());
@@ -158,6 +163,93 @@ public class DependencyHelper {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+        return file;
+    }
+
+    public static class Agent {
+        private static Instrumentation inst = null;
+
+        public static void premain(final String agentArgs, final Instrumentation inst) {
+            if (FoxLauncher.foxClassLoader != null)
+                throw new IllegalStateException("FoxClassLoader already initialized!");
+            Agent.inst = inst;
+        }
+
+        public static void agentmain(final String agentArgs, final Instrumentation inst) {
+            if (FoxLauncher.foxClassLoader != null)
+                throw new IllegalStateException("FoxClassLoader already initialized!");
+            Agent.inst = inst;
+        }
+
+        static boolean supported() {
+            return inst != null;
+        }
+
+        static void addToClassPath(final File library) {
+            if (inst == null) {
+                System.err.println("Unable to retrieve Instrumentation API to add Paper jar to classpath. If you're " +
+                        "running paperclip without -jar then you also need to include the -javaagent:<paperclip_jar> JVM " +
+                        "command line option.");
+                System.exit(1);
+                return;
+            }
+            try {
+                inst.appendToSystemClassLoaderSearch(new JarFile(library));
+            } catch (final IOException e) {
+                System.err.println("Failed to add Paper jar to ClassPath");
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
+
+    public static void loadDependencySelf(Dependency dependency) {
+        if (FoxLauncher.foxClassLoader != null)
+            throw new IllegalStateException("FoxClassLoader already initialized!");
+        if (DependencyHelper.class.getClassLoader().getResource(
+                dependency.classCheck.replace('.', '/') + ".class") != null) {
+            return; // Great news, we already have the library loaded!
+        }
+        if (mcLibraries == null) setMCLibraryRoot();
+        File file = loadDependencyImpl(dependency, false, true);
+        if (file == null) {
+            // If null it means it's already in class path.
+            return;
+        }
+        if (Agent.supported()) {
+            Agent.addToClassPath(file);
+        } else {
+            final ClassLoader loader = ClassLoader.getSystemClassLoader();
+            if (!(loader instanceof URLClassLoader)) {
+                throw new RuntimeException("System ClassLoader is not URLClassLoader");
+            }
+            try {
+                final Method addURL = getURLClassLoaderAddMethod(loader);
+                if (addURL == null) {
+                    throw new RuntimeException("Unable to find method to add library jar to System ClassLoader");
+                }
+                addURL.setAccessible(true);
+                addURL.invoke(loader, file.toURI().toURL());
+            } catch (final ReflectiveOperationException | MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static Method getURLClassLoaderAddMethod(final Object o) {
+        Class<?> clazz = o.getClass();
+        Method m = null;
+        while (m == null) {
+            try {
+                m = clazz.getDeclaredMethod("addURL", URL.class);
+            } catch (final NoSuchMethodException ignored) {
+                clazz = clazz.getSuperclass();
+                if (clazz == null) {
+                    return null;
+                }
+            }
+        }
+        return m;
     }
 
     private static String fixUpPath(String path) {

@@ -12,7 +12,12 @@ import java.util.Arrays;
 import java.util.Locale;
 
 public class Main {
-    static final File currentWorkingDir = new File("").getAbsoluteFile();
+    // We need -XX:+IgnoreUnrecognizedVMOptions cause some of the optimization arg we us are not available on some JVMs
+    static final String optJvmArgs = "-XX:+IgnoreUnrecognizedVMOptions -XX:+UnlockExperimentalVMOptions " +
+            "-XX:+UseFastAccessorMethods -XX:+AggressiveOpts -XX:+UseCompressedOops -XX:+UseBiasedLocking " +
+            "-XX:+OptimizeStringConcat -XX:MaxGCPauseMillis=25 -XX:-UseGCOverheadLimit -XX:+UseLargePages" +
+            "-XX:+UseStringCache -XX:+UseCompressedStrings -Dfile.encoding=UTF-8";
+    static final String optJvmArgsWithMem = optJvmArgs + " -Xmn512M -Xms512M -Xmx2G";
     static final File currentInstallerFile = SourceUtil.getSourceFile(Main.class);
     public static void main(String[] args) throws ReflectiveOperationException, MalformedURLException {
         boolean platform = false;
@@ -71,7 +76,7 @@ public class Main {
         if (platform) {
             installerPlatform = InstallerPlatform.valueOf(args[1].toUpperCase(Locale.ROOT));
         }
-        if (update) {
+        if (update || installerPlatform.doSilentInstall) {
             System.setErr(System.out); // Redirect errors to stdout
             LauncherType launcherType = LauncherType.valueOf(args[1].toUpperCase(Locale.ROOT));
             try {

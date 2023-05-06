@@ -20,7 +20,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class InstallerGUI implements FileDropHelper.FileDropHandler {
-    private static final String DEFAULT_VERSION_NAME =
+    public static final String DEFAULT_VERSION_NAME =
             "ReIndev-" + BuildConfig.REINDEV_VERSION +
                     "-FoxLoader-" + BuildConfig.FOXLOADER_VERSION;
     private static final String CUSTOM_VERSION_NAME_BASE =
@@ -236,8 +236,10 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 progressBar.setValue(i + 1);
             }
         }
+        DependencyHelper.loadDependencySelf(DependencyHelper.GSON_DEPENDENCY);
         File minecraft = Platform.getAppDir("minecraft");
         File versions = new File(minecraft, "versions");
+        File launcherProfiles = new File(minecraft, "launcher_profiles.json");
         File foxLoaderVersion = new File(versions, this.versionName);
         File foxLoaderVersionJar = new File(foxLoaderVersion, this.versionName + ".jar");
         File foxLoaderVersionJson = new File(foxLoaderVersion, this.versionName + ".json");
@@ -258,6 +260,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                     Files.newOutputStream(foxLoaderVersionJson.toPath()));
             Files.copy(Main.currentInstallerFile.toPath(),
                     foxLoaderVersionJar.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            ProfileInstaller.install(launcherProfiles);
         } catch (IOException e) {
             showError(e);
             return;
@@ -277,14 +280,19 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         File versionsJsons = new File(versions, "jsons");
         File launchMethods = new File(betaCraft,
                 "launcher" + File.separator + "launch-methods");
+        File instances = new File(betaCraft,
+                "launcher" + File.separator + "instances");
         if ((!versionsJsons.isDirectory() && !versionsJsons.mkdirs()) ||
-                (!launchMethods.isDirectory() && !launchMethods.mkdirs())) {
+                (!launchMethods.isDirectory() && !launchMethods.mkdirs()) ||
+                (!instances.isDirectory() && !instances.mkdirs())) {
             showMessage(TranslateEngine.getTranslationFormat(
                     "installer.error.create-target-directory", "betacraft"), true);
             return;
         }
         File foxLoaderVersionJar = new File(versions, this.versionName + ".jar");
         File foxLoaderVersionJson = new File(versionsJsons, this.versionName + ".info");
+        File foxLoaderVersionInstance = new File(instances, this.reIndevSource == null ?
+                "ReIndev-" + BuildConfig.REINDEV_VERSION + "-FoxLoader.txt" : "ReIndev-custom-FoxLoader.txt");
         File foxLoaderBetaCraft = new File(launchMethods, "FoxLoader.jar");
         try {
             if (this.reIndevSource != null) {
@@ -304,6 +312,26 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 printStream.println("launch-method:FoxLoader");
                 printStream.println("proxy-args:-XX:+IgnoreUnrecognizedVMOptions");
                 printStream.println("custom:true");
+            }
+            try (UnixPrintStream printStream = new UnixPrintStream(
+                    Files.newOutputStream(foxLoaderVersionInstance.toPath()))) {
+                printStream.println("name:FoxLoader " + BuildConfig.FOXLOADER_VERSION +
+                        (this.reIndevSource == null ? "" : " (Custom jar)"));
+                printStream.println("launchArgs:" + Main.optJvmArgsWithMem);
+                printStream.println("width:854");
+                printStream.println("height:480");
+                printStream.println("proxy:false");
+                printStream.println("keepopen:false");
+                printStream.println("RPC:true");
+                printStream.println("gameDir:" + Platform.getAppDir("reindev").getAbsolutePath());
+                printStream.println("version:" + this.versionName);
+                printStream.println("console:true");
+                // On Linux it may default to an invalid JVM that crash the game.
+                if (Platform.getPlatform() == Platform.LINUX &&
+                        new File("/usr/lib/jvm/java-8-openjdk/bin/java").exists()) {
+                    printStream.println("javaPath:/usr/lib/jvm/java-8-openjdk/bin/java");
+                }
+                printStream.println("addons:");
             }
             copyAndClose(InstallerGUI.class.getResourceAsStream(
                     "/betacraft-" + BuildConfig.FOXLOADER_VERSION + ".jar"),

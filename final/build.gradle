@@ -8,6 +8,7 @@ configurations {
 }
 
 dependencies {
+    compileOnly 'com.google.code.gson:gson:2.2.4'
     include(project(":common")) {
         transitive = false
     }
@@ -33,6 +34,9 @@ jar {
                 project['foxloader.lastReIndevTransformerChanges']
         attributes 'FoxLoader-Version': project['foxloader.version']
         attributes 'ReIndev-Version': project['reindev.version']
+        // Only supported on Java9+ but only needed on Java9+! :3
+        attributes 'Launcher-Agent-Class': 'com.fox2code.foxloader.launcher.DependencyHelper$Agent'
+        attributes 'Premain-Class': 'com.fox2code.foxloader.launcher.DependencyHelper$Agent'
     }
 }
 

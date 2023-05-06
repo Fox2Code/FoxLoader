@@ -17,8 +17,14 @@ final class LoggerHelper {
                     "/common/build/libs/common-" + BuildConfig.FOXLOADER_VERSION + ".jar");
     private static final boolean consoleSupportColor = devEnvironment ||
             Boolean.getBoolean("foxloader.console-support-color");
+    private static final boolean disableLoggerHelper =
+            Boolean.getBoolean("foxloader.disable-logger-helper");
 
     static boolean install(File logFile) {
+        if (disableLoggerHelper) {
+            System.out.println("The LoggerHelper has been disabled, things aren't gonna look pretty");
+            return true;
+        }
         if (System.out.getClass() != PrintStream.class) {
             System.out.println("System out has been modified, skipping install.");
             try (PrintStream printStream = new PrintStream(Files.newOutputStream(logFile.toPath()))){
@@ -33,11 +39,17 @@ final class LoggerHelper {
         final SystemOutConsoleHandler systemOutConsoleHandler = new SystemOutConsoleHandler();
         final FoxLoaderLogFormatter simpleFormatter = new FoxLoaderLogFormatter();
         final Logger rootLogger = LogManager.getLogManager().getLogger("");
+        final DirectFileHandler directFileHandler;
         try {
-            rootLogger.addHandler(new DirectFileHandler(logFile));
+            directFileHandler = new DirectFileHandler(logFile);
+            rootLogger.addHandler(directFileHandler);
         } catch (Exception ignored) {
             return false;
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            directFileHandler.flush();
+            systemOutConsoleHandler.flush();
+        }, "LoggerHelper exit flush shutdown hook"));
         Handler[] handlers = rootLogger.getHandlers();
         for (Handler handler : handlers) {
             if (handler instanceof ConsoleHandler) {
@@ -161,6 +173,7 @@ final class LoggerHelper {
     private static class DirectFileHandler extends StreamHandler {
         DirectFileHandler(File file) throws IOException {
             setOutputStream(Files.newOutputStream(file.toPath()));
+            setLevel(Level.ALL);
         }
     }
 

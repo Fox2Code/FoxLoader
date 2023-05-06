@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.launcher;
 
+import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
 import java.io.File;
@@ -11,9 +12,11 @@ public class FoxLauncher {
         System.setProperty("file.encoding", "UTF-8");
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
         System.setProperty("user.language", "en");
-        try {
-            System.setSecurityManager(null);
-        } catch (Throwable ignored) {}
+        if (Platform.getJvmVersion() < 17) {
+            try {
+                System.setSecurityManager(null);
+            } catch (Throwable ignored) {}
+        }
 
         // Preload some classes to improve reliability.
         String[] classToPreload = new String[]{
