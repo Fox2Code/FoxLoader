@@ -3,10 +3,12 @@ package com.fox2code.foxloader.loader;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxClassLoader;
 import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.loader.transformer.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.*;
@@ -33,6 +35,7 @@ public class PreLoader {
     private static final byte[] metaInf = ("Manifest-Version: 1.0\n" +
             "FoxLoader-Transformer-Version: " + BuildConfig.FOXLOADER_TRANSFORMER_VERSION +
             "Multi-Release: true\n").getBytes(StandardCharsets.UTF_8);
+    private static JvmCompatTransformer jvmCompatTransformer = null;
 
     static {
         preLoadMetaJarHash.addString(BuildConfig.REINDEV_VERSION);
@@ -77,6 +80,9 @@ public class PreLoader {
                 e.printStackTrace();
             }
         }
+        if (jvmCompatTransformer != null) {
+            jvmCompatTransformer.transform(classNode, className);
+        }
     }
 
     static void addCoreMod(File coreMod) {
@@ -100,6 +106,18 @@ public class PreLoader {
 
     static void loadPrePatches(boolean client) {
         preTransformers.clear();
+        if (FoxLauncher.getFoxClassLoader() != null) {
+            final int jvmVersion = Platform.getJvmVersion();
+            if (jvmVersion < 11) {
+                ModLoader.foxLoader.logger.info( // Tell the user we are doing that :3
+                        "Registering JvmCompatTransformer to run Java11 code on Java" + jvmVersion);
+                preTransformers.add(jvmCompatTransformer = new JvmCompatTransformer(jvmVersion));
+            } else {
+                ModLoader.foxLoader.logger.info( // Tell the user their jvm version
+                        "You are currently running on Java" + jvmVersion);
+                jvmCompatTransformer = null;
+            }
+        }
         registerPrePatch(new VarNameTransformer());
         registerPrePatch(new RegistryTransformer());
         if (client) {
@@ -262,5 +280,9 @@ public class PreLoader {
         public void freeze() {
             this.cache = this.makeHash();
         }
+    }
+
+    static JvmCompatTransformer getJvmCompatTransformer() {
+        return jvmCompatTransformer;
     }
 }

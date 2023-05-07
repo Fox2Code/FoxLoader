@@ -64,10 +64,13 @@ public final class FoxClassLoader extends URLClassLoader {
             Class<?> c = findLoadedClass(name);
             if (c == null) {
                 URL resource = findResource(name.replace('.', '/') + ".class");
-                if (resource != null)
+                if (resource != null) {
                     c = findClass(name, resource);
-                else
+                } else try {
                     c = super.loadClass(name, false);
+                } catch (SecurityException securityException) {
+                    throw new ClassNotFoundException(name, securityException);
+                }
             }
             return c;
         }

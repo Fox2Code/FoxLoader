@@ -18,12 +18,16 @@ dependencies {
     include(project(":server")) {
         transitive = false
     }
+    include(project(":fallbacks")) {
+        transitive = false
+    }
 }
 
 jar.dependsOn(":betacraft:jar")
 jar.dependsOn(":client:jar")
 jar.dependsOn(":common:jar")
 jar.dependsOn(":server:jar")
+jar.dependsOn(":fallbacks:jar")
 
 jar {
     from "LICENSE"

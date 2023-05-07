@@ -2,8 +2,11 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.launcher.ClassTransformer;
 import com.fox2code.foxloader.launcher.FoxClassLoader;
+import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
+import com.fox2code.foxloader.loader.transformer.JvmCompatTransformer;
 import org.objectweb.asm.*;
+import org.objectweb.asm.commons.ClassRemapper;
 
 import java.util.logging.Logger;
 
@@ -20,7 +23,10 @@ public final class FoxWrappedExtensions extends FoxClassLoader.WrappedExtensions
     public byte[] computeFrames(byte[] classData) {
         ClassReader classReader = new ClassReader(classData);
         ClassWriter classWriter = classDataProvider.newClassWriter();
-        classReader.accept(new ClassVisitor(ClassTransformer.ASM_BUILD, classWriter) {
+        JvmCompatTransformer jvmCompatTransformer = PreLoader.getJvmCompatTransformer();
+        classReader.accept(new ClassVisitor(ClassTransformer.ASM_BUILD,
+                jvmCompatTransformer == null ? classWriter : // Fix Java11 code
+                        new ClassRemapper(classWriter, jvmCompatTransformer)) {
             @Override
             public MethodVisitor visitMethod(int access, final String name, final String descriptor, String signature, String[] exceptions) {
                 return new MethodVisitor(ClassTransformer.ASM_BUILD, super.visitMethod(access, name, descriptor, signature, exceptions)) {

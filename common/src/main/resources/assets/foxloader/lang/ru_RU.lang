@@ -8,6 +8,16 @@ mods.updateMod=Обновить мод
 mods.updateReIndev=Обновить ReIndev
 mods.configureMod=Настроить мод
 mods.pack=Модпаки
+command.usage.id-meta=Должен использоваться только 1 аргумент, используйте либо id, либо id:meta
+command.usage.id-meta-twice=Следует использовать только 2 аргумента, для каждого из них, используйте либо id, либо id:meta
+command.error.creative-only=Вы должны быть в творческом режиме, чтобы выполнить эту команду
+command.error.no-area-selected=Перед использованием этой команды необходимо выделить область!
+command.error.invalid-block-id=Неверный id блока: %s
+command.error.invalid-meta-data=Неверные метаданные: %s
+command.error.changing-too-many-blocks=Вы собирались изменить %s блоков и это кажется слишком...
+command.error.internal-error=Во время выполнения команды произошла внутренняя ошибка.
+command.changing-blocks=Изменение %s блоков...
+command.done=Готово!
 
 
 # Installer strings (Note: Usable by mods too)

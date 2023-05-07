@@ -5,7 +5,7 @@ dependencies {
     // compileOnly("com.github.Vatuu:discord-rpc:1.6.2")
     // compileOnly("aaaaaaaa:bbbbbbb:1.0.0") something.repo/aaaaaaaa/bbbbbbb/1.0.0/bbbbbbb-1.0.0.pom
 
-    // Let's use betacraft project fir client dev runs.
+    // Let's use betacraft project for client dev runs.
     implementation(project(":client"))
 
     //noinspection GradlePackageUpdate
