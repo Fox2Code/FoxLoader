@@ -4,6 +4,7 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.transformer.PreClassTransformer;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.registry.RegisteredItemStack;
 import org.semver4j.Semver;
 
 import java.io.File;
@@ -248,5 +249,52 @@ public final class ModContainer {
             clientMod.onCameraAndRenderUpdated(partialTick);
         if (serverMod != null)
             serverMod.onCameraAndRenderUpdated(partialTick);
+    }
+
+    boolean notifyPlayerStartBreakBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                   int x, int y, int z, int facing, boolean cancelled) {
+        if (commonMod != null)
+            cancelled |= commonMod.onPlayerStartBreakBlock(networkPlayer, itemStack, x, y, z, facing, cancelled);
+        if (clientMod != null)
+            cancelled |= clientMod.onPlayerStartBreakBlock(networkPlayer, itemStack, x, y, z, facing, cancelled);
+        if (serverMod != null)
+            cancelled |= serverMod.onPlayerStartBreakBlock(networkPlayer, itemStack, x, y, z, facing, cancelled);
+        return cancelled;
+    }
+
+    boolean notifyPlayerBreakBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                   int x, int y, int z, int facing, boolean cancelled) {
+        if (commonMod != null)
+            cancelled |= commonMod.onPlayerBreakBlock(networkPlayer, itemStack, x, y, z, facing, cancelled);
+        if (clientMod != null)
+            cancelled |= clientMod.onPlayerBreakBlock(networkPlayer, itemStack, x, y, z, facing, cancelled);
+        if (serverMod != null)
+            cancelled |= serverMod.onPlayerBreakBlock(networkPlayer, itemStack, x, y, z, facing, cancelled);
+        return cancelled;
+    }
+
+    boolean notifyPlayerUseItem(NetworkPlayer networkPlayer, RegisteredItemStack itemStack, boolean cancelled) {
+        if (commonMod != null)
+            cancelled |= commonMod.onPlayerUseItem(networkPlayer, itemStack, cancelled);
+        if (clientMod != null)
+            cancelled |= clientMod.onPlayerUseItem(networkPlayer, itemStack, cancelled);
+        if (serverMod != null)
+            cancelled |= serverMod.onPlayerUseItem(networkPlayer, itemStack, cancelled);
+        return cancelled;
+    }
+
+    boolean notifyPlayerUseItemOnBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                       int x, int y, int z, int facing,
+                                       float xOffset, float yOffset, float zOffset, boolean cancelled) {
+        if (commonMod != null)
+            cancelled |= commonMod.onPlayerUseItemOnBlock(networkPlayer, itemStack,
+                    x, y, z, facing, xOffset, yOffset, zOffset, cancelled);
+        if (clientMod != null)
+            cancelled |= clientMod.onPlayerUseItemOnBlock(networkPlayer, itemStack,
+                    x, y, z, facing, xOffset, yOffset, zOffset, cancelled);
+        if (serverMod != null)
+            cancelled |= serverMod.onPlayerUseItemOnBlock(networkPlayer, itemStack,
+                    x, y, z, facing, xOffset, yOffset, zOffset, cancelled);
+        return cancelled;
     }
 }

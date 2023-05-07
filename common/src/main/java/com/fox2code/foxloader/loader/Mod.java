@@ -104,6 +104,42 @@ public abstract class Mod implements LifecycleListener {
      */
     public void onServerStop(NetworkPlayer.ConnectionType connectionType) {}
 
+    /**
+     * Called when a player break a block
+     * @return true to cancel the interaction.
+     */
+    public boolean onPlayerStartBreakBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                      int x, int y, int z, int facing, boolean cancelled) {
+        return false;
+    }
+
+    /**
+     * Called when a player break a block
+     * @return true to cancel the interaction.
+     */
+    public boolean onPlayerBreakBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                      int x, int y, int z, int facing, boolean cancelled) {
+        return false;
+    }
+
+    /**
+     * Called when a player use an item
+     * @return true to cancel the interaction.
+     */
+    public boolean onPlayerUseItem(NetworkPlayer networkPlayer, RegisteredItemStack itemStack, boolean cancelled) {
+        return false;
+    }
+
+    /**
+     * Called when a player use an item while pointing at a block
+     * @return true to cancel the interaction.
+     */
+    public boolean onPlayerUseItemOnBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                          int x, int y, int z, int facing,
+                                          float xOffset, float yOffset, float zOffset, boolean cancelled) {
+        return false;
+    }
+
     // GameRegistry mirror
 
     /**

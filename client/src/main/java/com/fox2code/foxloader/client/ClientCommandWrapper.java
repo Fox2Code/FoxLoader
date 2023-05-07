@@ -3,6 +3,7 @@ package com.fox2code.foxloader.client;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import net.minecraft.mitask.command.Command;
+import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.client.player.EntityPlayerSP;
 
 public final class ClientCommandWrapper extends Command {
@@ -15,7 +16,13 @@ public final class ClientCommandWrapper extends Command {
 
     @Override
     public void onExecute(String[] args, EntityPlayerSP commandExecutor) {
-        this.commandCompat.onExecute(args, (NetworkPlayer) commandExecutor);
+        try {
+            this.commandCompat.onExecute(args, (NetworkPlayer) commandExecutor);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            ((NetworkPlayer) commandExecutor).displayChatMessage(
+                    StringTranslate.getInstance().translateKey("command.error.internal-error"));
+        }
     }
 
     @Override

@@ -92,6 +92,19 @@ public abstract class GameRegistry {
     public abstract RegisteredBlock getRegisteredBlock(int id);
 
     /**
+     * @param translationKey translation key to use
+     * @return translated component
+     */
+    public abstract String translateKey(String translationKey);
+
+    /**
+     * @param translationKey translation key to use
+     * @param args translation arguments to use
+     * @return translated formatted component
+     */
+    public abstract String translateKeyFormat(String translationKey, String... args);
+
+    /**
      * Only use this if you know what you are doing.
      */
     public abstract int generateNewBlockId(String name, int fallbackId);

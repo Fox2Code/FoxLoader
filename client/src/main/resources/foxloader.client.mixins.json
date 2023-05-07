@@ -9,6 +9,7 @@
     "MixinChunk",
     "MixinChunkBlockMap",
     "MixinContainerCreative",
+    "MixinEntity",
     "MixinEntityClientPlayerMP",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
@@ -26,7 +27,14 @@
     "MixinPacket104WindowItems",
     "MixinPacket2Handshake",
     "MixinPlayerCommandHandler",
+    "MixinPlayerController",
+    "MixinPlayerControllerMix",
+    "MixinPlayerControllerMP",
+    "MixinPlayerControllerSP",
+    "MixinPlayerControllerTest",
     "MixinStringTranslate",
-    "MixinTextureMap"
+    "MixinTextureMap",
+    "MixinTileEntity",
+    "MixinWorld"
   ]
 }

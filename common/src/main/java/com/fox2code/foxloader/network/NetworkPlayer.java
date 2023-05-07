@@ -1,8 +1,9 @@
 package com.fox2code.foxloader.network;
 
 import com.fox2code.foxloader.loader.ModContainer;
+import com.fox2code.foxloader.registry.RegisteredEntity;
 
-public interface NetworkPlayer {
+public interface NetworkPlayer extends RegisteredEntity {
     /**
      * Just empty byte array to reduce allocations.
      */
@@ -49,6 +50,11 @@ public interface NetworkPlayer {
      */
     default void kick(String message) { throw new RuntimeException(); }
 
+    /**
+     * Get the network player controller.
+     */
+    default NetworkPlayerController getNetworkPlayerController() { throw new RuntimeException(); }
+
     enum ConnectionType {
         SINGLE_PLAYER(true, true), CLIENT_ONLY(true, false), SERVER_ONLY(false, true);
 
@@ -58,5 +64,16 @@ public interface NetworkPlayer {
             this.isClient = isClient;
             this.isServer = isServer;
         }
+    }
+
+    interface NetworkPlayerController {
+        default boolean hasCreativeModeRegistered() { throw new RuntimeException(); }
+        default boolean hasSelection() { throw new RuntimeException(); }
+        default int getMinX() { throw new RuntimeException(); }
+        default int getMaxX() { throw new RuntimeException(); }
+        default int getMinY() { throw new RuntimeException(); }
+        default int getMaxY() { throw new RuntimeException(); }
+        default int getMinZ() { throw new RuntimeException(); }
+        default int getMaxZ() { throw new RuntimeException(); }
     }
 }

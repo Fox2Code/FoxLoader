@@ -1,0 +1,3 @@
+// Fallbacks build.gradle
+group 'com.fox2code'
+version project['foxloader.version']

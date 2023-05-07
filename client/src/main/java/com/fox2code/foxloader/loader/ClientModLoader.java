@@ -17,7 +17,7 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 
-public final class ClientModLoader extends Mod {
+public final class ClientModLoader extends ModLoader {
     public static final boolean linuxFix = Boolean.parseBoolean(
             System.getProperty("foxloader.linux-fix", // Switch to enable linux workaround
                     Boolean.toString(Platform.getPlatform() == Platform.LINUX)));

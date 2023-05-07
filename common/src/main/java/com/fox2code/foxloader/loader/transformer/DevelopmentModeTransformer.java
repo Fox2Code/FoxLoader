@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class DevelopmentModeTransformer implements PreClassTransformer {
     /**
-     * While mixins already inject these interfaces, we must use a transformer to simplify the life of developers.
+     * While mixins already injects these interfaces, we must use a transformer to simplify the life of developers.
      */
     private static final HashMap<String, String> interfacesFromMixin = new HashMap<>();
 
@@ -19,10 +19,20 @@ public class DevelopmentModeTransformer implements PreClassTransformer {
                 "com.fox2code.foxloader.registry.RegisteredItem");
         interfacesFromMixin.put("net.minecraft.src.game.item.ItemStack",
                 "com.fox2code.foxloader.registry.RegisteredItemStack");
+        interfacesFromMixin.put("net.minecraft.src.game.entity.Entity",
+                "com.fox2code.foxloader.registry.RegisteredEntity");
+        interfacesFromMixin.put("net.minecraft.src.game.block.tileentity.TileEntity",
+                "com.fox2code.foxloader.registry.RegisteredTileEntity");
         interfacesFromMixin.put("net.minecraft.src.client.player.EntityPlayerSP",
                 "com.fox2code.foxloader.network.NetworkPlayer");
         interfacesFromMixin.put("net.minecraft.src.game.entity.player.EntityPlayerMP",
                 "com.fox2code.foxloader.network.NetworkPlayer");
+        interfacesFromMixin.put("net.minecraft.src.client.player.PlayerController",
+                "com.fox2code.foxloader.network.NetworkPlayer$NetworkPlayerController");
+        interfacesFromMixin.put("net.minecraft.src.server.player.PlayerController",
+                "com.fox2code.foxloader.network.NetworkPlayer$NetworkPlayerController");
+        interfacesFromMixin.put("net.minecraft.src.game.level.World",
+                "com.fox2code.foxloader.registry.RegisteredWorld");
     }
 
     @Override

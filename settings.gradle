@@ -5,4 +5,5 @@ include 'common'
 include 'final'
 include 'betacraft'
 include 'dev'
+include 'fallbacks'
 

@@ -10,6 +10,7 @@ import net.minecraft.src.game.level.World;
 import net.minecraft.src.server.packets.NetServerHandler;
 import net.minecraft.src.server.packets.Packet250PluginMessage;
 import net.minecraft.src.server.packets.Packet3Chat;
+import net.minecraft.src.server.player.PlayerController;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.Unique;
 public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, NetworkPlayerImpl {
     @Shadow public NetServerHandler playerNetServerHandler;
     @Shadow public MinecraftServer mcServer;
+    @Shadow public PlayerController itemInWorldManager;
     @Unique private boolean hasFoxLoader;
 
     public MixinEntityPlayerMP(World var1) {
@@ -69,5 +71,10 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
         if (this.hasFoxLoader) {
             this.playerNetServerHandler.sendPacket(new Packet250PluginMessage(modContainer, data));
         }
+    }
+
+    @Override
+    public NetworkPlayerController getNetworkPlayerController() {
+        return (NetworkPlayerController) this.itemInWorldManager;
     }
 }

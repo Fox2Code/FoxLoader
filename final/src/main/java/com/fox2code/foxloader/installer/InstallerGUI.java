@@ -368,6 +368,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                         "/mmc/" + entry), byteArrayOutputStream);
                 copy(new ByteArrayInputStream(byteArrayOutputStream.toString()
                         .replace("#version#", this.versionName)
+                        .replace("#jvm_args#", Main.optJvmArgs)
                         .replace("#foxloader_version#", BuildConfig.FOXLOADER_VERSION)
                         .getBytes(StandardCharsets.UTF_8)), zipOutputStream);
                 zipOutputStream.closeEntry();

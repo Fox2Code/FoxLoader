@@ -5,6 +5,7 @@ chat.copy=Копировать в буфер обмена
 mods.openFolder=Папка с модами
 mods.updateAllMods=Обновить все моды
 mods.updateMod=Обновить мод
+mods.updateReIndev=Обновить ReIndev
 mods.configureMod=Настроить мод
 mods.pack=Модпаки
 

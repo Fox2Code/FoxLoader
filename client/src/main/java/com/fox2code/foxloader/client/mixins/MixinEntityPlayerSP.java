@@ -43,4 +43,9 @@ public abstract class MixinEntityPlayerSP implements NetworkPlayer {
     public void kick(String message) {
         throw new IllegalStateException("kick cannot be used client-side");
     }
+
+    @Override
+    public NetworkPlayerController getNetworkPlayerController() {
+        return (NetworkPlayerController) Minecraft.getInstance().playerController;
+    }
 }

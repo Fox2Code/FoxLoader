@@ -97,6 +97,16 @@ public class GameRegistryClient extends GameRegistry {
     }
 
     @Override
+    public String translateKey(String translationKey) {
+        return StringTranslate.getInstance().translateKey(translationKey);
+    }
+
+    @Override
+    public String translateKeyFormat(String translationKey, String... args) {
+        return StringTranslate.getInstance().translateKeyFormat(translationKey, args);
+    }
+
+    @Override
     public int generateNewBlockId(String name, int fallbackId) {
         if (registryEntries.containsKey(name)) {
             throw new RuntimeException("Duplicate item/block string id: " + name);

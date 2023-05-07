@@ -11,7 +11,7 @@ import net.minecraft.server.MinecraftServer;
 
 import java.util.Objects;
 
-public final class ServerModLoader extends Mod {
+public final class ServerModLoader extends ModLoader {
     public static void launchModdedServer(String... args) {
         ModLoader.foxLoader.serverMod = new ServerModLoader();
         ModLoader.foxLoader.serverMod.modContainer = ModLoader.foxLoader;

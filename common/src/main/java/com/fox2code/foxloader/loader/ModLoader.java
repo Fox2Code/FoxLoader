@@ -1,10 +1,14 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.commands.WorldReplace;
+import com.fox2code.foxloader.commands.WorldSet;
 import com.fox2code.foxloader.launcher.*;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.registry.CommandCompat;
+import com.fox2code.foxloader.registry.RegisteredItemStack;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +23,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
-public class ModLoader {
+public class ModLoader extends Mod {
     public static final boolean I_AM_EXPERIMENTAL = false; // Show text on client main menu
     public static final boolean TEST_MODE = Boolean.getBoolean("foxloader.test-mode");
     private static final String INJECT_MOD = System.getProperty("foxloader.inject-mod");
@@ -71,6 +75,8 @@ public class ModLoader {
             throw new RuntimeException("Invalid class loader context!");
         }
     }
+
+    ModLoader() {}
 
     static void initializeModdedInstance(boolean client) {
         if (launched) return; launched = true;
@@ -154,6 +160,12 @@ public class ModLoader {
         for (ModContainer modContainer : modContainers.values()) {
             modContainer.notifyOnPostInit();
         }
+    }
+
+    @Override
+    public void onPostInit() {
+        CommandCompat.registerCommand(new WorldSet());
+        CommandCompat.registerCommand(new WorldReplace());
     }
 
     private static void loadModContainerFrom(File file, boolean injected) {
@@ -290,6 +302,45 @@ public class ModLoader {
 
         public static byte[] compileServerHello(ServerHello serverHello) {
             return LoaderNetworkManager.compileServerPacketData(serverHello, 2);
+        }
+
+        public static boolean notifyPlayerStartBreakBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                            int x, int y, int z, int facing) {
+            boolean cancelled = false;
+            for (ModContainer modContainer : modContainers.values()) {
+                cancelled = modContainer.notifyPlayerStartBreakBlock(
+                        networkPlayer, itemStack, x, y, z, facing, cancelled);
+            }
+            return cancelled;
+        }
+
+        public static boolean notifyPlayerBreakBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                                          int x, int y, int z, int facing) {
+            boolean cancelled = false;
+            for (ModContainer modContainer : modContainers.values()) {
+                cancelled = modContainer.notifyPlayerBreakBlock(
+                        networkPlayer, itemStack, x, y, z, facing, cancelled);
+            }
+            return cancelled;
+        }
+
+        public static boolean notifyPlayerUseItem(NetworkPlayer networkPlayer, RegisteredItemStack itemStack) {
+            boolean cancelled = false;
+            for (ModContainer modContainer : modContainers.values()) {
+                cancelled = modContainer.notifyPlayerUseItem(networkPlayer, itemStack, cancelled);
+            }
+            return cancelled;
+        }
+
+        public static boolean notifyPlayerUseItemOnBlock(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                                         int x, int y, int z, int facing,
+                                                         float xOffset, float yOffset, float zOffset) {
+            boolean cancelled = false;
+            for (ModContainer modContainer : modContainers.values()) {
+                cancelled = modContainer.notifyPlayerUseItemOnBlock(
+                        networkPlayer, itemStack, x, y, z, facing, xOffset, yOffset, zOffset, cancelled);
+            }
+            return cancelled;
         }
     }
 }

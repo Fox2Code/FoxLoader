@@ -5,8 +5,19 @@ chat.copy=Copy to Clipboard
 mods.openFolder=Open mods folder
 mods.updateAllMods=Update all mods
 mods.updateMod=Update mod
+mods.updateReIndev=Update ReIndev
 mods.configureMod=Configure mod
 mods.pack=Mods Pack
+command.usage.id-meta=Only 1 argument should be used, use either id or id:meta
+command.usage.id-meta-twice=Only 2 argument should be used, use either id or id:meta for each one
+command.error.creative-only=You must be in creative mode to run this command
+command.error.no-area-selected=You need to select an area before using this command!
+command.error.invalid-block-id=Invalid block id: %s
+command.error.invalid-meta-data=Invalid meta data: %s
+command.error.changing-too-many-blocks=You were about to change %s blocks and it seemed too much...
+command.error.internal-error=An internal error happened durring the execution of the command.
+command.changing-blocks=Changing %s blocks...
+command.done=Done!
 
 
 # Installer strings (Note: Usable by mods too)

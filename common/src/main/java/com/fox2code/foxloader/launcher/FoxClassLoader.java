@@ -135,7 +135,7 @@ public final class FoxClassLoader extends URLClassLoader {
                             this.didPrintedTransformFail = true; // Only print first failure.
                             Files.write(new File(FoxLauncher.gameDir, "transform_fail.class").toPath(), bytes);
                         }
-                        throw new ClassTransformException("Can't transform "+name+" for "+classTransformer.getClass().getName(), e);
+                        throw new ClassTransformException("Can't transform "+name+" for "+ classTransformer.getClass().getName(), e);
                     }
                 }
                 try {

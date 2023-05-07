@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class MixinItemStack implements RegisteredItemStack, NetworkItemStack {
     @Shadow public int itemID;
     @Shadow public int stackSize;
-    @Shadow int itemDamage;
+    @Shadow public int itemDamage;
     @Unique private int networkId;
 
     @Shadow public abstract Item getItem();

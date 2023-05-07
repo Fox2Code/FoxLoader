@@ -8,12 +8,16 @@
     "MixinBlock",
     "MixinBlockFire",
     "MixinChunkBlockMap",
+    "MixinEntity",
     "MixinEntityPlayerMP",
     "MixinItem",
     "MixinItemStack",
     "MixinMinecraftServer",
     "MixinNetLoginHandler",
     "MixinNetServerHandler",
-    "MixinStringTranslate"
+    "MixinPlayerController",
+    "MixinStringTranslate",
+    "MixinTileEntity",
+    "MixinWorld"
   ]
 }

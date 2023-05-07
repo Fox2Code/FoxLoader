@@ -103,6 +103,7 @@ public class PreLoader {
         registerPrePatch(new VarNameTransformer());
         registerPrePatch(new RegistryTransformer());
         if (client) {
+            registerPrePatch(new MinecraftClientDebugTransformer());
             registerPrePatch(new FrustrumHelperTransformer());
             registerPrePatch(new FastBrightnessAccessTransformer());
             registerPrePatch(new NetworkMappingTransformer());

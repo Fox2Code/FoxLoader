@@ -33,7 +33,8 @@ public class MixinGameSettings {
 
     @Inject(method = "getKeyBinding", at = @At("HEAD"))
     public void hotfix_onGetKeyBinding(EnumOptions option, CallbackInfoReturnable<String> cir) {
-        if (option == EnumOptions.FRAMERATE_LIMIT && this.limitFramerate > 2) {
+        if (option == EnumOptions.FRAMERATE_LIMIT && this.limitFramerate > 2 &&
+                !EnumOptions.FRAMERATE_LIMIT.getEnumFloat()) {
             this.limitFramerate = 0;
         }
     }
