@@ -101,10 +101,8 @@ final class LetsEncryptHelper {
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
             try {
                 this.letsEncrypt.checkServerTrusted(chain, authType);
-                System.out.println("checkServerTrusted let's encrypt trust!");
             } catch (CertificateException | SecurityException e) {
                 this.system.checkServerTrusted(chain, authType);
-                System.out.println("checkServerTrusted system trust!");
             }
         }
 
