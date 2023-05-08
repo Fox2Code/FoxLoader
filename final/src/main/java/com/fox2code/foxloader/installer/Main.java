@@ -78,7 +78,8 @@ public class Main {
         }
         if (update || installerPlatform.doSilentInstall) {
             System.setErr(System.out); // Redirect errors to stdout
-            LauncherType launcherType = LauncherType.valueOf(args[1].toUpperCase(Locale.ROOT));
+            LauncherType launcherType = !update ? LauncherType.VANILLA_LIKE :
+                    LauncherType.valueOf(args[1].toUpperCase(Locale.ROOT));
             try {
                 System.out.println("Updating...");
                 new InstallerGUI(installerPlatform, launcherType).doSilentInstall();

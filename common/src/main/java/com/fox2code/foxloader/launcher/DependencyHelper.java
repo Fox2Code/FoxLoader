@@ -48,6 +48,16 @@ public class DependencyHelper {
 
     private static File mcLibraries;
 
+    static {
+        if (Platform.getJvmVersion() == 8) {
+            try {
+                LetsEncryptHelper.installCertificates();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     static void loadDependencies(boolean client) {
         if (client) {
             URL url = DependencyHelper.class.getResource("/org/lwjgl/opengl/GLChecks.class");

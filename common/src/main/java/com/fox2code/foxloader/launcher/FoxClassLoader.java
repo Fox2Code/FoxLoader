@@ -193,6 +193,9 @@ public final class FoxClassLoader extends URLClassLoader {
                 return this.getParent().getResource(name);
             }
         }
+        if (name.startsWith("assets/foxloader/certificates/")) {
+            return this.getParent().getResource(name);
+        }
         URL resource = this.findResource(name);
         if (resource != null) return resource;
         if (minecraftExclusiveSource != null) {

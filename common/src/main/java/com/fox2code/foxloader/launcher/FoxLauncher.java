@@ -75,8 +75,8 @@ public class FoxLauncher {
         foxClassLoader.addTransformerExclusion("org.spongepowered.tools.");
         foxClassLoader.addTransformerExclusion("com.llamalad7.mixinextras.");
         foxClassLoader.addTransformerExclusion("com.fox2code.foxloader.loader.");
+        installLoggerHelper(); // Install special logger before libraries loading
         DependencyHelper.loadDependencies(true);
-        installLoggerHelper();
     }
 
     static void initForServerFromArgs(String[] args) {
@@ -97,8 +97,8 @@ public class FoxLauncher {
         foxClassLoader.addTransformerExclusion("org.spongepowered.tools.");
         foxClassLoader.addTransformerExclusion("com.llamalad7.mixinextras.");
         foxClassLoader.addTransformerExclusion("com.fox2code.foxloader.loader.");
+        installLoggerHelper(); // Install special logger before libraries loading
         DependencyHelper.loadDependencies(false);
-        installLoggerHelper();
     }
 
     private static void installLoggerHelper() {

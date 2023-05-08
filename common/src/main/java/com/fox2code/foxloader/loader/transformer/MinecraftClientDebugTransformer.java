@@ -5,6 +5,12 @@ import org.objectweb.asm.tree.*;
 public class MinecraftClientDebugTransformer implements PreClassTransformer {
     @Override
     public void transform(ClassNode classNode, String className) {
+        if ("net.minecraft.src.client.ThreadGetSkin".equals(className)) {
+            MethodNode methodNode = TransformerUtils.getMethod(classNode, "run");
+            if (methodNode.tryCatchBlocks == null) return;
+            hotfixThreadGetSkin(methodNode);
+            return;
+        }
         if (!"net.minecraft.client.Minecraft".equals(className)) return;
         MethodNode methodNode = TransformerUtils.getMethod(classNode, "run");
         if (methodNode.tryCatchBlocks == null) return;
@@ -37,6 +43,23 @@ public class MinecraftClientDebugTransformer implements PreClassTransformer {
                 return;
             }
         }
+    }
 
+    private void hotfixThreadGetSkin(MethodNode methodNode) {
+        for (TryCatchBlockNode tryCatchBlockNode : methodNode.tryCatchBlocks) {
+            if ("java/lang/Exception".equals(tryCatchBlockNode.type)) {
+                tryCatchBlockNode.type = "java/lang/Throwable";
+                AbstractInsnNode abstractInsnNode = tryCatchBlockNode.handler.getNext();
+                if (abstractInsnNode instanceof FrameNode) {
+                    FrameNode frameNode = (FrameNode) abstractInsnNode;
+                    if (frameNode.stack.size() == 1 &&
+                            "java/lang/Exception".equals(
+                                    frameNode.stack.get(0))) {
+                        frameNode.stack.set(0, "java/lang/Throwable");
+                    }
+                }
+                return;
+            }
+        }
     }
 }
