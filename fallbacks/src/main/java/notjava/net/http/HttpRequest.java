@@ -48,6 +48,8 @@ public abstract class HttpRequest {
 
     public abstract String method();
 
+    public abstract Optional<Duration> timeout();
+
     public abstract URI uri();
 
     public abstract HttpHeaders headers();

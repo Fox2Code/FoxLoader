@@ -11,8 +11,13 @@ import java.util.List;
 public class HttpRequestBuilderImpl implements HttpRequest.Builder {
     private final HashMap<String, List<String>> headers = new HashMap<>();
     private HttpRequest.BodyPublisher bodyPublisher;
-    private String method = "GET";
+    private Duration timeout;
+    private String method;
     private URI uri;
+
+    public HttpRequestBuilderImpl() {
+        this.method = "GET";
+    }
 
     @Override
     public HttpRequest.Builder uri(URI uri) {
@@ -30,6 +35,7 @@ public class HttpRequestBuilderImpl implements HttpRequest.Builder {
 
     @Override
     public HttpRequest.Builder timeout(Duration duration) {
+        this.timeout = duration;
         return this;
     }
 
@@ -71,6 +77,7 @@ public class HttpRequestBuilderImpl implements HttpRequest.Builder {
 
     @Override
     public HttpRequest build() {
-        return new HttpRequestImpl(this.method, uri, HttpHeaders.of(headers, (k, v) -> true), bodyPublisher);
+        return new HttpRequestImpl(this.method, this.timeout, this.uri,
+                HttpHeaders.of(this.headers, (k, v) -> true), this.bodyPublisher);
     }
 }

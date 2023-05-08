@@ -18,6 +18,8 @@ public interface HttpResponse<T> {
 
     interface ResponseInfo {
         int statusCode();
+
+        HttpHeaders headers();
     }
 
     @FunctionalInterface
