@@ -103,7 +103,7 @@ public class GameRegistryClient extends GameRegistry {
 
     @Override
     public String translateKeyFormat(String translationKey, String... args) {
-        return StringTranslate.getInstance().translateKeyFormat(translationKey, args);
+        return StringTranslate.getInstance().translateKeyFormat(translationKey, (Object[]) args);
     }
 
     @Override

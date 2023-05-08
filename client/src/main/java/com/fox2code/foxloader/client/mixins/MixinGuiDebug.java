@@ -1,6 +1,8 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.loader.ClientModLoader;
+import net.minecraft.src.client.gui.FontRenderer;
 import net.minecraft.src.client.gui.GuiDebug;
 import org.lwjgl.input.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,6 +11,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(GuiDebug.class)
 public class MixinGuiDebug {
+    @Redirect(method = "drawScreen", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/src/client/gui/GuiDebug;drawStringWithBg(Lnet/minecraft/src/client/gui/FontRenderer;Ljava/lang/String;III)V",
+            ordinal = 0))
+    private void drawVersionStringWith(GuiDebug instance, FontRenderer fr, String s, int x, int y, int fontcolor) {
+        instance.drawStringWithBg(fr, s + " (FoxLoader " + BuildConfig.FOXLOADER_VERSION + ")", x, y, fontcolor);
+    }
 
     @Redirect(method = "drawScreen", at = @At(value = "INVOKE",
             target = "Lorg/lwjgl/input/Keyboard;isKeyDown(I)Z"))

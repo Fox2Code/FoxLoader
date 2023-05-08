@@ -23,8 +23,6 @@
     "MixinMinecraft",
     "MixinNetClientHandler",
     "MixinPacket",
-    "MixinPacket103SetSlot",
-    "MixinPacket104WindowItems",
     "MixinPacket2Handshake",
     "MixinPlayerCommandHandler",
     "MixinPlayerController",
