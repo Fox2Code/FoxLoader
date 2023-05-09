@@ -27,15 +27,4 @@ public class MixinGameSettings {
     public void onOptionInit(CallbackInfo ci) {
         this.keyBindings = KeyBindingAPI.Internal.inject(this.keyBindings);
     }
-
-    // Temporary hotfix.
-    @Shadow public int limitFramerate;
-
-    @Inject(method = "getKeyBinding", at = @At("HEAD"))
-    public void hotfix_onGetKeyBinding(EnumOptions option, CallbackInfoReturnable<String> cir) {
-        if (option == EnumOptions.FRAMERATE_LIMIT && this.limitFramerate > 2 &&
-                !EnumOptions.FRAMERATE_LIMIT.getEnumFloat()) {
-            this.limitFramerate = 0;
-        }
-    }
 }

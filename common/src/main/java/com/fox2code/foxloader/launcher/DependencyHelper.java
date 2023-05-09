@@ -30,7 +30,7 @@ public class DependencyHelper {
             new Dependency("org.semver4j:semver4j:4.3.0", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.6",
+            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.7",
                     JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
     };
 

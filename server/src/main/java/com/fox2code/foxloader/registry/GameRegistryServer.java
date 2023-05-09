@@ -7,6 +7,7 @@ import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import com.fox2code.foxloader.server.registry.RegisteredBlockImpl;
 import net.minecraft.src.game.block.*;
 import net.minecraft.src.game.entity.player.EntityPlayerMP;
+import net.minecraft.src.game.item.EnumTools;
 import net.minecraft.src.game.item.Item;
 import net.minecraft.src.game.item.ItemBlock;
 import net.minecraft.src.game.item.ItemBlockSlab;
@@ -213,6 +214,12 @@ public class GameRegistryServer extends GameRegistry {
         }
         if (blockBuilder.abilityToCatchFire != 0) {
             abilityToCatchFire[blockId] = blockBuilder.abilityToCatchFire;
+        }
+        byte effectiveToolBit = blockBuilder.effectiveToolBit;
+        for (EnumTools enumTool : EnumTools.values()) {
+            if ((effectiveToolBit & (1 << enumTool.ordinal())) != 0) {
+                block.setEffectiveTool(enumTool);
+            }
         }
         block.setBlockName(blockBuilder.blockName == null ?
                 name.replace(':', '.') : blockBuilder.blockName);

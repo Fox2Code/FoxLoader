@@ -234,6 +234,9 @@ class GradlePlugin implements Plugin<Project> {
             runClient.mainClass.set("com.fox2code.foxloader.launcher.ClientMain")
             runClient.systemProperty("foxloader.inject-mod", mod.getAbsolutePath())
             runClient.systemProperty("foxloader.dev-mode", "true")
+            if (config.localTesting) {
+                runClient.systemProperty("foxloader.ignore-cache", "true")
+            }
             runClient.workingDir = runDir
             runClient.args(username, "-", "--gameDir", runDir.getPath())
             JavaExec runServer = project.getTasks().getByName("runServer") as JavaExec
@@ -241,6 +244,9 @@ class GradlePlugin implements Plugin<Project> {
             runServer.mainClass.set("com.fox2code.foxloader.launcher.ServerMain")
             runServer.systemProperty("foxloader.inject-mod", mod.getAbsolutePath())
             runServer.systemProperty("foxloader.dev-mode", "true")
+            if (config.localTesting) {
+                runServer.systemProperty("foxloader.ignore-cache", "true")
+            }
             runServer.workingDir = runDir
             if (config.addJitPackCIPublish && project.rootProject == project &&
                     config.modVersion != null && !config.modVersion.isEmpty()) {

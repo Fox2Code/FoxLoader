@@ -31,6 +31,7 @@ public final class BlockBuilder {
     public int chanceToEncourageFire;
     public int abilityToCatchFire;
     public int tooltipColor;
+    public byte effectiveToolBit;
 
     public BlockBuilder() {}
 
@@ -115,5 +116,15 @@ public final class BlockBuilder {
 
     public BlockBuilder setTooltipColor(Color color) {
         return this.setTooltipColor(color.getRGB());
+    }
+
+    public void setEffectiveTool(RegisteredToolType registeredToolType) {
+        this.effectiveToolBit |= (byte)(this.effectiveToolBit | 1 << registeredToolType.ordinal());
+    }
+
+    public void setEffectiveTools(RegisteredToolType... registeredToolTypes) {
+        for (RegisteredToolType registeredToolType : registeredToolTypes) {
+            this.setEffectiveTool(registeredToolType);
+        }
     }
 }

@@ -21,6 +21,10 @@ public class DevelopmentModeTransformer implements PreClassTransformer {
                 "com.fox2code.foxloader.registry.RegisteredItemStack");
         interfacesFromMixin.put("net.minecraft.src.game.entity.Entity",
                 "com.fox2code.foxloader.registry.RegisteredEntity");
+        interfacesFromMixin.put("net.minecraft.src.game.entity.EntityLiving",
+                "com.fox2code.foxloader.registry.RegisteredEntityLiving");
+        interfacesFromMixin.put("net.minecraft.src.game.entity.other.EntityItem",
+                "com.fox2code.foxloader.registry.RegisteredEntityItem");
         interfacesFromMixin.put("net.minecraft.src.game.block.tileentity.TileEntity",
                 "com.fox2code.foxloader.registry.RegisteredTileEntity");
         interfacesFromMixin.put("net.minecraft.src.client.player.EntityPlayerSP",

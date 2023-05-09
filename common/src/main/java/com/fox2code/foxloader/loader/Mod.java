@@ -5,6 +5,8 @@ import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.*;
 
+import java.io.File;
+import java.io.IOError;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -28,6 +30,17 @@ public abstract class Mod implements LifecycleListener {
      */
     public final Object getConfigObject() {
         return this.getModContainer().configObject;
+    }
+
+    /**
+     * @return Object to use for the config screen.
+     */
+    public final Object getConfigFolder() {
+        File configFolder = this.getModContainer().configFolder;
+        if (!configFolder.isDirectory() && !configFolder.mkdirs()) {
+            throw new IOError(new IOException("Can't create " + configFolder.getPath()));
+        }
+        return configFolder;
     }
 
     /**

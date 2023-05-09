@@ -8,10 +8,7 @@ import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.game.block.*;
-import net.minecraft.src.game.item.Item;
-import net.minecraft.src.game.item.ItemBlock;
-import net.minecraft.src.game.item.ItemBlockSlab;
-import net.minecraft.src.game.item.ItemStack;
+import net.minecraft.src.game.item.*;
 import net.minecraft.src.game.recipe.*;
 
 import java.lang.reflect.Constructor;
@@ -231,6 +228,12 @@ public class GameRegistryClient extends GameRegistry {
         }
         if (blockBuilder.abilityToCatchFire != 0) {
             abilityToCatchFire[blockId] = blockBuilder.abilityToCatchFire;
+        }
+        byte effectiveToolBit = blockBuilder.effectiveToolBit;
+        for (EnumTools enumTool : EnumTools.values()) {
+            if ((effectiveToolBit & (1 << enumTool.ordinal())) != 0) {
+                block.setEffectiveTool(enumTool);
+            }
         }
         if (blockBuilder.tooltipColor != 0) {
             block.setTooltipColor(blockBuilder.tooltipColor);

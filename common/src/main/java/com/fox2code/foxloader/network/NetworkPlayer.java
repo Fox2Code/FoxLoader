@@ -1,9 +1,9 @@
 package com.fox2code.foxloader.network;
 
 import com.fox2code.foxloader.loader.ModContainer;
-import com.fox2code.foxloader.registry.RegisteredEntity;
+import com.fox2code.foxloader.registry.RegisteredEntityLiving;
 
-public interface NetworkPlayer extends RegisteredEntity {
+public interface NetworkPlayer extends RegisteredEntityLiving {
     /**
      * Just empty byte array to reduce allocations.
      */

@@ -11,6 +11,7 @@ import java.security.CodeSource;
 import java.util.*;
 
 public final class FoxClassLoader extends URLClassLoader {
+    private static final String CLASS_TO_DUMP = System.getProperty("foxloader.dump-class");
     private static final String MIXIN_CONFIG = "org.spongepowered.asm.mixin.transformer.MixinConfig";
     private static final String MIXIN_PRE_PROCESSOR = "org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard";
     private static final URL[] NO_URLs = new URL[0];
@@ -165,6 +166,9 @@ public final class FoxClassLoader extends URLClassLoader {
             if (urlConnection instanceof JarURLConnection) {
                 url = ((JarURLConnection) urlConnection).getJarFileURL();
             }
+            if (name.equals(CLASS_TO_DUMP)) {
+                Files.write(new File(FoxLauncher.gameDir, "class_dump.class").toPath(), bytes);
+            }
             clas = defineClass(name,bytes,0,bytes.length, url == null ?
                     null : new CodeSource(url, new CodeSigner[]{}));
             return clas;
@@ -246,12 +250,21 @@ public final class FoxClassLoader extends URLClassLoader {
     public void setMinecraftURL(URL url) {
         if (allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
-        super.addURL(url);
+        minecraftExclusiveSource = new URLClassLoader(makeURLClassPathForSource(url), null);
+    }
+
+    public void setPatchedMinecraftURL(URL url) {
+        if (allowLoadingGame)
+            throw new IllegalStateException("Minecraft jar already loaded!");
+        minecraftExclusiveSource = new URLClassLoader(new URL[]{url}, null);
+    }
+
+    public URL[] makeURLClassPathForSource(URL source) {
         if (coreMods != null) {
-            ArrayList<URL> urls = new ArrayList<>(coreMods); urls.add(url);
-            minecraftExclusiveSource = new URLClassLoader(urls.toArray(NO_URLs), null);
+            ArrayList<URL> urls = new ArrayList<>(coreMods); urls.add(source);
+            return urls.toArray(NO_URLs);
         } else {
-            minecraftExclusiveSource = new URLClassLoader(new URL[]{url}, null);
+            return new URL[]{source};
         }
     }
 
@@ -259,17 +272,23 @@ public final class FoxClassLoader extends URLClassLoader {
         if (allowLoadingGame) return;
         if (coreMods != null) {
             try {
-                URLConnection urlConnection = Objects.requireNonNull(
-                        this.getResource("font.txt")).openConnection();
-                if (urlConnection instanceof JarURLConnection) {
-                    setMinecraftURL(((JarURLConnection) urlConnection).getJarFileURL());
-                    coreMods = null;
-                    allowLoadingGame = true;
-                } else throw new RuntimeException("Invalid reindev.jar source...");
+                setMinecraftURL(getMinecraftSource());
+                coreMods = null;
+                allowLoadingGame = true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         } else allowLoadingGame = true;
+    }
+
+    public URL getMinecraftSource() throws IOException {
+        URLConnection urlConnection = Objects.requireNonNull(
+                this.getResource("font.txt")).openConnection();
+        if (urlConnection instanceof JarURLConnection) {
+          return ((JarURLConnection) urlConnection).getJarFileURL();
+        } else if (earlyMinecraftURL != null) {
+            return earlyMinecraftURL;
+        } else throw new IOException("Invalid reindev.jar source...");
     }
 
     public boolean isAllowLoadingGame() {

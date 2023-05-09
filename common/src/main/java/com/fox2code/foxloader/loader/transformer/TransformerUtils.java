@@ -1,7 +1,9 @@
 package com.fox2code.foxloader.loader.transformer;
 
 import com.fox2code.foxloader.launcher.ClassTransformer;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.Textifier;
@@ -61,19 +63,70 @@ public class TransformerUtils {
         return methodNodeCopy;
     }
 
-    public static MethodNode getMethod(ClassNode classNode, String methodName) {
-        return getMethod(classNode, methodName, null);
+    @NotNull
+    public static InsnList copyCodeUntil(final AbstractInsnNode start, int endOpCode) {
+        AbstractInsnNode abstractInsnNode = start;
+        Map<LabelNode, LabelNode> map = new IdentityHashMap<LabelNode, LabelNode>() {
+            @Override
+            public LabelNode get(Object key) {
+                LabelNode labelNode = super.get(key);
+                return labelNode == null ? (LabelNode) key : labelNode;
+            }
+        };
+        while (abstractInsnNode != null &&
+                abstractInsnNode.getOpcode() != endOpCode) {
+            if (abstractInsnNode instanceof LabelNode) {
+                map.put((LabelNode) abstractInsnNode, new LabelNode());
+            }
+            abstractInsnNode = abstractInsnNode.getNext();
+        }
+        if (abstractInsnNode == null) {
+            throw new IllegalArgumentException("Opcodes " + endOpCode + " isn't present after the given instruction");
+        }
+        InsnList copy = new InsnList();
+        abstractInsnNode = start;
+        while (abstractInsnNode.getOpcode() != endOpCode) {
+            copy.add(abstractInsnNode.clone(map));
+            abstractInsnNode = abstractInsnNode.getNext();
+        }
+        copy.add(abstractInsnNode.clone(map));
+        return copy;
     }
 
+    @NotNull
+    public static MethodNode getMethod(ClassNode classNode, String methodName) {
+        return findMethod0(classNode, methodName, null, true);
+    }
+
+    @NotNull
     public static MethodNode getMethod(ClassNode classNode, String methodName, String methodDesc) {
+        return findMethod0(classNode, methodName, methodDesc, true);
+    }
+
+    @Nullable
+    public static MethodNode findMethod(ClassNode classNode, String methodName) {
+        return findMethod0(classNode, methodName, null, false);
+    }
+
+    @Nullable
+    public static MethodNode findMethod(ClassNode classNode, String methodName, String methodDesc) {
+        return findMethod0(classNode, methodName, methodDesc, false);
+    }
+
+    @Contract("_, _, _, true -> !null")
+    private static MethodNode findMethod0(ClassNode classNode, String methodName, String methodDesc, boolean require) {
         for (MethodNode methodNode:classNode.methods) {
             if (methodNode.name.equals(methodName)
                     && (methodDesc == null || methodNode.desc.equals(methodDesc))) {
                 return methodNode;
             }
         }
-        throw new NoSuchElementException(classNode.name + "." +
-                methodName + (methodDesc == null ? "()" : methodDesc));
+        if (require) {
+            throw new NoSuchElementException(classNode.name + "." +
+                    methodName + (methodDesc == null ? "()" : methodDesc));
+        } else {
+            return null;
+        }
     }
 
     public static FieldNode getField(ClassNode classNode,String fieldName) {

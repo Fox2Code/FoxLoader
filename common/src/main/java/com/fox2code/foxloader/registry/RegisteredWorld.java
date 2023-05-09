@@ -22,7 +22,8 @@ public interface RegisteredWorld {
      * @throws IllegalStateException if the game doesn't have control over the world
      * @see #hasRegisteredControl()
      */
-    default void setRegisteredBlockAndMetadataWithNotify(int xCoord, int yCoord, int zCoord, int block, int metadata) {
+    default void setRegisteredBlockAndMetadataWithNotify(
+            int xCoord, int yCoord, int zCoord, int block, int metadata) {
         throw new RuntimeException();
     }
 
@@ -30,7 +31,21 @@ public interface RegisteredWorld {
      * Same as {@link #setRegisteredBlockAndMetadataWithNotify(int, int, int, int, int)}
      * but won't throw an exception if the game has no control over the world
      */
-    default void forceSetRegisteredBlockAndMetadataWithNotify(int xCoord, int yCoord, int zCoord, int block, int metadata) {
+    default void forceSetRegisteredBlockAndMetadataWithNotify(
+            int xCoord, int yCoord, int zCoord, int block, int metadata) {
+        throw new RuntimeException();
+    }
+
+    /**
+     *
+     * @param x position
+     * @param y position
+     * @param z position
+     * @param registeredItemStack item of the RegisteredEntityItem
+     * @return the spawned RegisteredEntityItem or null if spawning failed.
+     */
+    default RegisteredEntityItem spawnRegisteredEntityItem(
+            double x, double y, double z, RegisteredItemStack registeredItemStack) {
         throw new RuntimeException();
     }
 

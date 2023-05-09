@@ -20,6 +20,7 @@ public final class ModContainer {
     // tmp is used to make getModContainer work in constructor.
     static ModContainer tmp;
     public final File file;
+    public final File configFolder;
     public final String id;
     public final String name;
     public final String version;
@@ -49,6 +50,7 @@ public final class ModContainer {
     ModContainer(File file, String id, String name, String version,
                  Semver semver, String description, String jitpack, boolean unofficial, boolean injected) {
         this.file = Objects.requireNonNull(file);
+        this.configFolder = new File(ModLoader.config, id);
         this.id = id;
         this.name = name;
         this.version = version;

@@ -11,6 +11,8 @@
     "MixinContainerCreative",
     "MixinEntity",
     "MixinEntityClientPlayerMP",
+    "MixinEntityItem",
+    "MixinEntityLiving",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
     "MixinGameSettings",

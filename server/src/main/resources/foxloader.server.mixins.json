@@ -9,6 +9,8 @@
     "MixinBlockFire",
     "MixinChunkBlockMap",
     "MixinEntity",
+    "MixinEntityItem",
+    "MixinEntityLiving",
     "MixinEntityPlayerMP",
     "MixinItem",
     "MixinItemStack",
