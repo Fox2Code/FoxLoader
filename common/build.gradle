@@ -9,6 +9,7 @@ dependencies {
     api 'org.semver4j:semver4j:4.3.0'
     api 'org.spongepowered:mixin:0.8.5'
     api 'com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.7'
+    api 'org.luaj:luaj-jse:3.0.1'
 
     // Mixin dependencies
     api 'com.google.code.gson:gson:2.2.4'

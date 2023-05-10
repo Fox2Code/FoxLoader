@@ -8,10 +8,17 @@ import java.util.Map;
 
 public class CommandCompat {
     private static final HashMap<String, CommandCompat> commandsMap = new HashMap<>();
+    private static final HashMap<String, CommandCompat> clientCommandsMap = new HashMap<>();
     public static final Map<String, CommandCompat> commands = Collections.unmodifiableMap(commandsMap);
+    public static final Map<String, CommandCompat> clientCommands = Collections.unmodifiableMap(clientCommandsMap);
+    public static final String[] NO_ALIASES = new String[0];
 
     public static void registerCommand(CommandCompat commandCompat) {
         commandsMap.put(commandCompat.name, commandCompat);
+    }
+
+    public static void registerClientCommand(CommandCompat commandCompat) {
+        clientCommandsMap.put(commandCompat.name, commandCompat);
     }
 
     private final String name;
@@ -20,11 +27,11 @@ public class CommandCompat {
     private final String[] aliases;
 
     public CommandCompat(String name) {
-        this(name, true, false, new String[0]);
+        this(name, true, false, NO_ALIASES);
     }
 
     public CommandCompat(String name, boolean opOnly) {
-        this(name, opOnly, false, new String[0]);
+        this(name, opOnly, false, NO_ALIASES);
     }
 
     public CommandCompat(String name, boolean opOnly, boolean isHidden, String[] aliases) {

@@ -9,9 +9,15 @@ import java.util.UUID;
 
 public class FoxLoaderSparkCommandSender extends AbstractCommandSender<NetworkPlayer> {
     private static final LegacyComponentSerializer LEGACY_COMPONENT_SERIALIZER = LegacyComponentSerializer.legacy('§');
+    private final boolean absolute;
 
     public FoxLoaderSparkCommandSender(NetworkPlayer delegate) {
+        this(delegate, false);
+    }
+
+    public FoxLoaderSparkCommandSender(NetworkPlayer delegate, boolean absolute) {
         super(delegate);
+        this.absolute = absolute;
     }
 
     @Override
@@ -32,6 +38,6 @@ public class FoxLoaderSparkCommandSender extends AbstractCommandSender<NetworkPl
 
     @Override
     public boolean hasPermission(String s) {
-        return this.delegate.isOperator();
+        return this.absolute || this.delegate.isOperator();
     }
 }

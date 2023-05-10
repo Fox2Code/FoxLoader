@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.loader.lua.LuaVMHelper;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.transformer.PreClassTransformer;
 import com.fox2code.foxloader.network.NetworkPlayer;
@@ -8,6 +9,7 @@ import com.fox2code.foxloader.registry.RegisteredItemStack;
 import org.semver4j.Semver;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -145,6 +147,13 @@ public final class ModContainer {
                 logger.log(Level.WARNING, "Your mod don't have a /assets/" + id + "/lang/en_US.lang");
             }
         } catch (Throwable ignored) {}
+        if (file.getName().endsWith(".lua") && this.commonMod == null) {
+            try {
+                this.commonMod = LuaVMHelper.loadMod(this);
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Unable to load " + file.getName(), e);
+            }
+        }
     }
 
     void loadLanguageTo(String lang, Properties target) {

@@ -13,6 +13,6 @@ public class FoxLoaderClientSparkPlugin extends FoxLoaderSparkPlugin {
 
     @Override
     public Stream<? extends CommandSender> getCommandSenders() {
-        return Stream.of(new FoxLoaderSparkCommandSender(ClientMod.getLocalNetworkPlayer()));
+        return Stream.of(new FoxLoaderSparkCommandSender(ClientMod.getLocalNetworkPlayer(), true));
     }
 }

@@ -11,10 +11,17 @@ public class FoxLoaderSparkTickHook extends AbstractTickHook {
 
     @Override
     public void start() {
-
+        this.foxLoaderSparkPlugin.tickHook = this;
     }
 
     public void close() {
+        if (this.foxLoaderSparkPlugin.tickHook == this) {
+            this.foxLoaderSparkPlugin.tickHook = null;
+        }
+    }
 
+    @Override
+    protected void onTick() {
+        super.onTick();
     }
 }

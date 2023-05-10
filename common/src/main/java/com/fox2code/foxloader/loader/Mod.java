@@ -35,7 +35,7 @@ public abstract class Mod implements LifecycleListener {
     /**
      * @return Object to use for the config screen.
      */
-    public final Object getConfigFolder() {
+    public final File getConfigFolder() {
         File configFolder = this.getModContainer().configFolder;
         if (!configFolder.isDirectory() && !configFolder.mkdirs()) {
             throw new IOError(new IOException("Can't create " + configFolder.getPath()));

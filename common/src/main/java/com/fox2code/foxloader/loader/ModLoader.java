@@ -4,6 +4,7 @@ import com.fox2code.foxloader.commands.WorldReplace;
 import com.fox2code.foxloader.commands.WorldSet;
 import com.fox2code.foxloader.launcher.*;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
+import com.fox2code.foxloader.loader.lua.LuaVMHelper;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.network.NetworkPlayer;
@@ -14,13 +15,15 @@ import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.semver4j.Semver;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ModLoader extends Mod {
@@ -102,16 +105,24 @@ public class ModLoader extends Mod {
             }
             for (File mod : Objects.requireNonNull(mods.listFiles(
                     (dir, name) -> name.endsWith(".jar")))) {
-                loadModContainerFrom(mod, false);
+                loadModContainerFromJar(mod, false);
+            }
+            for (File mod : Objects.requireNonNull(mods.listFiles(
+                    (dir, name) -> name.endsWith(".lua")))) {
+                loadModContainerFromLua(mod);
             }
             for (File mod : Objects.requireNonNull(modsVersioned.listFiles(
                     (dir, name) -> name.endsWith(".jar")))) {
-                loadModContainerFrom(mod, false);
+                loadModContainerFromJar(mod, false);
+            }
+            for (File mod : Objects.requireNonNull(modsVersioned.listFiles(
+                    (dir, name) -> name.endsWith(".lua")))) {
+                loadModContainerFromLua(mod);
             }
         }
         // Inject mod is used by the gradle plugin to load dev mod
         if (DEV_MODE && INJECT_MOD != null && !INJECT_MOD.isEmpty()) {
-            loadModContainerFrom(new File(INJECT_MOD).getAbsoluteFile(), true);
+            loadModContainerFromJar(new File(INJECT_MOD).getAbsoluteFile(), true);
         }
         if (!modContainers.containsKey("spark") && !disableSpark &&
                 DependencyHelper.loadDependencySafe(DependencyHelper.sparkDependency)) {
@@ -168,7 +179,7 @@ public class ModLoader extends Mod {
         CommandCompat.registerCommand(new WorldReplace());
     }
 
-    private static void loadModContainerFrom(File file, boolean injected) {
+    private static void loadModContainerFromJar(File file, boolean injected) {
         Manifest manifest;
         try (JarFile jarFile = new JarFile(file)) {
             manifest = jarFile.getManifest();
@@ -242,6 +253,83 @@ public class ModLoader extends Mod {
         } catch (MalformedURLException e) {
             throw new Error("What!", e);
         }
+    }
+
+    private static final String MOD_ID_LUA_PREFIX = "-- modId: ";
+    private static final String MOD_NAME_LUA_PREFIX = "-- modName: ";
+    private static final String MOD_VERSION_LUA_PREFIX = "-- version: ";
+    private static final String MOD_DESC_LUA_PREFIX = "-- description: ";
+    private static final String MOD_UNOFFICIAL_LUA_PREFIX = "-- unofficial: ";
+
+    private static void loadModContainerFromLua(File file) {
+        String id = null;
+        String name = null;
+        String version = null;
+        String desc = null;
+        boolean unofficial = false;
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                Files.newInputStream(file.toPath()), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null
+                    && line.startsWith("-- ")) {
+                if (line.startsWith(MOD_ID_LUA_PREFIX)) {
+                    id = line.substring(MOD_ID_LUA_PREFIX.length());
+                } else if (line.startsWith(MOD_NAME_LUA_PREFIX)) {
+                    name = line.substring(MOD_NAME_LUA_PREFIX.length());
+                } else if (line.startsWith(MOD_VERSION_LUA_PREFIX)) {
+                    version = line.substring(MOD_VERSION_LUA_PREFIX.length());
+                } else if (line.startsWith(MOD_DESC_LUA_PREFIX)) {
+                    desc = line.substring(MOD_DESC_LUA_PREFIX.length());
+                } else if (line.startsWith(MOD_UNOFFICIAL_LUA_PREFIX)) {
+                    unofficial = Boolean.parseBoolean(line.substring(
+                            MOD_UNOFFICIAL_LUA_PREFIX.length()));
+                }
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            return;
+        }
+
+        if (id == null || id.isEmpty()) {
+            foxLoader.logger.warning("Unable to load " + file.getName() +
+                    " because it doesn't have a mod-id (Is it a core mod?)");
+            return;
+        }
+        if (FOX_LOADER_MOD_ID.equals(id) || "minecraft".equals(id) || "reindev".equals(id) || "null".equals(id)) {
+            foxLoader.logger.warning("Unable to load " + file.getName() +
+                    " because it used the reserved mod id: " + id);
+            return;
+        }
+        if (name == null || name.isEmpty()) {
+            name = id.substring(0, 1).toLowerCase(Locale.ROOT) + id.substring(1);
+        }
+        if (version == null || (version = version.trim()).isEmpty()) {
+            version = "1.0";
+        }
+        Semver semver = "1.0".equals(version) || "1.0.0".equals(version) ?
+                INITIAL_SEMVER : Semver.parse(version);
+        if (semver == null) {
+            int verExt = version.indexOf('-');
+            if (verExt != -1) {
+                version = version.substring(0, verExt);
+            }
+            semver = Semver.coerce(version);
+        }
+        if (semver == null) {
+            semver = INITIAL_SEMVER;
+        }
+
+        if (desc == null || desc.isEmpty()) {
+            desc = "...";
+        }
+        ModContainer modContainer = modContainers.get(id);
+        if (modContainer != null) {
+            foxLoader.logger.warning("Unable to load " + file.getName() + " because " +
+                    modContainer.file.getName() + " already uses the same mod id: " + id);
+            return;
+        }
+        modContainer = new ModContainer(file, id, name, version, semver, desc, null, unofficial, false);
+        modContainers.put(id, modContainer);
     }
 
     public static boolean checkSemVerMismatch(String value, String accept) {

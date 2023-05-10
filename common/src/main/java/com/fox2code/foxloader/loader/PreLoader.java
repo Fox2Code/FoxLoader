@@ -191,6 +191,7 @@ public class PreLoader {
             registerPrePatch(new MinecraftClientDebugTransformer());
             registerPrePatch(new FrustrumHelperTransformer());
             registerPrePatch(new NetworkMappingTransformer());
+            registerPrePatch(new OptimizerTessellatorTransformer());
         }
     }
 

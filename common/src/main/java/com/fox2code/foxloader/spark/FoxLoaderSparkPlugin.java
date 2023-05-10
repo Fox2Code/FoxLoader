@@ -16,6 +16,7 @@ import me.lucko.spark.common.util.SparkThreadFactory;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -44,16 +45,25 @@ public abstract class FoxLoaderSparkPlugin extends Mod implements SparkPlugin {
         CommandCompat.registerCommand(new CommandCompat("spark") {
             @Override
             public void onExecute(String[] args, NetworkPlayer commandExecutor) {
-                runCommand(args, commandExecutor);
+                runCommand(args, commandExecutor, false);
+            }
+        });
+        CommandCompat.registerClientCommand(new CommandCompat(
+                "sparkclient", false, false, new String[]{"sparkc"}) {
+            @Override
+            public void onExecute(String[] args, NetworkPlayer commandExecutor) {
+                runCommand(args, commandExecutor, true);
             }
         });
         // The "/tps" is technically not a spark feature but a FoxLoader one!
         // But since the command relies on Spark API, might as well put it here
         CommandCompat.registerCommand(new CommandCompat("tps", false) {
+            private final DecimalFormat formatter = new DecimalFormat("#0.00");
+
             @Override
             public void onExecute(String[] args, NetworkPlayer commandExecutor) {
                 final TickStatistics stats = platform.getTickStatistics();
-                StringBuilder stringBuilder = new StringBuilder("TPS from last 1m, 5m, 15m: ");
+                StringBuilder stringBuilder = new StringBuilder(ChatColors.RESET + "TPS from last 1m, 5m, 15m: ");
                 formatTps(stringBuilder, stats.tps1Min());
                 stringBuilder.append(", ");
                 formatTps(stringBuilder, stats.tps5Min());
@@ -63,9 +73,9 @@ public abstract class FoxLoaderSparkPlugin extends Mod implements SparkPlugin {
             }
 
             private void formatTps(StringBuilder stringBuilder, double tps) {
-                stringBuilder.append(( ( tps > 20.0 ) ? ChatColors.RAINBOW :
+                stringBuilder.append(( ( tps > 20.001 ) ? ChatColors.AQUA :
                         ( tps > 18.0 ) ? ChatColors.GREEN : ( tps > 16.0 ) ? ChatColors.YELLOW : ChatColors.RED));
-                stringBuilder.append(tps);
+                stringBuilder.append(formatter.format(tps));
                 stringBuilder.append(ChatColors.RESET);
             }
         });
@@ -73,12 +83,20 @@ public abstract class FoxLoaderSparkPlugin extends Mod implements SparkPlugin {
 
     @Override
     public void onServerStart(NetworkPlayer.ConnectionType connectionType) {
-        if (connectionType.isServer) this.enable();
+        this.enable();
     }
 
     @Override
     public void onServerStop(NetworkPlayer.ConnectionType connectionType) {
-        if (connectionType.isServer) this.disable();
+        this.disable();
+    }
+
+    @Override
+    public void onTick() {
+        FoxLoaderSparkTickHook tickHook = this.tickHook;
+        if (tickHook != null) {
+            tickHook.onTick();
+        }
     }
 
     public void enable() {
@@ -93,9 +111,9 @@ public abstract class FoxLoaderSparkPlugin extends Mod implements SparkPlugin {
         this.tickHook = null;
     }
 
-    public void runCommand(String[] args, NetworkPlayer commandExecutor) {
+    public void runCommand(String[] args, NetworkPlayer commandExecutor, boolean absolute) {
         this.platform.executeCommand(
-                new FoxLoaderSparkCommandSender(commandExecutor),
+                new FoxLoaderSparkCommandSender(commandExecutor, absolute),
                 Arrays.copyOfRange(args, 1, args.length));
     }
 

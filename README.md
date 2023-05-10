@@ -14,6 +14,8 @@ For mixins usage check here: https://github.com/2xsaiko/mixin-cheatsheet
 
 For spark usage check here: https://spark.lucko.me/docs/Command-Usage
 
+For example mod check here: https://github.com/Fox2Code/FoxLoaderExampleMod
+
 ## Project structure
 - `betacraft` -> BetaCraft launch method to run fox loader
 - `client` -> client specific code
@@ -38,3 +40,27 @@ As you see the game is allowed to be loaded very late into the boot process, eve
 This ensures that all patches introduced by mods are applied, 
 but also prevent code loaded in MixinPlugins to load Minecraft classes,
 please keep that in mind when messing with mixins.
+
+## Lua mods
+
+If you are too lazy to learn java you can just use put `.lua` files in your `mods` folder
+
+```lua
+-- modId: lua_example
+-- modName: Lua Example Mod
+-- version: 1.0.0
+-- description: Just add /discord to the game.
+--
+
+print("Hello from lua")
+
+gameRegistry.registerCommand(function(args, player)
+    player:displayChatMessage(chatColors.AQUA .. "https://discord.gg/38Vfes6NpR")
+end, "discord", false) -- false is needed cause it default to "opOnly = true"
+
+mod.onNetworkPlayerJoined = function(player)
+    player:displayChatMessage(chatColors.AQUA .. "Welcome back to server name!")
+end
+```
+
+Note: You can use the [`luajava`](https://github.com/luaj/luaj#user-content-luajava) extension from [LuaJ](https://github.com/luaj/luaj)

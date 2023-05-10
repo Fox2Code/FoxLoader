@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.registry;
 
 import com.fox2code.foxloader.loader.ModLoader;
+import com.fox2code.foxloader.loader.lua.LuaInterop;
 
 import java.util.*;
 
@@ -53,6 +54,7 @@ public abstract class GameRegistry {
     /**
      * @return a registered modded item with the corresponding registry name
      */
+    @LuaInterop
     public RegisteredItem getRegisteredItem(String name) {
         RegistryEntry registryEntry = registryEntries.get(name);
         return registryEntry == null ? null :
@@ -62,6 +64,7 @@ public abstract class GameRegistry {
     /**
      * @return a registered modded item with the corresponding registry name
      */
+    @LuaInterop
     public RegisteredBlock getRegisteredBlock(String name) {
         RegistryEntry registryEntry = registryEntries.get(name);
         return registryEntry == null ? null :
@@ -79,22 +82,26 @@ public abstract class GameRegistry {
     /**
      * @return maximum expected block id
      */
+    @LuaInterop
     public abstract int getMaxBlockId();
 
     /**
      * @return a registered item with the corresponding id
      */
+    @LuaInterop
     public abstract RegisteredItem getRegisteredItem(int id);
 
     /**
      * @return a registered block with the corresponding id
      */
+    @LuaInterop
     public abstract RegisteredBlock getRegisteredBlock(int id);
 
     /**
      * @param translationKey translation key to use
      * @return translated component
      */
+    @LuaInterop
     public abstract String translateKey(String translationKey);
 
     /**
@@ -142,14 +149,17 @@ public abstract class GameRegistry {
 
     public abstract void addFreezerRecipe(RegisteredItem input, RegisteredItemStack output);
 
+    @LuaInterop
     public boolean isFrozen() {
         return ModLoader.areAllModsLoaded();
     }
 
+    @LuaInterop
     public static int convertBlockIdToItemId(int blockID) {
         return blockID > 255 ? blockID + 744 : blockID;
     }
 
+    @LuaInterop
     public static int convertItemIdToBlockId(int itemId) {
         return itemId > MAXIMUM_TRANSLATED_BLOCK_ID ? -1 : // -1 means no block equivalent.
                 itemId > 255 ? itemId < 1000 ? -1 : itemId - 744 : itemId;
