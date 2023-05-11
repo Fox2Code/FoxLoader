@@ -8,8 +8,11 @@ import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.other.EntityItem;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.level.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.List;
 
@@ -79,5 +82,11 @@ public abstract class MixinWorld implements RegisteredWorld {
     @SuppressWarnings("unchecked")
     public List<? extends NetworkPlayer> getRegisteredNetworkPlayers() {
         return (List<? extends NetworkPlayer>) (Object) this.playerEntities;
+    }
+
+    @Redirect(method = "getLoadedBlockIdOrM1", at = @At(value = "INVOKE", target =
+            "Lnet/minecraft/src/game/level/World;getLoadedChunkFromBlockCoords(III)Lnet/minecraft/src/game/level/chunk/Chunk;"))
+    public Chunk hotfix_getLoadedBlockIdOrM1(World instance, int x, int y, int z) {
+        return instance.getLoadedChunkFromChunkCoords(x, y, z);
     }
 }

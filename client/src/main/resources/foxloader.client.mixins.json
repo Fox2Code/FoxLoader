@@ -9,6 +9,7 @@
     "MixinChunk",
     "MixinChunkBlockMap",
     "MixinCommandHelperGUI",
+    "MixinContainer",
     "MixinContainerCreative",
     "MixinEntity",
     "MixinEntityClientPlayerMP",
