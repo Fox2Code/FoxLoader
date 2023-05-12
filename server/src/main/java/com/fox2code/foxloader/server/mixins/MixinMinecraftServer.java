@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftServer.class)
 public class MixinMinecraftServer {
-    @Shadow public boolean onlineMode;
     @Shadow private static MinecraftServer theMinecraft;
     @Unique private boolean hasServerStarted;
 
@@ -32,7 +31,6 @@ public class MixinMinecraftServer {
 
     @Inject(method = "startServer", at = @At("RETURN"))
     public void onStartServer(CallbackInfoReturnable<Boolean> cir) {
-        this.onlineMode = false;
         if (cir.getReturnValue() == Boolean.TRUE) {
             this.hasServerStarted = true;
             ModLoader.Internal.notifyOnServerStart(
