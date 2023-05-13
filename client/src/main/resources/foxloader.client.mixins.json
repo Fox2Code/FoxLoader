@@ -18,8 +18,6 @@
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
     "MixinGameSettings",
-    "MixinGuiChat",
-    "MixinGuiContainer",
     "MixinGuiDebug",
     "MixinGuiMainMenu",
     "MixinGuiTextField",

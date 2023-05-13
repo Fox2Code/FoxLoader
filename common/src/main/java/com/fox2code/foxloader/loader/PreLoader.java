@@ -186,12 +186,10 @@ public class PreLoader {
         }
         registerPrePatch(new VarNameTransformer());
         registerPrePatch(new RegistryTransformer());
-        registerPrePatch(new OptimizerChunkCacheTransformer());
         if (client) {
             registerPrePatch(new MinecraftClientDebugTransformer());
             registerPrePatch(new FrustrumHelperTransformer());
             registerPrePatch(new NetworkMappingTransformer());
-            registerPrePatch(new OptimizerTessellatorTransformer());
         }
     }
 

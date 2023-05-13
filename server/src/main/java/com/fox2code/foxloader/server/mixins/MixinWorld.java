@@ -79,10 +79,4 @@ public abstract class MixinWorld implements RegisteredWorld {
     public List<? extends NetworkPlayer> getRegisteredNetworkPlayers() {
         return (List<? extends NetworkPlayer>) (Object) this.playerEntities;
     }
-
-    @Redirect(method = "getLoadedBlockIdOrM1", at = @At(value = "INVOKE", target =
-            "Lnet/minecraft/src/game/level/World;getLoadedChunkFromBlockCoords(III)Lnet/minecraft/src/game/level/chunk/Chunk;"))
-    public Chunk hotfix_getLoadedBlockIdOrM1(World instance, int x, int y, int z) {
-        return instance.getLoadedChunkFromChunkCoords(x, y, z);
-    }
 }

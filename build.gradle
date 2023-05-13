@@ -47,6 +47,9 @@ subprojects {
     rootProject.tasks.publishToMavenLocal.dependsOn(publishToMavenLocal)
 
     afterEvaluate {
+        final String reindevVersion = project['reindev.version'] as String
+        final String reindevVersionAllowFrom = project['reindev.version.allowFrom'] as String
+
         publishing {
             publications {
                 release(MavenPublication) {
@@ -56,10 +59,18 @@ subprojects {
                     version = '1.0' // JitPack only work with "1.0" as version
                     pom {
                         url = 'https://github.com/Fox2Code/FoxLoader'
-                        properties = [
-                                "foxloader.version": project['foxloader.version'] as String,
-                                "reindev.version"  : project['reindev.version'] as String,
-                        ]
+                        if (reindevVersion == reindevVersionAllowFrom) {
+                            properties = [
+                                    "foxloader.version": project['foxloader.version'] as String,
+                                    "reindev.version"  : reindevVersion,
+                            ]
+                        } else {
+                            properties = [
+                                    "foxloader.version": project['foxloader.version'] as String,
+                                    "reindev.version"  : reindevVersion,
+                                    "reindev.version.allowFrom"  : reindevVersionAllowFrom,
+                            ]
+                        }
                     }
                 }
             }
