@@ -118,13 +118,15 @@ public final class BlockBuilder {
         return this.setTooltipColor(color.getRGB());
     }
 
-    public void setEffectiveTool(RegisteredToolType registeredToolType) {
+    public BlockBuilder setEffectiveTool(RegisteredToolType registeredToolType) {
         this.effectiveToolBit |= (byte)(this.effectiveToolBit | 1 << registeredToolType.ordinal());
+        return this;
     }
 
-    public void setEffectiveTools(RegisteredToolType... registeredToolTypes) {
+    public BlockBuilder setEffectiveTools(RegisteredToolType... registeredToolTypes) {
         for (RegisteredToolType registeredToolType : registeredToolTypes) {
             this.setEffectiveTool(registeredToolType);
         }
+        return this;
     }
 }
