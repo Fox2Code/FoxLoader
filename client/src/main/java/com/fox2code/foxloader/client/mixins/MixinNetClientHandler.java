@@ -43,11 +43,11 @@ public class MixinNetClientHandler implements NetClientHandlerExtensions {
     }
 
     @Redirect(method = "handleMapChunk", at = @At(value = "INVOKE", target =
-            "Lnet/minecraft/src/game/level/WorldClient;setChunkData(IIIIII[B)V"))
-    public void onSetChunkData(WorldClient instance, int mx, int my, int mz, int mxx, int mxy, int mxz, byte[] data) {
+            "Lnet/minecraft/src/game/level/WorldClient;setChunkData(IIIIIIZ[B)V"))
+    public void onSetChunkData(WorldClient instance, int mx, int my, int mz, int mxx, int mxy, int mxz, boolean init, byte[] data) {
         ClientModLoader.Internal.networkChunkBytes = data;
         try {
-            instance.setChunkData(mx, my, mz, mxx, mxy, mxz, data);
+            instance.setChunkData(mx, my, mz, mxx, mxy, mxz, init, data);
         } finally {
             ClientModLoader.Internal.networkChunkBytes = null;
         }

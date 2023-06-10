@@ -14,7 +14,7 @@ public class MixinChunk {
     @Shadow public short[] blocks;
 
     @Inject(method = "setChunkData", at = @At("RETURN"))
-    public void onSetChunkData(byte[] data, int mix, int miy, int miz, int max, int may, int maz, int progress, CallbackInfoReturnable<Integer> cir) {
+    public void onSetChunkData(byte[] data, int mix, int miy, int miz, int max, int may, int maz, boolean init, int progress, CallbackInfoReturnable<Integer> cir) {
         if (ClientModLoader.Internal.networkChunkBytes == data) {
             for (int var17 = mix; var17 < max; ++var17) {
                 for (int var31 = miy; var31 < may; ++var31) {

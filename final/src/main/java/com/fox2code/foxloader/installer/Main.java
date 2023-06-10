@@ -5,6 +5,7 @@ import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.ServerMain;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -20,6 +21,10 @@ public class Main {
     static final String optJvmArgsWithMem = optJvmArgs + " -Xmn512M -Xms512M -Xmx2G";
     static final File currentInstallerFile = SourceUtil.getSourceFile(Main.class);
     public static void main(String[] args) throws ReflectiveOperationException, MalformedURLException {
+        if (args.length == 0 && GraphicsEnvironment.isHeadless()) {
+            ServerMain.main(args);
+            return;
+        }
         boolean platform = false;
         boolean update = false;
         if (args.length >= 1) {

@@ -11,7 +11,8 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class MixinItemStack implements RegisteredItemStack {
     @Shadow
     public int stackSize;
-    @Shadow int itemDamage;
+    @Shadow
+    public int itemDamage;
 
     @Shadow public abstract Item getItem();
     @Shadow public abstract String getDisplayName();
