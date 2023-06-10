@@ -13,6 +13,7 @@ public class MixinChunkBlockMap {
      */
     @Overwrite
     public static void cleanupInvalidBlocks(short[] bmap) {
+        if (bmap == null) return;
         final int len = bmap.length;
         for(int biter = 0; biter < len; ++biter) {
             final int block = bmap[biter] & '\uffff';
