@@ -31,7 +31,7 @@ public class DependencyHelper {
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.7",
+            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.8",
                     JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
     };
 
