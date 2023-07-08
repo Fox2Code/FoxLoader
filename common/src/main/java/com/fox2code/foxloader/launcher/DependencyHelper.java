@@ -31,8 +31,10 @@ public class DependencyHelper {
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.8",
-                    JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
+            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.9",
+                    JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap",
+                    // Need fallback URL cause JitPack links can ded at any time
+                    "https://github.com/LlamaLad7/MixinExtras/releases/download/0.2.0-beta.9/mixinextras-common-0.2.0-beta.9.jar"),
     };
 
     public static final Dependency sparkDependency =
@@ -142,13 +144,27 @@ public class DependencyHelper {
             if (!parentFile.isDirectory() && !parentFile.mkdirs()) {
                 throw new RuntimeException("Cannot create dependency directory for " + dependency.name);
             }
+            IOException fallBackIoe = null;
             try (OutputStream os = Files.newOutputStream(file.toPath())) {
                 justDownloaded = true;
                 NetUtils.downloadTo(new URL(dependency.repository.endsWith(".jar") ?
                         dependency.repository : dependency.repository + "/" + postURL), os);
             } catch (IOException ioe) {
-                if (file.exists() && !file.delete()) file.deleteOnExit();
-                throw new RuntimeException("Cannot download " + dependency.name, ioe);
+                if (dependency.fallbackUrl != null) {
+                    fallBackIoe = ioe;
+                } else {
+                    if (file.exists() && !file.delete()) file.deleteOnExit();
+                    throw new RuntimeException("Cannot download " + dependency.name, ioe);
+                }
+            }
+            if (fallBackIoe != null) {
+                try (OutputStream os = Files.newOutputStream(file.toPath())) {
+                    justDownloaded = true;
+                    NetUtils.downloadTo(new URL(dependency.fallbackUrl), os);
+                } catch (IOException ioe) {
+                    if (file.exists() && !file.delete()) file.deleteOnExit();
+                    throw new RuntimeException("Cannot download " + dependency.name, fallBackIoe);
+                }
             }
         }
         if (dev) return file; // We don't have a FoxClass loader in dev environment.
@@ -286,12 +302,17 @@ public class DependencyHelper {
     }
 
     public static class Dependency {
-        public final String name, repository, classCheck;
+        public final String name, repository, classCheck, fallbackUrl;
 
         public Dependency(String name, String repository, String classCheck) {
+            this(name, repository, classCheck, null);
+        }
+
+        public Dependency(String name, String repository, String classCheck, String fallbackUrl) {
             this.name = name;
             this.repository = repository;
             this.classCheck = classCheck;
+            this.fallbackUrl = fallbackUrl;
         }
     }
 }

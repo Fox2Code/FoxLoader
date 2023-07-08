@@ -8,7 +8,7 @@ dependencies {
     api 'org.ow2.asm:asm-commons:9.5'
     api 'org.semver4j:semver4j:4.3.0'
     api 'org.spongepowered:mixin:0.8.5'
-    api 'com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.8'
+    api 'com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.9'
     api 'org.luaj:luaj-jse:3.0.1'
 
     // Mixin dependencies
