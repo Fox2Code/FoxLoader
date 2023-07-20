@@ -47,7 +47,7 @@ public final class FoxClassLoader extends URLClassLoader {
             }
             Class<?> c = findLoadedClass(name);
             if (c == null) {
-                c = findClass(name, null);
+                c = findClassImpl(name, null);
             }
             return c;
         } else if ((name.startsWith("com.fox2code.foxloader.") &&
@@ -58,7 +58,7 @@ public final class FoxClassLoader extends URLClassLoader {
                 name.startsWith("org.objectweb.asm.")) {
             Class<?> c = findLoadedClass(name);
             if (c == null) {
-                c = findClass(name, null);
+                c = findClassImpl(name, null);
             }
             return c;
         } else {
@@ -66,7 +66,7 @@ public final class FoxClassLoader extends URLClassLoader {
             if (c == null) {
                 URL resource = findResource(name.replace('.', '/') + ".class");
                 if (resource != null) {
-                    c = findClass(name, resource);
+                    c = findClassImpl(name, resource);
                 } else try {
                     c = super.loadClass(name, false);
                 } catch (SecurityException securityException) {
@@ -82,7 +82,7 @@ public final class FoxClassLoader extends URLClassLoader {
         throw new ClassNotFoundException(name); // return findClass(name, null);
     }
 
-    private Class<?> findClass(String name, URL resource) throws ClassNotFoundException {
+    private Class<?> findClassImpl(String name, URL resource) throws ClassNotFoundException {
         Class<?> clas = this.findLoadedClass(name);
         if (clas != null) return clas;
         byte[] bytes = null;
