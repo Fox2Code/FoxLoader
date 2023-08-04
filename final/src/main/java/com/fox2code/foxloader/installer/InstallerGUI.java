@@ -272,10 +272,20 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
     }
 
     public void installBetaCraft() {
+        File betacraft = Platform.getAppDir("betacraft");
+        if (!betacraft.exists()) {
+            File betacraftPortable = new File(".betacraft").getAbsoluteFile();
+            if (betacraftPortable.exists()) {
+                betacraft = betacraftPortable;
+            }
+        }
+        this.installBetaCraftEx(betacraft);
+    }
+
+    public void installBetaCraftEx(File betaCraft) {
         if (this.checkInstaller()) {
             return;
         }
-        File betaCraft = Platform.getAppDir("betacraft");
         File versions = new File(betaCraft, "versions");
         File versionsJsons = new File(versions, "jsons");
         File launchMethods = new File(betaCraft,
@@ -383,7 +393,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 "installer.multimc.text.*", BuildConfig.FOXLOADER_VERSION, BuildConfig.REINDEV_VERSION), false);
     }
 
-    public void doSilentInstall() throws IOException {
+    public void doSilentInstall(String arg) throws IOException {
         if (this.checkInstaller()) {
             return;
         }
@@ -393,7 +403,11 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 return;
             }
             case BETA_CRAFT: {
-                this.installBetaCraft();
+                if (arg == null) {
+                    this.installBetaCraft();
+                } else {
+                    this.installBetaCraftEx(new File(arg));
+                }
                 if (progressBar.getValue() != PROGRESS_BAR_MAX) {
                     System.exit(-1);
                     return;

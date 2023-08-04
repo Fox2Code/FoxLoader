@@ -87,7 +87,8 @@ public class Main {
                     LauncherType.valueOf(args[1].toUpperCase(Locale.ROOT));
             try {
                 System.out.println("Updating...");
-                new InstallerGUI(installerPlatform, launcherType).doSilentInstall();
+                new InstallerGUI(installerPlatform, launcherType)
+                        .doSilentInstall(args.length >= 3 ? args[2] : null);
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(-1);

@@ -4,6 +4,7 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
+import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
@@ -87,10 +88,20 @@ public final class ClientModLoader extends ModLoader {
         switch (launcherType) {
             default:
                 return;
+            case BETA_CRAFT:
+                File betacraftSource = SourceUtil.getSourceFile(ClientModLoader.class).getParentFile();
+                String endPath = ".betacraft/versions";
+                String path = betacraftSource.getPath();
+                if (!path.replace('\\', '/').endsWith(endPath)) {
+                    this.getLogger().warning("Not BetaCraft?");
+                    return;
+                }
+                args = new String[]{null, "-jar", null, "--update", launcherType.name(),
+                        path.substring(0, path.length() - endPath.length())};
+                break;
             case MMC_LIKE:
                 File libraries = ModLoader.foxLoader.file.getParentFile();
                 dest = new File(libraries, "foxloader-" + version + ".jar");
-            case BETA_CRAFT:
             case VANILLA_LIKE:
                 args = new String[]{null, "-jar", null, "--update", launcherType.name()};
         }

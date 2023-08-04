@@ -19,5 +19,5 @@ dependencies {
 }
 
 tasks.withType(Jar) {
-    exclude('org/betacraft/*')
+    exclude('org/*')
 }
