@@ -125,7 +125,7 @@ public class GameRegistryServer extends GameRegistry {
 
     @Override
     public RegisteredBlock registerNewBlock(String name, BlockBuilder blockBuilder, int fallbackId) {
-        validateRegistryName(name);
+        name = validateAndFixRegistryName(name);
         if (blockBuilder == null) blockBuilder = DEFAULT_BLOCK_BUILDER;
         String secondaryExt = blockBuilder.builtInBlockType.secRegistryExt;
         Block mainBlock = this.registerNewBlock0(name, blockBuilder, fallbackId, true);
@@ -228,7 +228,7 @@ public class GameRegistryServer extends GameRegistry {
 
     @Override
     public RegisteredItem registerNewItem(String name, ItemBuilder itemBuilder, int fallbackId) {
-        validateRegistryName(name);
+        name = validateAndFixRegistryName(name);
         return this.registerNewItem0(name, itemBuilder, null, null, this.generateNewItemId(name, fallbackId), true);
     }
 

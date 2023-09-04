@@ -19,6 +19,7 @@
     "MixinEntityRenderer",
     "MixinGameSettings",
     "MixinGuiDebug",
+    "MixinGuiIngameMenu",
     "MixinGuiMainMenu",
     "MixinGuiTextField",
     "MixinItem",

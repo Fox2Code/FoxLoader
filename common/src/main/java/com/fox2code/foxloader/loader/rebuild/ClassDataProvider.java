@@ -34,7 +34,7 @@ public class ClassDataProvider {
         this.clDataHashMap = new HashMap<>();
         this.clDataHashMap.put("java/lang/Object", object);
         this.clDataHashMap.put("[java/lang/Object", objectArray);
-        this.classLoader = classLoader==null ?
+        this.classLoader = classLoader == null ?
                 ClassLoader.getSystemClassLoader() : classLoader;
         this.clPatcher = clPatcher;
     }
@@ -195,7 +195,9 @@ public class ClassDataProvider {
 
         @Override
         public ClData getSuperclass() {
-            return ClassDataProvider.this.getClassData("["+clData.superClass);
+            return ClassDataProvider.this.getClassData(
+                    clData.superClass.endsWith("[java/lang/Object") ?
+                            clData.superClass.substring(1) : "[" + clData.superClass);
         }
 
         @Override
@@ -316,11 +318,11 @@ public class ClassDataProvider {
                 });
             } catch (Exception e) {
                 if (debugClassResolution) {
-                    System.out.println("DEBUG: Invalid input class -> "+name);
+                    System.out.println("DEBUG: Invalid input class -> " + name);
                 }
                 clData.superClass = "java/lang/Object";
             }
-            clDataHashMap.put(name,clData);
+            clDataHashMap.put(name, clData);
         }
     }
 }

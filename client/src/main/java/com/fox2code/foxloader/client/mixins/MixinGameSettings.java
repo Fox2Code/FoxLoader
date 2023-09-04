@@ -4,6 +4,7 @@ import com.fox2code.foxloader.client.KeyBindingAPI;
 import net.minecraft.src.client.EnumOptions;
 import net.minecraft.src.client.GameSettings;
 import net.minecraft.src.client.KeyBinding;
+import org.lwjgl.input.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,5 +27,13 @@ public class MixinGameSettings {
     @Inject(method = "<init>()V", at = @At("RETURN"))
     public void onOptionInit(CallbackInfo ci) {
         this.keyBindings = KeyBindingAPI.Internal.inject(this.keyBindings);
+    }
+
+    @Redirect(method = "*", at = @At(value = "INVOKE", target =
+            "Lorg/lwjgl/input/Keyboard;getKeyName(I)Ljava/lang/String;"))
+    public String getKeyName(int i) {
+        if (i > Keyboard.KEYBOARD_SIZE || i < 0)
+            return "#" + i;
+        return Keyboard.getKeyName(i);
     }
 }

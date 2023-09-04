@@ -152,6 +152,7 @@ public class ModLoader extends Mod {
     static void initializeMods(boolean client) {
         gameThread = Thread.currentThread();
         for (ModContainer modContainer : modContainers.values()) {
+            ModContainer.setActiveModContainer(modContainer);
             try {
                 modContainer.applyMod(client);
             } catch (ReflectiveOperationException e) {
@@ -159,18 +160,23 @@ public class ModLoader extends Mod {
             }
         }
         for (ModContainer modContainer : modContainers.values()) {
+            ModContainer.setActiveModContainer(modContainer);
             modContainer.notifyOnPreInit();
         }
         for (ModContainer modContainer : modContainers.values()) {
+            ModContainer.setActiveModContainer(modContainer);
             modContainer.notifyOnInit();
         }
+        ModContainer.setActiveModContainer(null);
         allModsLoaded = true;
     }
 
     static void postInitializeMods() {
         for (ModContainer modContainer : modContainers.values()) {
+            ModContainer.setActiveModContainer(modContainer);
             modContainer.notifyOnPostInit();
         }
+        ModContainer.setActiveModContainer(null);
     }
 
     @Override
@@ -271,7 +277,7 @@ public class ModLoader extends Mod {
                 Files.newInputStream(file.toPath()), StandardCharsets.UTF_8))) {
             String line;
             while ((line = bufferedReader.readLine()) != null
-                    && line.startsWith("-- ")) {
+                    && (line.equals("--") || line.startsWith("-- "))) {
                 if (line.startsWith(MOD_ID_LUA_PREFIX)) {
                     id = line.substring(MOD_ID_LUA_PREFIX.length());
                 } else if (line.startsWith(MOD_NAME_LUA_PREFIX)) {

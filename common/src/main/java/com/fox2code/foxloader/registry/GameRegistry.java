@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.registry;
 
+import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.lua.LuaInterop;
 
@@ -165,12 +166,23 @@ public abstract class GameRegistry {
                 itemId > 255 ? itemId < 1000 ? -1 : itemId - 744 : itemId;
     }
 
+    public static String validateAndFixRegistryName(String name) {
+        if (name.indexOf(':') == -1 && !ModLoader.areAllModsLoaded()) {
+            ModContainer modContainer = ModContainer.getActiveModContainer();
+            if (modContainer != null) {
+                name = modContainer.id + ":" + name;
+            }
+        }
+        validateRegistryName(name);
+        return name;
+    }
+
     public static void validateRegistryName(String name) {
         if (name.indexOf(':') == -1) {
             throw new IllegalArgumentException("Please add your mod id in the registry name, ex \"modid:item\")");
         }
-        if (name.indexOf('\0') != -1) {
-            throw new IllegalArgumentException("Null bytes are not supported in registry identifiers");
+        if (name.indexOf('\0') != -1 || name.indexOf(' ') != -1) {
+            throw new IllegalArgumentException("Null bytes and spaces are not supported in registry identifiers");
         }
     }
 

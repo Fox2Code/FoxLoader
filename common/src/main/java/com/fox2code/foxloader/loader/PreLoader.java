@@ -37,6 +37,7 @@ public class PreLoader {
     private static final String metaInfPath = "META-INF/MANIFEST.MF";
     private static final byte[] metaInf = ("Manifest-Version: 1.0\n" +
             "FoxLoader-Transformer-Version: " + BuildConfig.FOXLOADER_TRANSFORMER_VERSION +
+            "FoxLoader-ReIndev-Version: " + BuildConfig.REINDEV_VERSION +
             "Multi-Release: true\n").getBytes(StandardCharsets.UTF_8);
     private static JvmCompatTransformer jvmCompatTransformer = null;
     private static final boolean devFoxLoader = FoxLauncher.foxLoaderFile.getAbsolutePath().replace('\\', '/')
@@ -47,6 +48,7 @@ public class PreLoader {
 
     static {
         if (devFoxLoader) {
+            // Workaround FoxLoader not updating properly in dev mode
             preLoadMetaJarHash.addLong(FoxLauncher.foxLoaderFile.length());
         }
         preComputedFilesForHash.add(FoxLauncher.foxLoaderFile);
@@ -190,6 +192,7 @@ public class PreLoader {
             registerPrePatch(new MinecraftClientDebugTransformer());
             registerPrePatch(new FrustrumHelperTransformer());
             registerPrePatch(new NetworkMappingTransformer());
+            registerPrePatch(new ClientOnlyInventoryTransformer());
         }
     }
 
@@ -286,7 +289,20 @@ public class PreLoader {
     static void registerPrePatch(PreClassTransformer classTransformer) {
         if (prePatchInitialized)
             throw new IllegalStateException("Minecraft already pre patched");
-        File file = SourceUtil.getSourceFile(classTransformer.getClass());
+        Class<?> prePatch = classTransformer.getClass();
+        FoxClassLoader foxClassLoader = FoxLauncher.getFoxClassLoader();
+        if (foxClassLoader != null) { // <- Can be null when making dev jar
+            PrePatcher prePatcher = prePatch.getAnnotation(PrePatcher.class);
+            if (prePatcher != null) {
+                for (String exclusion : prePatcher.transformerExclusions()) {
+                    if (exclusion.indexOf('.') != -1 && // Add exclusion!
+                            !foxClassLoader.isTransformExclude(exclusion)) {
+                        foxClassLoader.addTransformerExclusion(exclusion);
+                    }
+                }
+            }
+        }
+        File file = SourceUtil.getSourceFile(prePatch);
         if (!preComputedFilesForHash.add(file)) {
             preLoadMetaJarHash.addLong(file.length());
         }

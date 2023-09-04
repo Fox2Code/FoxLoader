@@ -8,7 +8,7 @@ import me.lucko.spark.common.platform.serverconfig.ServerConfigProvider;
 
 import java.util.stream.Stream;
 
-public class FoxLoaderServerSparkPlugin extends FoxLoaderSparkPlugin {
+public class FoxLoaderServerSparkPlugin extends FoxLoaderSparkPlugin implements ServerMod {
     public FoxLoaderServerSparkPlugin() {
         super(PlatformInfo.Type.SERVER);
     }

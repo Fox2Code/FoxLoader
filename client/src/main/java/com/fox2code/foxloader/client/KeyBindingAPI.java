@@ -11,8 +11,8 @@ public class KeyBindingAPI {
 
     public static void registerKeyBinding(KeyBinding keyBinding) {
         if (loaded) throw new IllegalStateException("Options are already loaded");
-        if (registeredKeyBindings.size() >= 9) // This limit will be fixed in future update!
-            throw new IllegalStateException("Cannot register more than 9 custom key-binds!");
+        if (registeredKeyBindings.size() >= 8) // This limit will be fixed in future update!
+            throw new IllegalStateException("Cannot register more than 8 custom key-binds!");
         registeredKeyBindings.add(keyBinding);
     }
 

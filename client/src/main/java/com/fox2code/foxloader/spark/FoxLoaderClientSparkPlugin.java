@@ -6,7 +6,7 @@ import me.lucko.spark.common.platform.PlatformInfo;
 
 import java.util.stream.Stream;
 
-public class FoxLoaderClientSparkPlugin extends FoxLoaderSparkPlugin {
+public class FoxLoaderClientSparkPlugin extends FoxLoaderSparkPlugin implements ClientMod {
     public FoxLoaderClientSparkPlugin() {
         super(PlatformInfo.Type.CLIENT);
     }

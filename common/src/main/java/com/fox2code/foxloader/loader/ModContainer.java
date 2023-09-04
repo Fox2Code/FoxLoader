@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class ModContainer {
+    private static final ThreadLocal<ModContainer> activeModContainer = new ThreadLocal<>();
     // tmp is used to make getModContainer work in constructor.
     static ModContainer tmp;
     public final File file;
@@ -65,6 +66,27 @@ public final class ModContainer {
         if (ModLoader.DEV_MODE) {
             this.logger.setLevel(injected ? Level.ALL : Level.FINE);
         }
+    }
+
+    private ModContainer markActive() {
+        ModContainer modContainer = activeModContainer.get();
+        activeModContainer.set(this);
+        return modContainer;
+    }
+
+    public static ModContainer getActiveModContainer() {
+        return activeModContainer.get();
+    }
+
+    static void setActiveModContainer(ModContainer modContainer)  {
+        if (modContainer == null) activeModContainer.remove();
+        else activeModContainer.set(modContainer);
+    }
+
+    public void runInContext(Runnable runnable) {
+        ModContainer modContainer = markActive();
+        runnable.run();
+        setActiveModContainer(modContainer);
     }
 
     public Mod getClientMod() {

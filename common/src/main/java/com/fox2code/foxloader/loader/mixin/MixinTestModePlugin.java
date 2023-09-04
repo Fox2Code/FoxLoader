@@ -12,7 +12,8 @@ import java.util.Set;
 
 public class MixinTestModePlugin implements IMixinConfigPlugin {
     private static final HashSet<String> testModeMixins = new HashSet<>(
-            Arrays.asList("MixinEntityPlayerMP", "MixinMinecraftServer"));
+            Arrays.asList("MixinEntity", "MixinEntityPlayerMP",
+                    "MixinMinecraftServer", "MixinStringTranslate"));
 
     @Override
     public void onLoad(String mixinPackage) {

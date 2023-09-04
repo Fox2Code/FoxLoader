@@ -89,7 +89,7 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
                 new Flag(GL11.GL_EVAL_BIT, "GL_EVAL_BIT"),
                 new Flag(GL11.GL_LIST_BIT, "GL_LIST_BIT"),
                 new Flag(GL11.GL_TEXTURE_BIT, "GL_TEXTURE_BIT"),
-                new Flag(GL11.GL_HINT_BIT, "GL_HINT_BIT"));
+                new Flag(GL11.GL_SCISSOR_BIT, "GL_SCISSOR_BIT"));
         ConstantUnpick glZeroOne = new IntStaticConstantUnpick("org/lwjgl/opengl/GL11") {
             @Override
             public String unpick(int value) {
@@ -169,6 +169,7 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
         // LWJGL/Input Unpicks
         ConstantUnpick key = GeneratedConstantUnpicks.keyboardConstantUnpick;
         staticConstantUnpicks.put("org/lwjgl/input/Keyboard.isKeyDown(I)Z", key);
+        staticConstantUnpicks.put("org/lwjgl/input/Keyboard.getKeyName(I)Ljava/lang/String;", key);
         returnStaticConstantUnpicks.put("org/lwjgl/input/Keyboard.getEventKey()I", key);
         // Minecraft specific LWJGL/Input Unpicks
         virtualConstantUnpicks.put("net/minecraft/src/client/KeyBinding.<init>(Ljava/lang/String;I)V", key);
