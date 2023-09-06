@@ -35,21 +35,25 @@ public class ClientOnlyInventoryTransformer implements PreClassTransformer {
                 .getMethod(classNode, "clickSlot");
         InsnList earlyInject = new InsnList();
         LabelNode labelNode = new LabelNode();
-        earlyInject.insert(new VarInsnNode(ILOAD, 1));
-        earlyInject.insert(new InsnNode(ICONST_M1));
-        earlyInject.insert(new JumpInsnNode(IF_ICMPNE, labelNode));
-        earlyInject.insert(new VarInsnNode(ALOAD, 0));
-        earlyInject.insert(new VarInsnNode(ILOAD, 1));
-        earlyInject.insert(new VarInsnNode(ILOAD, 2));
-        earlyInject.insert(new VarInsnNode(ILOAD, 3));
-        earlyInject.insert(new VarInsnNode(ILOAD, 4));
-        earlyInject.insert(new VarInsnNode(ALOAD, 5));
-        earlyInject.insert(new MethodInsnNode(INVOKESPECIAL,
+        earlyInject.add(new VarInsnNode(ILOAD, 1));
+        earlyInject.add(new InsnNode(ICONST_M1));
+        earlyInject.add(new JumpInsnNode(IF_ICMPNE, labelNode));
+        earlyInject.add(new VarInsnNode(ALOAD, 0));
+        earlyInject.add(new VarInsnNode(ILOAD, 1));
+        earlyInject.add(new VarInsnNode(ILOAD, 2));
+        earlyInject.add(new VarInsnNode(ILOAD, 3));
+        earlyInject.add(new VarInsnNode(ILOAD, 4));
+        earlyInject.add(new VarInsnNode(ALOAD, 5));
+        earlyInject.add(new MethodInsnNode(INVOKESPECIAL,
                 "net/minecraft/src/client/player/PlayerController", "clickSlot",
                 "(IIIILnet/minecraft/src/game/entity/player/EntityPlayer;)Lnet/minecraft/src/game/item/ItemStack;"));
-        earlyInject.insert(new InsnNode(ARETURN));
-        earlyInject.insert(labelNode);
-        sendClickSlot.instructions.insert(earlyInject);
+        earlyInject.add(new InsnNode(ARETURN));
+        earlyInject.add(labelNode);
+        AbstractInsnNode firstCodeNode =
+                sendClickSlot.instructions.getFirst();
+        while (firstCodeNode.getOpcode() == -1)
+            firstCodeNode = firstCodeNode.getNext();
+        sendClickSlot.instructions.insertBefore(firstCodeNode, earlyInject);
     }
 
     private void patchNetClientHandler(ClassNode classNode) {
