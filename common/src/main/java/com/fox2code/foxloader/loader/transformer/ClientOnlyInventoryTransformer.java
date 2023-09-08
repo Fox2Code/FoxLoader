@@ -63,7 +63,7 @@ public class ClientOnlyInventoryTransformer implements PreClassTransformer {
                 if (abstractInsnNode.getOpcode() == GETFIELD &&
                         ((FieldInsnNode)abstractInsnNode).name.equals("currentContainer")) {
                     insnList.insertBefore(abstractInsnNode, new MethodInsnNode(INVOKESTATIC, classNode.name, "getNetworkContainer",
-                            "(Lnet/minecraft/src/game/entity/player/EntityPlayer;)Lnet/minecraft/src/client/gui/Container;", false));
+                            "(Lnet/minecraft/src/game/entity/player/EntityPlayer;)Lnet/minecraft/src/client/gui/Container;", true));
                     insnList.remove(abstractInsnNode);
                 }
             }
