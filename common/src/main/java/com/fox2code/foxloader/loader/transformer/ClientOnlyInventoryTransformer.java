@@ -63,7 +63,7 @@ public class ClientOnlyInventoryTransformer implements PreClassTransformer {
                 if (abstractInsnNode.getOpcode() == GETFIELD &&
                         ((FieldInsnNode)abstractInsnNode).name.equals("currentContainer")) {
                     insnList.insertBefore(abstractInsnNode, new MethodInsnNode(INVOKESTATIC, classNode.name, "getNetworkContainer",
-                            "(Lnet/minecraft/src/game/entity/player/EntityPlayer;)Lnet/minecraft/src/client/gui/Container;", true));
+                            "(Lnet/minecraft/src/game/entity/player/EntityPlayer;)Lnet/minecraft/src/client/gui/Container;", false));
                     insnList.remove(abstractInsnNode);
                 }
             }
@@ -79,7 +79,7 @@ public class ClientOnlyInventoryTransformer implements PreClassTransformer {
                 "currentContainer", "Lnet/minecraft/src/client/gui/Container;"));
         getNetworkContainer.instructions.add(new MethodInsnNode(INVOKESTATIC,
                 "com/fox2code/foxloader/client/gui/ContainerWrapped", "getNetworkContainer",
-                "(Lnet/minecraft/src/client/gui/Container;)Lnet/minecraft/src/client/gui/Container;", false));
+                "(Lnet/minecraft/src/client/gui/Container;)Lnet/minecraft/src/client/gui/Container;", true));
         getNetworkContainer.instructions.add(new VarInsnNode(ASTORE, 1));
         getNetworkContainer.instructions.add(new VarInsnNode(ALOAD, 1));
         LabelNode noFallback = new LabelNode();
