@@ -1,5 +1,7 @@
 package com.fox2code.foxloader.updater;
 
+import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.loader.FLJitPackUpdater;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;
@@ -96,6 +98,20 @@ public final class UpdateManager {
         }
         this.hasUpdates = hasUpdates;
         this.checkingUpdates = false;
+        // If FoxLoader is wrongly installed, try to fix it
+        if (FoxLauncher.isWronglyInstalled() &&
+                FoxLauncher.getLauncherType().hasAutoFix) {
+            System.out.println("It look like you were too incompetent to install FoxLoader properly");
+            System.out.println("But don't worry, FoxLoader will install itself properly on the current instance");
+            AbstractUpdater abstractUpdater = modsToUpdater.get("foxloader");
+            if (abstractUpdater != null) {
+                try {
+                    abstractUpdater.doUpdate();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public synchronized void doUpdates() {

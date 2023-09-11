@@ -7,21 +7,32 @@ public enum LauncherType {
     /**
      * Ex: Server ran via --server
      */
-    UNKNOWN,
+    UNKNOWN(false),
+    /**
+     * BIN is a special broken case that can happen on MultiMC
+     * when users lacks the mental capabilities to run a jar file
+     */
+    BIN(false),
     /**
      * Ex: Dev environment.
      */
-    GRADLE,
+    GRADLE(false),
     /**
      * Ex: Vanilla launcher & Pojav launcher
      */
-    VANILLA_LIKE,
+    VANILLA_LIKE(false),
     /**
      * Ex: BetaCraft launcher.
      */
-    BETA_CRAFT,
+    BETA_CRAFT(true),
     /**
      * Ex: MultiMC/PolyMC/PrismLauncher
      */
-    MMC_LIKE
+    MMC_LIKE(true);
+
+    public final boolean hasAutoFix;
+
+    LauncherType(boolean hasAutoFix) {
+        this.hasAutoFix = hasAutoFix;
+    }
 }

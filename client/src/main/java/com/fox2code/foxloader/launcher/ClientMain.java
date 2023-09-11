@@ -12,6 +12,7 @@ import java.util.Map;
 public class ClientMain {
     private static final File currentLoaderFile = SourceUtil.getSourceFile(ClientMain.class);
     public static boolean hasBetaCraftDiscordRPC = false;
+    public static boolean isFoxLoaderBadlyInstalled = false;
 
     /**
      * This is executed by FoxLoader BetaCraft wrapper.

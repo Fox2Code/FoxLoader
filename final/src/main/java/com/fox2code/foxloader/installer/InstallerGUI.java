@@ -4,6 +4,7 @@ import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.DependencyHelper;
 import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.StackTraceStringifier;
+import com.fox2code.foxloader.launcher.utils.IOUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 
 import javax.swing.*;
@@ -13,8 +14,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -38,6 +39,8 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
     private static final String FULLSCREEN_LABEL =
             "FoxLoader " + BuildConfig.FOXLOADER_VERSION + " for ReIndev " + BuildConfig.REINDEV_VERSION;
     private static final int PROGRESS_BAR_MAX = DependencyHelper.commonDependencies.length + 1;
+    private static final HashSet<String> MMC_PATCHES = new HashSet<>(Arrays.asList(
+            "com.fox2code.foxloader.json", "net.minecraft.json", "net.minecraftforge.json"));
     private final InstallerPlatform installerPlatform;
     private final LauncherType launcherType;
     private final JFrame jFrame;
@@ -251,9 +254,9 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
 
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            copyAndClose(InstallerGUI.class.getResourceAsStream(
+            IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
                     "/launcher-version.json"), byteArrayOutputStream);
-            copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
+            IOUtils.copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
                             .replace(installerPlatform.specialLauncher ?
                                     "#hack_releaseTime#" : "#no-op#", "releaseTime")
                             .replace("#version#", this.versionName).getBytes(StandardCharsets.UTF_8)),
@@ -343,7 +346,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 }
                 printStream.println("addons:");
             }
-            copyAndClose(InstallerGUI.class.getResourceAsStream(
+            IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
                     "/betacraft-" + BuildConfig.FOXLOADER_VERSION + ".jar"),
                     Files.newOutputStream(foxLoaderBetaCraft.toPath()));
         } catch (IOException e) {
@@ -374,7 +377,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                     "instance.cfg", "mmc-pack.json"}) {
                 zipOutputStream.putNextEntry(new ZipEntry(entry));
                 byteArrayOutputStream.reset();
-                copyAndClose(InstallerGUI.class.getResourceAsStream(
+                IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
                         "/mmc/" + entry), byteArrayOutputStream);
                 copy(new ByteArrayInputStream(byteArrayOutputStream.toString()
                         .replace("#version#", this.versionName)
@@ -423,19 +426,34 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 break;
             }
             case MMC_LIKE: {
-                File patches = new File(Main.currentInstallerFile.getParentFile().getParentFile(), "patches");
+                File root = Main.currentInstallerFile.getParentFile().getParentFile();
+                File patches = new File(root, "patches");
                 File patch = new File(patches, "com.fox2code.foxloader.json");
-                if (!patch.exists()) {
+                if (!patches.exists()) {
                     System.exit(-1);
                     return;
                 }
+                if (!patch.exists()) {
+                    for (File file : Objects.requireNonNull(patches.listFiles())) {
+                        if (file.getName().endsWith(".json") &&
+                                !MMC_PATCHES.contains(file.getName())) {
+                            if (!file.delete()) file.deleteOnExit();
+                        }
+                    }
+                }
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                copyAndClose(InstallerGUI.class.getResourceAsStream(
+                IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
                         "/mmc/patches/com.fox2code.foxloader.json"), byteArrayOutputStream);
-                copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
+                IOUtils.copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
                         .replace("#version#", this.versionName)
                         .replace("#foxloader_version#", BuildConfig.FOXLOADER_VERSION)
                         .getBytes(StandardCharsets.UTF_8)), Files.newOutputStream(patch.toPath()));
+                for (String entry : new String[]{ // Fix in place replace!
+                        "patches/net.minecraft.json", "patches/net.minecraftforge.json"}) {
+                    IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
+                            "/mmc/patches/com.fox2code.foxloader.json"),
+                            Files.newOutputStream(new File(entry).toPath()));
+                }
             }
         }
     }
@@ -475,18 +493,6 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
 
             while ((n = is.read(byteChunk)) > 0) {
                 outputStream.write(byteChunk, 0, n);
-            }
-        }
-    }
-
-    private static void copyAndClose(InputStream inputStream, OutputStream outputStream) throws IOException {
-        try (InputStream is = inputStream;
-             OutputStream out = outputStream) {
-            byte[] byteChunk = new byte[4096];
-            int n;
-
-            while ((n = is.read(byteChunk)) > 0) {
-                out.write(byteChunk, 0, n);
             }
         }
     }

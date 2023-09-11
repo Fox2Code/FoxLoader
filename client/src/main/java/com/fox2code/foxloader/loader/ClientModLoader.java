@@ -1,7 +1,9 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
+import com.fox2code.foxloader.launcher.utils.IOUtils;
 import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
@@ -15,6 +17,9 @@ import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.src.client.gui.StringTranslate;
 
 import java.io.*;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.function.Function;
 
@@ -112,8 +117,17 @@ public final class ClientModLoader extends ModLoader {
             }
             dest = new File(ModLoader.updateTmp, "foxloader-" + version + ".jar");
         }
-        try (FileOutputStream fileOutputStream = new FileOutputStream(dest)) {
-            NetUtils.downloadTo(url, fileOutputStream);
+        if (BuildConfig.FOXLOADER_VERSION.equals(version) &&
+                FoxLauncher.getLauncherType() != LauncherType.BIN) {
+            // Can happen if wrongly installed
+            if (!dest.equals(FoxLauncher.foxLoaderFile)) {
+                Files.copy(FoxLauncher.foxLoaderFile.toPath(), dest.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            }
+        } else {
+            try (FileOutputStream fileOutputStream = new FileOutputStream(dest)) {
+                NetUtils.downloadTo(url, fileOutputStream);
+            }
         }
         args[0] = Platform.getPlatform().javaBin.getPath();
         args[2] = dest.getAbsolutePath();

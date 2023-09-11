@@ -14,4 +14,6 @@ public interface RegisteredItemStack extends GameRegistry.Ingredient {
     default String getRegisteredDisplayName() { throw new RuntimeException(); }
 
     default void setRegisteredDisplayName(String displayName) { throw new RuntimeException(); }
+
+    default void verifyRegisteredItemStack() { throw new RuntimeException(); }
 }

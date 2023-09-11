@@ -4,11 +4,17 @@ import com.fox2code.foxloader.registry.RegisteredItem;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
 import net.minecraft.src.game.item.Item;
 import net.minecraft.src.game.item.ItemStack;
+import net.minecraft.src.game.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack implements RegisteredItemStack {
+    @Shadow
+    public int itemID;
     @Shadow
     public int stackSize;
     @Shadow
@@ -18,6 +24,26 @@ public abstract class MixinItemStack implements RegisteredItemStack {
     @Shadow public abstract String getDisplayName();
     @Shadow public abstract void setItemName(String par1Str);
     @Shadow public abstract boolean hasDisplayName();
+
+    @Inject(method = "<init>(II)V", at = @At("RETURN"))
+    public void onNewItemStack(int id, int count, CallbackInfo ci) {
+        this.verifyRegisteredItemStack();
+    }
+
+    @Inject(method = "<init>(III)V", at = @At("RETURN"))
+    public void onNewItemStack(int id, int count, int damage, CallbackInfo ci) {
+        this.verifyRegisteredItemStack();
+    }
+
+    @Inject(method = "<init>(IIILnet/minecraft/src/game/nbt/NBTTagCompound;)V", at = @At("RETURN"))
+    public void onNewItemStack(int id, int count, int damage, NBTTagCompound tagCompound, CallbackInfo ci) {
+        this.verifyRegisteredItemStack();
+    }
+
+    @Inject(method = "readFromNBT", at = @At("RETURN"))
+    public void onReadFromNBT(NBTTagCompound nbtTagCompound, CallbackInfo ci) {
+        this.verifyRegisteredItemStack();
+    }
 
     @Override
     public RegisteredItem getRegisteredItem() {
@@ -52,5 +78,13 @@ public abstract class MixinItemStack implements RegisteredItemStack {
     @Override
     public void setRegisteredDisplayName(String displayName) {
         this.setItemName(displayName);
+    }
+
+    @Override
+    public void verifyRegisteredItemStack() {
+        if (this.itemID != 0 && this.stackSize <= 0) {
+            this.itemDamage = 0;
+            this.itemID = 0;
+        }
     }
 }

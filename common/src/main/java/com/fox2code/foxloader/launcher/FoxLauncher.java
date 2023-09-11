@@ -31,20 +31,39 @@ public class FoxLauncher {
     public static final File foxLoaderFile = SourceUtil.getSourceFile(FoxLauncher.class);
     public static final HashMap<String, Object> mixinProperties = new HashMap<>();
     static LauncherType launcherType = LauncherType.UNKNOWN;
-    private static boolean client;
+    private static boolean client, wronglyInstalled, wronglyInstalledUnrecoverable;
     static FoxClassLoader foxClassLoader;
     static File gameDir;
     public static String initialUsername;
     public static String initialSessionId;
 
+    public static void markWronglyInstalled() {
+        if (foxClassLoader == null) wronglyInstalled = true;
+    }
+
+    public static void markWronglyInstalledUnrecoverable() {
+        if (foxClassLoader == null) {
+            wronglyInstalledUnrecoverable = true;
+            initForClientFromArgs(new String[0]);
+            wronglyInstalled = true;
+        }
+    }
+
+    public static boolean isWronglyInstalled() {
+        return (client && wronglyInstalled) ||
+                wronglyInstalledUnrecoverable;
+    }
+
     static void initForClientFromArgs(String[] args) {
         if (foxClassLoader != null)
             throw new IllegalStateException("FoxClassLoader already initialized!");
+        if (wronglyInstalled && wronglyInstalledUnrecoverable)
+            throw new IllegalStateException("FoxClassLoader cannot initialize!");
         client = true;
         File gameDir = null;
         if (args.length < 2) {
             initialUsername = // Allow username defines
-                    args.length < 1 ? "Player" : args[0];
+                    args.length == 0 ? "Player" : args[0];
             initialSessionId = "-";
         } else {
             initialUsername = args[0];
@@ -68,6 +87,7 @@ public class FoxLauncher {
         if (LoggerHelper.devEnvironment) {
             launcherType = LauncherType.GRADLE;
         }
+        if (wronglyInstalledUnrecoverable) return;
         foxClassLoader = new FoxClassLoader();
         foxClassLoader.addTransformerExclusion("org.lwjgl.");
         foxClassLoader.addTransformerExclusion("org.objectweb.asm.");
@@ -82,6 +102,8 @@ public class FoxLauncher {
     static void initForServerFromArgs(String[] args) {
         if (foxClassLoader != null)
             throw new IllegalStateException("FoxClassLoader already initialized!");
+        if (wronglyInstalled && wronglyInstalledUnrecoverable)
+            throw new IllegalStateException("FoxClassLoader cannot initialize!");
         client = false;
         FoxLauncher.gameDir = new File("").getAbsoluteFile();
         // Special case for development environment.
@@ -91,6 +113,7 @@ public class FoxLauncher {
         if (LoggerHelper.devEnvironment) {
             launcherType = LauncherType.GRADLE;
         }
+        if (wronglyInstalledUnrecoverable) return;
         foxClassLoader = new FoxClassLoader();
         foxClassLoader.addTransformerExclusion("org.objectweb.asm.");
         foxClassLoader.addTransformerExclusion("org.spongepowered.asm.");

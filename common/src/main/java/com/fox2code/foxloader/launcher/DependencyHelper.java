@@ -42,7 +42,7 @@ public class DependencyHelper {
 
     public static final Dependency[] clientDependencies = new Dependency[]{
             new Dependency("net.silveros:reindev:" + BuildConfig.REINDEV_VERSION,
-                    BuildConfig.CLIENT_URL, "net.minecraft.client.Minecraft")
+                    BuildConfig.CLIENT_URL, "net.minecraft.src.client.MinecraftImpl")
     };
     public static final Dependency[] serverDependencies = new Dependency[]{
             new Dependency("net.silveros:reindev-server:" + BuildConfig.REINDEV_VERSION,

@@ -27,6 +27,11 @@ final class ModLoaderMixin {
                 .setOption(MixinEnvironment.Option.DEBUG_INJECTORS, true);
         MixinEnvironment.getCurrentEnvironment()
                 .setOption(MixinEnvironment.Option.DEBUG_VERBOSE, true);
+        for (MixinEnvironment.Phase phase : new MixinEnvironment.Phase[]{
+                MixinEnvironment.Phase.PREINIT, MixinEnvironment.Phase.INIT, MixinEnvironment.Phase.DEFAULT}) {
+            MixinEnvironment.getEnvironment(phase).setSide(client ?
+                    MixinEnvironment.Side.CLIENT : MixinEnvironment.Side.SERVER);
+        }
         MixinEnvironment.getCurrentEnvironment().setSide(client ?
                 MixinEnvironment.Side.CLIENT : MixinEnvironment.Side.SERVER);
         MixinBootstrap.getPlatform().inject();
