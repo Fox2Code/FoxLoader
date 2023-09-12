@@ -82,7 +82,7 @@ public abstract class MixinItemStack implements RegisteredItemStack {
 
     @Override
     public void verifyRegisteredItemStack() {
-        if (this.itemID != 0 && this.stackSize <= 0) {
+        if (this.itemID != 0 && this.stackSize <= 0 && false) {
             this.itemDamage = 0;
             this.itemID = 0;
         }
