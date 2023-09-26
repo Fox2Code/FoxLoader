@@ -27,6 +27,11 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
     }
 
     @Override
+    public void teleportRegistered(double x, double y, double z) {
+        this.playerNetServerHandler.teleportTo(x, y, z, this.rotationYaw, this.rotationPitch);
+    }
+
+    @Override
     public ConnectionType getConnectionType() {
         return ConnectionType.SERVER_ONLY;
     }
