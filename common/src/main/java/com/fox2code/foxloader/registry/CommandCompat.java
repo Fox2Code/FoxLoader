@@ -38,7 +38,8 @@ public class CommandCompat {
         this.name = name;
         this.opOnly = opOnly;
         this.isHidden = isHidden;
-        this.aliases = aliases;
+        this.aliases = aliases == null ?
+                NO_ALIASES : aliases;
     }
 
     public String getName() {

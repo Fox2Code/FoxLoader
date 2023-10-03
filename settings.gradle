@@ -6,4 +6,5 @@ include 'final'
 include 'betacraft'
 include 'dev'
 include 'fallbacks'
+include 'api'
 

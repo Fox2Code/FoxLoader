@@ -10,4 +10,7 @@ dependencies {
 
     // Do no expose spark APIs to mods
     implementation(project['spark.dependency'] as String)
+
+    // External mods APIs
+    implementation(project(":api"))
 }

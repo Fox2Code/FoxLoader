@@ -128,7 +128,7 @@ public class PreLoader {
         prePatchInitialized = true;
         preLoadMetaJarHash.freeze();
         final String currentHash = preLoadMetaJarHash.getHash();
-        String previousHash = "";
+        String previousHashAndSize = "";
         File configFolder = ModLoader.foxLoader.configFolder;
         if (!configFolder.exists() && !configFolder.mkdirs()) {
             ModLoader.foxLoader.logger.severe("Can't create FoxLoader config folder!");
@@ -136,14 +136,17 @@ public class PreLoader {
         }
         File jar = new File(configFolder, client ? "PatchedMinecraftClient.jar" : "PatchedMinecraftServer.jar");
         File hash = new File(configFolder, client ? "PatchedMinecraftClient.hash" : "PatchedMinecraftServer.hash");
+        String jarSize = "";
         if (jar.exists() && hash.exists()) {
             try {
-                previousHash = new String(Files.readAllBytes(
+                previousHashAndSize = new String(Files.readAllBytes(
                         hash.toPath()), StandardCharsets.UTF_8);
+                jarSize = String.format("%08X", jar.length());
             } catch (Exception ignored) {}
         }
+        String expectedHashAndSize = currentHash + jarSize;
         ModLoader.foxLoader.logger.info("PreLoader hash: " + currentHash);
-        if (currentHash.equals(previousHash) && !ignoreMinecraftCache) {
+        if (expectedHashAndSize.equals(previousHashAndSize) && !ignoreMinecraftCache) {
             ModLoader.foxLoader.logger.info("Existing patched jar exists, using that!");
             try {
                 FoxLauncher.getFoxClassLoader().setPatchedMinecraftURL(jar.toURI().toURL());
@@ -163,7 +166,8 @@ public class PreLoader {
                     .getMinecraftSource().toURI().getPath());
             ModLoader.foxLoader.logger.info("Source jar file: " + sourceJar.getAbsolutePath());
             patchJar(sourceJar, jar, false);
-            Files.write(hash.toPath(), currentHash.getBytes(StandardCharsets.UTF_8));
+            jarSize = String.format("%08X", jar.length());
+            Files.write(hash.toPath(), (currentHash + jarSize).getBytes(StandardCharsets.UTF_8));
             ModLoader.foxLoader.logger.info("Jar patched successfully, using that!");
             FoxLauncher.getFoxClassLoader().setPatchedMinecraftURL(jar.toURI().toURL());
             if (!ModLoader.DEV_MODE) ignoreMinecraft = true;
@@ -193,6 +197,8 @@ public class PreLoader {
             registerPrePatch(new FrustrumHelperTransformer());
             registerPrePatch(new NetworkMappingTransformer());
             registerPrePatch(new ClientOnlyInventoryTransformer());
+        } else {
+            registerPrePatch(new ConsoleLogManagerTransformer());
         }
     }
 
@@ -382,7 +388,7 @@ public class PreLoader {
             byte[] hash = makeHash();
             StringBuilder builder = new StringBuilder();
             for (byte b : hash) {
-                builder.append(String.format("%02X ", b));
+                builder.append(String.format("%02X", b));
             }
             return builder.toString();
         }

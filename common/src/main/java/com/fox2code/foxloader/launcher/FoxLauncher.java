@@ -6,6 +6,7 @@ import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 public class FoxLauncher {
     static {
@@ -36,6 +37,7 @@ public class FoxLauncher {
     static File gameDir;
     public static String initialUsername;
     public static String initialSessionId;
+    private static boolean hasLogger = false;
 
     public static void markWronglyInstalled() {
         if (foxClassLoader == null) wronglyInstalled = true;
@@ -95,7 +97,7 @@ public class FoxLauncher {
         foxClassLoader.addTransformerExclusion("org.spongepowered.tools.");
         foxClassLoader.addTransformerExclusion("com.llamalad7.mixinextras.");
         foxClassLoader.addTransformerExclusion("com.fox2code.foxloader.loader.");
-        installLoggerHelper(); // Install special logger before libraries loading
+        installLoggerHelper(true); // Install special logger before libraries loading
         DependencyHelper.loadDependencies(true);
     }
 
@@ -120,11 +122,12 @@ public class FoxLauncher {
         foxClassLoader.addTransformerExclusion("org.spongepowered.tools.");
         foxClassLoader.addTransformerExclusion("com.llamalad7.mixinextras.");
         foxClassLoader.addTransformerExclusion("com.fox2code.foxloader.loader.");
-        installLoggerHelper(); // Install special logger before libraries loading
+        installLoggerHelper(false); // Install special logger before libraries loading
         DependencyHelper.loadDependencies(false);
     }
 
-    private static void installLoggerHelper() {
+    private static void installLoggerHelper(boolean client) {
+        if (hasLogger) return;
         boolean installed = false;
         try {
             File logFile = new File(gameDir, (LoggerHelper.devEnvironment ?
@@ -134,6 +137,11 @@ public class FoxLauncher {
         if (!installed) {
             System.out.println("Failed to install log helper!");
         }
+        hasLogger = installed;
+    }
+
+    public static void installLoggerHelperOn(Logger logger) {
+        if (hasLogger) LoggerHelper.installOn(logger);
     }
 
     public static void setEarlyMinecraftURL(URL url) {
@@ -145,9 +153,9 @@ public class FoxLauncher {
     }
 
     private static boolean isDirGradle(File file) {
-        return new File(gameDir, "gradle").exists() && (
-                new File(gameDir, "build.gradle.kts").exists() ||
-                        new File(gameDir, "build.gradle").exists());
+        return new File(file, "gradle").exists() && (
+                new File(file, "build.gradle.kts").exists() ||
+                        new File(file, "build.gradle").exists());
     }
 
     static void runClientWithArgs(String[] args) throws ReflectiveOperationException {

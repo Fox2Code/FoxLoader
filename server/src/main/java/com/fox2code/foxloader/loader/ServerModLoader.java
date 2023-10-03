@@ -5,6 +5,7 @@ import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.GameRegistryServer;
 import com.fox2code.foxloader.server.ServerCommandWrapper;
+import com.fox2code.foxloader.server.ServerCommandWrapper4ReIndevPatches;
 import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.server.MinecraftServer;
@@ -39,8 +40,20 @@ public final class ServerModLoader extends ModLoader {
             GameRegistryServer.freezeRecipes();
             // StatList.initBreakableStats();
             // StatList.initStats();
-            for (CommandCompat commandCompat : CommandCompat.commands.values()) {
-                PlayerCommandHandler.commands.add(new ServerCommandWrapper(commandCompat));
+            boolean hasReIndevPatches;
+            try {
+                //noinspection ResultOfMethodCallIgnored
+                PlayerCommandHandler.commands.getClass();
+                hasReIndevPatches = false;
+            } catch (Throwable t) {
+                hasReIndevPatches = true;
+            }
+            if (hasReIndevPatches) {
+                ServerCommandWrapper4ReIndevPatches.registerAllForReIndevPatches();
+            } else {
+                for (CommandCompat commandCompat : CommandCompat.commands.values()) {
+                    PlayerCommandHandler.commands.add(new ServerCommandWrapper(commandCompat));
+                }
             }
         }
     }

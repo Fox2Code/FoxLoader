@@ -2,6 +2,7 @@ package net.minecraft.client.main;
 
 import com.fox2code.foxloader.launcher.ClientMain;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftApplet;
 
 /**
  * Should never be loaded in memory, if it is loaded, it means something wrong happened
@@ -10,6 +11,6 @@ import net.minecraft.client.Minecraft;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        Minecraft.main(args);
+        new MinecraftApplet(); // We need to remap args for it to work
     }
 }

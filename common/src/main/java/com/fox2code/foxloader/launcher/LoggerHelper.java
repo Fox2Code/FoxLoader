@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.launcher;
 
+import com.fox2code.foxloader.launcher.utils.Platform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,9 +17,13 @@ final class LoggerHelper {
             FoxLauncher.foxLoaderFile.getAbsolutePath().replace('\\', '/').endsWith( // Also check for IDE launch.
                     "/common/build/libs/common-" + BuildConfig.FOXLOADER_VERSION + ".jar");
     private static final boolean consoleSupportColor = devEnvironment ||
-            Boolean.getBoolean("foxloader.console-support-color");
+            Boolean.getBoolean("foxloader.console-support-color") ||
+            (Platform.getPlatform() != Platform.WINDOWS && System.console() != null);
     private static final boolean disableLoggerHelper =
             Boolean.getBoolean("foxloader.disable-logger-helper");
+    private static final FoxLoaderLogFormatter simpleFormatter = new FoxLoaderLogFormatter();
+    private static SystemOutConsoleHandler systemOutConsoleHandler;
+    private static DirectFileHandler directFileHandler;
 
     static boolean install(File logFile) {
         if (disableLoggerHelper) {
@@ -37,7 +42,6 @@ final class LoggerHelper {
         }
         boolean installed = false;
         final SystemOutConsoleHandler systemOutConsoleHandler = new SystemOutConsoleHandler();
-        final FoxLoaderLogFormatter simpleFormatter = new FoxLoaderLogFormatter();
         final Logger rootLogger = LogManager.getLogManager().getLogger("");
         final DirectFileHandler directFileHandler;
         try {
@@ -46,6 +50,8 @@ final class LoggerHelper {
         } catch (Exception ignored) {
             return false;
         }
+        LoggerHelper.systemOutConsoleHandler = systemOutConsoleHandler;
+        LoggerHelper.directFileHandler = directFileHandler;
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             directFileHandler.flush();
             systemOutConsoleHandler.flush();
@@ -57,7 +63,7 @@ final class LoggerHelper {
                 rootLogger.removeHandler(handler);
                 rootLogger.addHandler(systemOutConsoleHandler);
             } else {
-                handler.setFormatter(simpleFormatter);
+                handler.setFormatter(LoggerHelper.simpleFormatter);
             }
         }
         if (installed) {
@@ -67,6 +73,24 @@ final class LoggerHelper {
             System.setErr(new FoxLoaderLogPrintStream(out, rootLogger, STDERR, true));
         }
         return installed;
+    }
+
+    static void installOn(Logger logger) {
+        Handler[] handlers = logger.getHandlers();
+        boolean hasDirectFileHandler = false;
+        for (Handler handler : handlers) {
+            if (handler instanceof ConsoleHandler) {
+                if (handler != systemOutConsoleHandler) {
+                    logger.removeHandler(handler);
+                    logger.addHandler(systemOutConsoleHandler);
+                }
+            } else if (handler == directFileHandler) {
+                hasDirectFileHandler = true;
+            }
+        }
+        if (!logger.getUseParentHandlers() && !hasDirectFileHandler) {
+            logger.addHandler(directFileHandler);
+        }
     }
 
     @SuppressWarnings({"UnnecessaryCallToStringValueOf", "StringOperationCanBeSimplified"})
@@ -174,6 +198,12 @@ final class LoggerHelper {
         DirectFileHandler(File file) throws IOException {
             setOutputStream(Files.newOutputStream(file.toPath()));
             setLevel(Level.ALL);
+        }
+
+        @Override
+        public synchronized void publish(LogRecord record) {
+            super.publish(record);
+            flush();
         }
     }
 
