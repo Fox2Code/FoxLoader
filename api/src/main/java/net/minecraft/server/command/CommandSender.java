@@ -9,5 +9,8 @@ public class CommandSender {
 
     public void sendMessage(String message) {}
 
-    /* public EntityPlayerMP getPlayer(); */
+    // It's fine, I swear.
+    public Object getPlayer() {
+        return null;
+    }
 }
