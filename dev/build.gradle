@@ -3,6 +3,12 @@ plugins {
     id 'groovy'
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
 group 'com.fox2code'
 version project['foxloader.version']
 
@@ -14,12 +20,11 @@ configurations {
 dependencies {
     compileOnly gradleApi()
     compileOnly localGroovy()
-    // Cannot use quilt flower 1.9+ cause it require java 11
-    api 'com.github.QuiltMC:quiltflower:1.8.1'
-    api 'com.google.code.gson:gson:2.2.4'
-    api 'org.semver4j:semver4j:4.3.0'
-    api 'org.ow2.asm:asm-commons:9.5'
-    api 'org.ow2.asm:asm-util:9.5'
+    api 'org.vineflower:vineflower:1.9.3'
+    api 'com.google.code.gson:gson:2.10.1'
+    api 'org.semver4j:semver4j:5.2.2'
+    api 'org.ow2.asm:asm-commons:9.6'
+    api 'org.ow2.asm:asm-util:9.6'
     // Need LWJGL 2 for game decompilation.
     api('org.lwjgl.lwjgl:lwjgl:2.9.3') {
         transitive = false

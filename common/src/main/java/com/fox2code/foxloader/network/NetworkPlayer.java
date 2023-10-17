@@ -1,9 +1,10 @@
 package com.fox2code.foxloader.network;
 
 import com.fox2code.foxloader.loader.ModContainer;
+import com.fox2code.foxloader.registry.RegisteredCommandSender;
 import com.fox2code.foxloader.registry.RegisteredEntityLiving;
 
-public interface NetworkPlayer extends RegisteredEntityLiving {
+public interface NetworkPlayer extends RegisteredEntityLiving, RegisteredCommandSender {
     /**
      * Just empty byte array to reduce allocations.
      */
@@ -21,11 +22,6 @@ public interface NetworkPlayer extends RegisteredEntityLiving {
     default void sendNetworkData(ModContainer modContainer, byte[] data) { throw new RuntimeException(); }
 
     /**
-     * Send/Display chat message to the user screen.
-     */
-    default void displayChatMessage(String chatMessage) { throw new RuntimeException(); }
-
-    /**
      * @return if the remote party has the mod loader,
      * always return true for a single player world.
      */
@@ -35,13 +31,6 @@ public interface NetworkPlayer extends RegisteredEntityLiving {
      * @return the player name
      */
     default String getPlayerName() { throw new RuntimeException(); }
-
-    /**
-     * @return if the player as operator permission.
-     *
-     * Always false client-side when connected to a server.
-     */
-    default boolean isOperator() { throw new RuntimeException(); }
 
     /**
      * Will kick the player.

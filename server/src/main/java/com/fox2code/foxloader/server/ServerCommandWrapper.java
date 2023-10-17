@@ -2,6 +2,7 @@ package com.fox2code.foxloader.server;
 
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
+import com.fox2code.foxloader.registry.RegisteredCommandSender;
 import net.minecraft.mitask.command.Command;
 import net.minecraft.src.game.entity.player.EntityPlayerMP;
 import net.minecraft.src.server.playergui.StringTranslate;
@@ -17,7 +18,7 @@ public final class ServerCommandWrapper extends Command {
     @Override
     public void onExecute(String[] args, EntityPlayerMP commandExecutor) {
         try {
-            this.commandCompat.onExecute(args, (NetworkPlayer) commandExecutor);
+            this.commandCompat.onExecute(args, (RegisteredCommandSender) commandExecutor);
         } catch (Throwable t) {
             t.printStackTrace();
             ((NetworkPlayer) commandExecutor).displayChatMessage(

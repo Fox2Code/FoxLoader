@@ -25,6 +25,7 @@ public class CommandCompat {
     private final boolean opOnly;
     private final boolean isHidden;
     private final String[] aliases;
+    private final boolean supportConsole;
 
     public CommandCompat(String name) {
         this(name, true, false, NO_ALIASES);
@@ -35,34 +36,66 @@ public class CommandCompat {
     }
 
     public CommandCompat(String name, boolean opOnly, boolean isHidden, String[] aliases) {
+        this(name, opOnly, isHidden, aliases, null);
+    }
+
+    public CommandCompat(String name, boolean opOnly, boolean isHidden, String[] aliases, boolean supportConsole) {
+        this(name, opOnly, isHidden, aliases, (Boolean) supportConsole);
+    }
+
+    private CommandCompat(String name, boolean opOnly, boolean isHidden, String[] aliases, Boolean supportConsole) {
         this.name = name;
         this.opOnly = opOnly;
         this.isHidden = isHidden;
         this.aliases = aliases == null ?
                 NO_ALIASES : aliases;
+        if (supportConsole == null) {
+            try { // Auto-detect support if not explicitly defined.
+                supportConsole = this.getClass().getMethod("onExecute",
+                                String[].class, RegisteredCommandSender.class)
+                        .getDeclaringClass() != CommandCompat.class;
+            } catch (Throwable ignored) {}
+        }
+        this.supportConsole = supportConsole == Boolean.TRUE;
     }
 
-    public String getName() {
+    public final String getName() {
         return this.name;
     }
 
-    public boolean isOpOnly() {
+    public final boolean isOpOnly() {
         return this.opOnly;
     }
 
-    public boolean isHidden() {
+    public final boolean isHidden() {
         return this.isHidden;
     }
 
-    public String[] getAliases() {
+    public final String[] getAliases() {
         return this.aliases;
     }
 
-    public void onExecute(String[] args, NetworkPlayer commandExecutor) {}
-
-    public void printHelpInformation(NetworkPlayer commandExecutor) {
-
+    public final boolean supportConsole() {
+        return this.supportConsole;
     }
+
+    public void onExecute(String[] args, RegisteredCommandSender commandSender) {
+        if (!this.supportConsole) {
+            if (commandSender instanceof NetworkPlayer) {
+                this.onExecute(args, (NetworkPlayer) commandSender);
+            } else {
+                commandSender.displayChatMessage("This command can only be executed by a player!");
+            }
+        }
+    }
+
+    public void onExecute(String[] args, NetworkPlayer commandExecutor) {
+        if (this.supportConsole) {
+            this.onExecute(args, (RegisteredCommandSender) commandExecutor);
+        }
+    }
+
+    public void printHelpInformation(NetworkPlayer commandExecutor) {}
 
     public String commandSyntax() {
         return this.name;

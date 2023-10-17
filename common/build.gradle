@@ -4,15 +4,15 @@ version project['foxloader.version']
 
 dependencies {
     // TODO Don't forget to update DependencyHelper
-    api 'org.ow2.asm:asm-util:9.5'
-    api 'org.ow2.asm:asm-commons:9.5'
-    api 'org.semver4j:semver4j:4.3.0'
+    api 'org.ow2.asm:asm-util:9.6'
+    api 'org.ow2.asm:asm-commons:9.6'
+    api 'org.semver4j:semver4j:5.2.2'
     api 'org.spongepowered:mixin:0.8.5'
-    api 'com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.9'
+    api 'com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0'
     api 'org.luaj:luaj-jse:3.0.1'
 
     // Mixin dependencies
-    api 'com.google.code.gson:gson:2.2.4'
+    api 'com.google.code.gson:gson:2.10.1'
     api 'com.google.guava:guava:21.0'
     api 'org.apache.commons:commons-lang3:3.3.2'
 

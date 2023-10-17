@@ -17,24 +17,24 @@ public class DependencyHelper {
     public static final String MODRINTH = "https://api.modrinth.com/maven";
 
     public static final Dependency GSON_DEPENDENCY = // Used by installer.
-            new Dependency("com.google.code.gson:gson:2.2.4", MAVEN_CENTRAL, "com.google.gson.Gson");
+            new Dependency("com.google.code.gson:gson:2.10.1", MAVEN_CENTRAL, "com.google.gson.Gson");
 
     // Extra dependencies not included in ReIndev
     public static final Dependency[] commonDependencies = new Dependency[]{
-            new Dependency("org.ow2.asm:asm:9.5", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),
-            new Dependency("org.ow2.asm:asm-tree:9.5", MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode"),
-            new Dependency("org.ow2.asm:asm-analysis:9.5", MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer"),
-            new Dependency("org.ow2.asm:asm-commons:9.5", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
-            new Dependency("org.ow2.asm:asm-util:9.5", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
+            new Dependency("org.ow2.asm:asm:9.6", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),
+            new Dependency("org.ow2.asm:asm-tree:9.6", MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode"),
+            new Dependency("org.ow2.asm:asm-analysis:9.6", MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer"),
+            new Dependency("org.ow2.asm:asm-commons:9.6", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
+            new Dependency("org.ow2.asm:asm-util:9.6", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
             GSON_DEPENDENCY, new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files"),
-            new Dependency("org.semver4j:semver4j:4.3.0", MAVEN_CENTRAL, "org.semver4j.Semver"),
+            new Dependency("org.semver4j:semver4j:5.2.2", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0-beta.9",
+            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0",
                     JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap",
                     // Need fallback URL cause JitPack links can ded at any time
-                    "https://github.com/LlamaLad7/MixinExtras/releases/download/0.2.0-beta.9/mixinextras-common-0.2.0-beta.9.jar"),
+                    "https://github.com/LlamaLad7/MixinExtras/releases/download/0.2.0/mixinextras-common-0.2.0.jar"),
     };
 
     public static final Dependency sparkDependency =
@@ -285,7 +285,7 @@ public class DependencyHelper {
     }
 
     public static boolean hasClass(String cls) {
-        return FoxLauncher.getFoxClassLoader().getResource(cls.replace('.', '/') + ".class") != null;
+        return FoxLauncher.getFoxClassLoader().isClassInClassPath(cls);
     }
 
     private static String resolvePostURL(String string) {

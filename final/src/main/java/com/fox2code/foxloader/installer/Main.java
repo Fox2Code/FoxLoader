@@ -14,10 +14,11 @@ import java.util.Locale;
 
 public class Main {
     // We need -XX:+IgnoreUnrecognizedVMOptions cause some of the optimization arg we us are not available on some JVMs
-    static final String optJvmArgs = "-XX:+IgnoreUnrecognizedVMOptions -XX:+UnlockExperimentalVMOptions " +
-            "-XX:+UseFastAccessorMethods -XX:+AggressiveOpts -XX:+UseCompressedOops -XX:+UseBiasedLocking " +
-            "-XX:+OptimizeStringConcat -XX:-UseGCOverheadLimit -XX:+UseLargePages -XX:+UseStringCache " +
-            "-XX:+UseCompressedStrings -XX:+UseNUMA -XX:+UseCodeCacheFlushing -d64 -Dfile.encoding=UTF-8";
+    static final String reqJvmArgs = "-XX:+IgnoreUnrecognizedVMOptions -XX:+UnlockExperimentalVMOptions " +
+            "-XX:+DisableAttachMechanism -Dcom.ibm.tools.attach.enable=no -Dfile.encoding=UTF-8";
+    static final String optJvmArgs = reqJvmArgs + " -XX:+UseFastAccessorMethods -XX:+AggressiveOpts " +
+            "-XX:+UseCompressedOops -XX:+UseBiasedLocking -XX:+OptimizeStringConcat -XX:-UseGCOverheadLimit " +
+            "-XX:+UseStringCache -XX:+UseCompressedStrings";
     static final String optJvmArgsWithMem = optJvmArgs + " -Xmn512M -Xms512M -Xmx2G";
     static final File currentInstallerFile = SourceUtil.getSourceFile(Main.class);
     public static void main(String[] args) throws ReflectiveOperationException, MalformedURLException {

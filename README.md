@@ -8,6 +8,13 @@ You can [join the official ReIndev Discord here](https://discord.gg/38Vfes6NpR)
 
 A feature missing to make your mod? [Just open an issue!](https://github.com/Fox2Code/FoxLoader/issues)
 
+## Installation
+
+For client side installation, just run the jar file.
+Either by double clicking on it, or running `java -jar FoxLoader.jar`
+
+To run FoxLoader as a server just run `java -jar FoxLoader.jar --server`
+
 ## Documentation
 
 For mixins usage check here: https://github.com/2xsaiko/mixin-cheatsheet

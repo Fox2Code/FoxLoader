@@ -63,10 +63,7 @@ public class PreLoader {
                 // secondary pre patched jar, so in DEV_MODE ignoreMinecraft
                 // is false and only mods and none of FoxLoader pre-patches
                 // are loaded at runtime.
-                if (ignoreMinecraft && (
-                        className.startsWith("net.minecraft.") ||
-                        className.startsWith("paulscode.sound.") ||
-                        className.startsWith("com.jcraft."))) {
+                if (ignoreMinecraft && FoxClassLoader.isGameClassName(className)) {
                     return bytes;
                 }
                 ClassReader classReader = new ClassReader(bytes);

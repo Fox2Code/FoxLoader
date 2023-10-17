@@ -18,7 +18,7 @@ public final class FoxClassLoader extends URLClassLoader {
     private final LinkedList<String> exclusions;
     private final LinkedList<ClassTransformer> classTransformers;
     private final HashMap<String, byte[]> injectedClasses;
-    private URLClassLoader minecraftExclusiveSource;
+    private URLClassLoader gameExclusiveSource;
     private boolean allowLoadingGame;
     private WrappedExtensions wrappedExtensions;
     private ArrayList<URL> coreMods;
@@ -39,30 +39,25 @@ public final class FoxClassLoader extends URLClassLoader {
 
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        if (name.startsWith("net.minecraft.") ||
-                name.startsWith("paulscode.sound.") ||
-                name.startsWith("com.jcraft.")) {
+        Class<?> c;
+        if (isGameClassName(name)) {
             if (!allowLoadingGame) {
                 throw new ClassNotFoundException("Cannot load \"" + name + "\" during pre init");
             }
-            Class<?> c = findLoadedClass(name);
+            c = findLoadedClass(name);
             if (c == null) {
                 c = findClassImpl(name, null);
             }
-            return c;
         } else if ((name.startsWith("com.fox2code.foxloader.") &&
                     !name.startsWith("com.fox2code.foxloader.launcher.")) ||
                 // Check mixins to fix them in development environment.
-                name.startsWith("com.llamalad7.mixinextras.") ||
-                name.startsWith("org.spongepowered.") ||
-                name.startsWith("org.objectweb.asm.")) {
-            Class<?> c = findLoadedClass(name);
+                isSpecialClassName(name)) {
+            c = findLoadedClass(name);
             if (c == null) {
                 c = findClassImpl(name, null);
             }
-            return c;
         } else {
-            Class<?> c = findLoadedClass(name);
+            c = findLoadedClass(name);
             if (c == null) {
                 URL resource = findResource(name.replace('.', '/') + ".class");
                 if (resource != null) {
@@ -73,8 +68,11 @@ public final class FoxClassLoader extends URLClassLoader {
                     throw new ClassNotFoundException(name, securityException);
                 }
             }
-            return c;
         }
+        if (resolve) {
+            resolveClass(c);
+        }
+        return c;
     }
 
     @Override
@@ -94,12 +92,10 @@ public final class FoxClassLoader extends URLClassLoader {
             ClassLoader resourceClassLoader;
             if (name.startsWith("com.fox2code.foxloader.")) {
                 resourceClassLoader = getParent();
-            } else if ((name.startsWith("net.minecraft.") ||
-                    name.startsWith("paulscode.sound.") ||
-                    name.startsWith("com.jcraft."))) {
+            } else if (isGameClassName(name)) {
                 resourceClassLoader = // Do not allow mods to act as jar mods blindly.
-                        minecraftExclusiveSource != null ?
-                        minecraftExclusiveSource : getParent();
+                        gameExclusiveSource != null ?
+                                gameExclusiveSource : getParent();
             } else {
                 resourceClassLoader = this;
             }
@@ -191,8 +187,8 @@ public final class FoxClassLoader extends URLClassLoader {
         if ((name.startsWith("net/minecraft/") &&
                 name.endsWith(".class")) ||
                 name.equals("font.txt")) {
-            if (minecraftExclusiveSource != null) {
-                return minecraftExclusiveSource.findResource(name);
+            if (gameExclusiveSource != null) {
+                return gameExclusiveSource.findResource(name);
             } else {
                 return this.getParent().getResource(name);
             }
@@ -202,8 +198,8 @@ public final class FoxClassLoader extends URLClassLoader {
         }
         URL resource = this.findResource(name);
         if (resource != null) return resource;
-        if (minecraftExclusiveSource != null) {
-            resource = minecraftExclusiveSource.findResource(name);
+        if (gameExclusiveSource != null) {
+            resource = gameExclusiveSource.findResource(name);
             if (resource != null) return resource;
         }
         return this.getParent().getResource(name);
@@ -211,6 +207,22 @@ public final class FoxClassLoader extends URLClassLoader {
 
     public boolean isClassLoaded(String className) {
         return this.findLoadedClass(className) != null;
+    }
+
+    public boolean isClassInClassPath(String className) {
+        final String path = className.replace('.', '/') + ".class";
+
+        if (className.startsWith("com.fox2code.foxloader.")) {
+            return this.getParent().getResource(path) != null;
+        } else if (isGameClassName(className)) {
+            if (gameExclusiveSource != null)
+                return gameExclusiveSource.getResource(path) != null;
+            return this.findResource(path) != null;
+        } else if (isSpecialClassName(className)) {
+            return this.findResource(path) != null;
+        } else {
+            return this.getResource(path) != null;
+        }
     }
 
     public void addClassTransformers(ClassTransformer classTransformer) {
@@ -250,13 +262,13 @@ public final class FoxClassLoader extends URLClassLoader {
     public void setMinecraftURL(URL url) {
         if (allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
-        minecraftExclusiveSource = new URLClassLoader(makeURLClassPathForSource(url), null);
+        gameExclusiveSource = new URLClassLoader(makeURLClassPathForSource(url), null);
     }
 
     public void setPatchedMinecraftURL(URL url) {
         if (allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
-        minecraftExclusiveSource = new URLClassLoader(new URL[]{url}, null);
+        gameExclusiveSource = new URLClassLoader(new URL[]{url}, null);
     }
 
     public URL[] makeURLClassPathForSource(URL source) {
@@ -312,6 +324,20 @@ public final class FoxClassLoader extends URLClassLoader {
         if (this.wrappedExtensions != null)
             throw new IllegalStateException("Wrapped Extension Already Installed!");
         this.wrappedExtensions = Objects.requireNonNull(wrappedExtensions);
+    }
+
+    public static boolean isSpecialClassName(String cls) {
+        // Check mixins to fix them in development environment.
+        return cls.startsWith("com.llamalad7.mixinextras.") ||
+                cls.startsWith("org.spongepowered.") ||
+                cls.startsWith("org.objectweb.asm.");
+    }
+
+    public static boolean isGameClassName(String cls) {
+        // Allow game pre-transforming
+        return cls.startsWith("net.minecraft.") ||
+                cls.startsWith("paulscode.sound.") ||
+                cls.startsWith("com.jcraft.");
     }
 
     private static class ClassTransformException extends Exception {

@@ -3,6 +3,7 @@ package com.fox2code.foxloader.server;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
+import com.fox2code.foxloader.registry.RegisteredCommandSender;
 import net.minecraft.server.command.Command;
 import net.minecraft.server.command.CommandRegistry;
 import net.minecraft.server.command.CommandSender;
@@ -17,26 +18,30 @@ public class ServerCommandWrapper4ReIndevPatches extends Command {
 
     private ServerCommandWrapper4ReIndevPatches(CommandCompat commandCompat) {
         super(commandCompat.getName(), commandCompat.getAliases());
-        this.setIssuerRole(IssuerRole.PLAYER); // We don't support console :( // Sad to read :(
+        this.setIssuerRole(commandCompat.supportConsole() ? IssuerRole.BOTH : IssuerRole.PLAYER);
         this.commandCompat = commandCompat;
     }
 
     @Override
     public void execute(String commandLabel, String[] args, CommandSender commandSender) {
-        NetworkPlayer networkPlayer = null;
+        RegisteredCommandSender registeredCommandSender = null;
         if (commandSender.isPlayer()) {
             try {
-                networkPlayer = (NetworkPlayer) commandSender.getPlayer();
+                registeredCommandSender = (NetworkPlayer) commandSender.getPlayer();
             } catch (Exception ignored) {}
         }
-        if (networkPlayer == null) {
-            commandSender.sendMessage("FoxLoader defined commands can only be executed by players!");
-            return;
+        if (registeredCommandSender == null) {
+            if (this.commandCompat.supportConsole()) {
+                registeredCommandSender = RegisteredCommandSender.CONSOLE_COMMAND_SENDER;
+            } else {
+                commandSender.sendMessage("This command can only be executed by a player!");
+                return;
+            }
         }
         final String[] foxArgs = new String[args.length + 1];
         foxArgs[0] = commandLabel;
         System.arraycopy(args, 0, foxArgs, 1, args.length);
-        this.commandCompat.onExecute(foxArgs, networkPlayer);
+        this.commandCompat.onExecute(foxArgs, registeredCommandSender);
     }
 
     @Override
