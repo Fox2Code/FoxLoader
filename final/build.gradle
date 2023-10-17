@@ -1,4 +1,8 @@
 // Final build.gradle
+plugins {
+    id 'maven-publish'
+}
+
 group 'com.fox2code'
 version project['foxloader.version']
 

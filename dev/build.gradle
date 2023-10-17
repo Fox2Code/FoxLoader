@@ -1,6 +1,7 @@
 // Dev build.gradle
 plugins {
     id 'groovy'
+    id 'maven-publish'
 }
 
 java {

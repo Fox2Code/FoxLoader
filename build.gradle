@@ -9,7 +9,6 @@ tasks.register('publishToMavenLocal', Task)
 
 subprojects {
     apply plugin: 'java-library'
-    apply plugin: 'maven-publish'
 
     repositories {
         mavenCentral()
@@ -51,26 +50,28 @@ subprojects {
         final String reindevVersion = project['reindev.version'] as String
         final String reindevVersionAllowFrom = project['reindev.version.allowFrom'] as String
 
-        publishing {
-            publications {
-                release(MavenPublication) {
-                    from components.java
-                    groupId = "com.github.Fox2Code.FoxLoader"
-                    artifactId = project.name
-                    version = '1.0' // JitPack only work with "1.0" as version
-                    pom {
-                        url = 'https://github.com/Fox2Code/FoxLoader'
-                        if (reindevVersion == reindevVersionAllowFrom) {
-                            properties = [
-                                    "foxloader.version": project['foxloader.version'] as String,
-                                    "reindev.version"  : reindevVersion,
-                            ]
-                        } else {
-                            properties = [
-                                    "foxloader.version": project['foxloader.version'] as String,
-                                    "reindev.version"  : reindevVersion,
-                                    "reindev.version.allowFrom"  : reindevVersionAllowFrom,
-                            ]
+        if (project.pluginManager.hasPlugin("maven-publish")) {
+            publishing {
+                publications {
+                    release(MavenPublication) {
+                        from components.java
+                        groupId = "com.github.Fox2Code.FoxLoader"
+                        artifactId = project.name
+                        version = '1.0' // JitPack only work with "1.0" as version
+                        pom {
+                            url = 'https://github.com/Fox2Code/FoxLoader'
+                            if (reindevVersion == reindevVersionAllowFrom) {
+                                properties = [
+                                        "foxloader.version": project['foxloader.version'] as String,
+                                        "reindev.version"  : reindevVersion,
+                                ]
+                            } else {
+                                properties = [
+                                        "foxloader.version"        : project['foxloader.version'] as String,
+                                        "reindev.version"          : reindevVersion,
+                                        "reindev.version.allowFrom": reindevVersionAllowFrom,
+                                ]
+                            }
                         }
                     }
                 }
