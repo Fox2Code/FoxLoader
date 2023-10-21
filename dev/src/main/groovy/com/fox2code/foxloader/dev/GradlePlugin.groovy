@@ -85,7 +85,7 @@ class GradlePlugin implements Plugin<Project> {
             group = "FoxLoader"
             description = "Run ReIndev client from gradle"
         }.get().dependsOn(project.getTasks().getByName("jar"))
-        project.tasks.register("runServer", JavaExec) {http
+        project.tasks.register("runServer", JavaExec) {
             group = "FoxLoader"
             description = "Run ReIndev server from gradle"
         }.get().dependsOn(project.getTasks().getByName("jar"))
