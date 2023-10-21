@@ -85,7 +85,7 @@ class GradlePlugin implements Plugin<Project> {
             group = "FoxLoader"
             description = "Run ReIndev client from gradle"
         }.get().dependsOn(project.getTasks().getByName("jar"))
-        project.tasks.register("runServer", JavaExec) {
+        project.tasks.register("runServer", JavaExec) {http
             group = "FoxLoader"
             description = "Run ReIndev server from gradle"
         }.get().dependsOn(project.getTasks().getByName("jar"))
@@ -366,19 +366,30 @@ class GradlePlugin implements Plugin<Project> {
                     System.out.println("Decompiling patched ReIndev " + logSideName)
                     new FoxLoaderDecompiler(unpickedJarFox, sourcesJarFox, client).decompile()
                 } catch (Throwable throwable) {
+                    boolean deleteFailed = false
                     try {
                         closeJarFileSystem(unpickedJarFox)
                         closeJarFileSystem(sourcesJarFox)
                     } finally {
-                        unpickedJarFox.delete()
-                        sourcesJarFox.delete()
+                        if (!unpickedJarFox.delete()) {
+                            unpickedJarFox.deleteOnExit()
+                            deleteFailed = true
+                        }
+                        if (!sourcesJarFox.delete()) {
+                            sourcesJarFox.deleteOnExit()
+                            deleteFailed = true
+                        }
                     }
                     Throwable root = throwable
                     while (root.getCause() != null)
                         root = root.getCause()
-                    root.initCause(client ?
-                            UserMessage.FAIL_DECOMPILE_CLIENT :
-                            UserMessage.FAIL_DECOMPILE_SERVER)
+                    root.initCause(deleteFailed ? // If delete failed, restart
+                            UserMessage.UNRECOVERABLE_STATE_DECOMPILE :
+                            client ? UserMessage.FAIL_DECOMPILE_CLIENT :
+                                    UserMessage.FAIL_DECOMPILE_SERVER)
+                    if (deleteFailed) {
+                        terminateProcess()
+                    }
                     throw throwable
                 }
             }
@@ -405,15 +416,7 @@ class GradlePlugin implements Plugin<Project> {
             try {
                 Files.exists(fileSystem.getPath("META-INF/MANIFEST.MF"))
             } catch (ClosedFileSystemException e) {
-                new Thread("FoxLoader - Termination Thread") {
-                    @Override
-                    void run() {
-                        try {
-                            sleep(500L)
-                        } catch (Exception ignored) {}
-                        System.exit(-1)
-                    }
-                }.start()
+                terminateProcess()
                 Throwable root = e
                 while (root.getCause() != null) root = root.getCause()
                 if (!(root instanceof UserMessage)) {
@@ -424,13 +427,25 @@ class GradlePlugin implements Plugin<Project> {
         }
     }
 
+    static void terminateProcess() {
+        new Thread("FoxLoader - Termination Thread") {
+            @Override
+            void run() {
+                try {
+                    sleep(500L)
+                } catch (Exception ignored) {}
+                System.exit(-1)
+            }
+        }.start()
+    }
+
     static void injectPom(File file,String group,String id,String ver) {
         File parent = file.getParentFile()
         if (!parent.isDirectory() && !parent.mkdirs())
             throw new IOException("Failed to create cache dir, is file-system read-only?")
         Files.write(file.toPath(), ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\n" +
-                "         xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+                "<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\"\n" +
+                "         xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
                 "    <modelVersion>4.0.0</modelVersion>\n" +
                 "    <groupId>"+group+"</groupId>\n" +
                 "    <artifactId>"+id+"</artifactId>\n" +
@@ -438,6 +453,10 @@ class GradlePlugin implements Plugin<Project> {
                 "    <packaging>jar</packaging>\n" +
                 "    <dependencies>\n" +
                 "    </dependencies>\n" +
+                "    <properties>\n" +
+                "        <maven.compiler.source>1.8</maven.compiler.source>\n" +
+                "        <maven.compiler.target>1.8</maven.compiler.target>\n" +
+                "    </properties>\n" +
                 "</project>").getBytes(StandardCharsets.UTF_8))
     }
 

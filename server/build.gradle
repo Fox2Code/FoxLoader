@@ -16,5 +16,5 @@ dependencies {
     implementation(project['spark.dependency'] as String)
 
     // External mods APIs
-    implementation(project(":api"))
+    compileOnly(project(":api"))
 }
