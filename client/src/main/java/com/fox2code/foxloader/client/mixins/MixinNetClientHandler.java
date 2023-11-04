@@ -71,10 +71,12 @@ public class MixinNetClientHandler implements NetClientHandlerExtensions {
         NetworkPlayer networkPlayer = (NetworkPlayer)
                 Minecraft.getInstance().thePlayer;
         if (ModLoader.FOX_LOADER_MOD_ID.equals(packet250.channel)) {
+            ModLoader.getModLoaderLogger().info("Got FoxLoader packet");
             this.isFoxLoader = true;
         }
         ModContainer modContainer = ModLoader.getModContainer(packet250.channel);
         if (networkPlayer != null && modContainer != null && packet250.data != null) {
+            ModLoader.getModLoaderLogger().info("Processing FoxLoader packet");
             modContainer.notifyReceiveServerPacket(networkPlayer, packet250.data);
         }
     }

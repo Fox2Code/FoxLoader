@@ -1,11 +1,13 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.GameRegistryServer;
 import com.fox2code.foxloader.server.ServerCommandWrapper;
 import com.fox2code.foxloader.server.ServerCommandWrapper4ReIndevPatches;
+import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.server.MinecraftServer;
@@ -23,6 +25,16 @@ public final class ServerModLoader extends ModLoader {
     }
 
     public static void notifyNetworkPlayerJoined(NetworkPlayer networkPlayer) {
+        if (networkPlayer.hasFoxLoader()) {
+            ModLoader.getModLoaderLogger().info("Starting Thread check");
+            new Thread(() -> {
+                try {
+                    Thread.sleep(2500);
+                    if (!((NetworkPlayerImpl) networkPlayer).hasClientHello())
+                        networkPlayer.kick("You have a broken and outdated version of FoxLoader");
+                } catch (InterruptedException ignored) {}
+            }, "Async - Client Hello Player Check").start();
+        }
         for (ModContainer modContainer : ModLoader.modContainers.values()) {
             modContainer.notifyNetworkPlayerJoined(networkPlayer);
         }
@@ -66,6 +78,7 @@ public final class ServerModLoader extends ModLoader {
 
     @Override
     void loaderHandleClientHello(NetworkPlayer networkPlayer, ClientHello clientHello) {
+        ((NetworkPlayerImpl) networkPlayer).notifyClientHello();
         for (ModContainer modContainer : ModLoader.modContainers.values()) {
             modContainer.notifyNetworkPlayerHello(networkPlayer, clientHello);
         }

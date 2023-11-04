@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.launcher.utils.FastThreadLocal;
 import com.fox2code.foxloader.loader.lua.LuaVMHelper;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.transformer.PreClassTransformer;
@@ -15,11 +16,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class ModContainer {
-    private static final ThreadLocal<ModContainer> activeModContainer = new ThreadLocal<>();
+    private static final FastThreadLocal<ModContainer> activeModContainer = new FastThreadLocal<>();
     // tmp is used to make getModContainer work in constructor.
     static ModContainer tmp;
     public final File file;
@@ -61,6 +63,7 @@ public final class ModContainer {
         this.description = description;
         this.jitpack = jitpack;
         this.logger = Logger.getLogger(name);
+        FoxLauncher.installLoggerHelperOn(this.logger);
         this.unofficial = unofficial;
         this.injected = injected;
         if (ModLoader.DEV_MODE) {
@@ -85,8 +88,22 @@ public final class ModContainer {
 
     public void runInContext(Runnable runnable) {
         ModContainer modContainer = markActive();
-        runnable.run();
-        setActiveModContainer(modContainer);
+        try {
+            runnable.run();
+        } finally {
+            setActiveModContainer(modContainer);
+        }
+    }
+
+    public <T, R> R runFuncInContext(T thing, Function<T, R> func) {
+        ModContainer modContainer = markActive();
+        R result;
+        try {
+            result = func.apply(thing);
+        } finally {
+            setActiveModContainer(modContainer);
+        }
+        return result;
     }
 
     public Mod getClientMod() {

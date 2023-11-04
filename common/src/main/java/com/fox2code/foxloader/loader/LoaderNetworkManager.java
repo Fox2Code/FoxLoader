@@ -1,5 +1,7 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.launcher.utils.IOUtils;
+import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.FoxPacket;
 import com.fox2code.foxloader.loader.packet.ServerHello;
@@ -16,7 +18,6 @@ import java.util.zip.GZIPOutputStream;
 
 final class LoaderNetworkManager {
     static void executeClientPacketData(NetworkPlayer networkPlayer, byte[] data) {
-
         try (DataInputStream dataInputStream =
                      new NetworkDataInputStream(new ByteArrayInputStream(data))) {
             int packetId = dataInputStream.readUnsignedByte();
@@ -50,9 +51,10 @@ final class LoaderNetworkManager {
     }
 
     static void executeServerPacketData(NetworkPlayer networkPlayer, byte[] data) {
-        byte compressed = data[0];
         InputStream inputStream = new ByteArrayInputStream(data);
         try {
+            int compressed = inputStream.read();
+            ModLoader.foxLoader.logger.info("Compression: " + compressed);
             switch (compressed) {
                 case 0:
                     break;
@@ -63,14 +65,32 @@ final class LoaderNetworkManager {
                     inputStream = new DeflaterInputStream(inputStream);
                     break;
                 default:
+                    ModLoader.foxLoader.logger.log(Level.WARNING, "Unknown compression: " + compressed);
                     return;
             }
         } catch (IOException e) {
-            ModLoader.foxLoader.logger.log(Level.WARNING, "Failed to read server packet", e);
+            ModLoader.foxLoader.logger.log(Level.SEVERE, "Failed to read server packet", e);
         }
         try (DataInputStream dataInputStream =
                      new NetworkDataInputStream(inputStream)) {
             int packetId = dataInputStream.readUnsignedByte();
+            ModLoader.foxLoader.logger.info("PacketID: " + packetId);
+
+            if (packetId == 120) {
+                StringBuilder stringBuilder = new StringBuilder();
+                try {
+                    while (true)
+                        stringBuilder.append(Integer.toHexString(dataInputStream.readUnsignedByte())).append(" ");
+                } catch (Exception e) {
+                    ModLoader.foxLoader.logger.info("PacketOfDeath: " + stringBuilder);
+                    stringBuilder.setLength(0);
+                    for (byte b : data) {
+                        stringBuilder.append(String.format("%02X", b));
+                    }
+                    ModLoader.foxLoader.logger.info("RAW Data: " + stringBuilder);
+                    System.exit(1);
+                }
+            }
             //noinspection SwitchStatementWithTooFewBranches
             switch (packetId) {
                 case 0:
@@ -81,7 +101,9 @@ final class LoaderNetworkManager {
                                     networkPlayer, serverHello);
                     break;
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            ModLoader.foxLoader.logger.log(Level.SEVERE, "Failed to read server packet", e);
+        }
     }
 
     static void sendServerPacketData(NetworkPlayer networkPlayer, FoxPacket foxPacket) {

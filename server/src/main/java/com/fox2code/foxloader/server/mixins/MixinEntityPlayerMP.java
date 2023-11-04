@@ -2,6 +2,7 @@ package com.fox2code.foxloader.server.mixins;
 
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.server.network.NetServerHandlerAccessor;
 import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.game.entity.player.EntityPlayer;
@@ -20,7 +21,6 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
     @Shadow public NetServerHandler playerNetServerHandler;
     @Shadow public MinecraftServer mcServer;
     @Shadow public PlayerController itemInWorldManager;
-    @Unique private boolean hasFoxLoader;
 
     public MixinEntityPlayerMP(World var1) {
         super(var1);
@@ -38,7 +38,9 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
 
     @Override
     public void sendNetworkData(ModContainer modContainer, byte[] data) {
-        this.sendNetworkDataRaw(modContainer.id, data);
+        if (this.hasFoxLoader()) {
+            this.sendNetworkDataRaw(modContainer.id, data);
+        }
     }
 
     @Override
@@ -48,7 +50,7 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
 
     @Override
     public boolean hasFoxLoader() {
-        return this.hasFoxLoader;
+        return ((NetServerHandlerAccessor) this.playerNetServerHandler).hasFoxLoader();
     }
 
     @Override
@@ -68,14 +70,22 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
 
     @Override
     public void notifyHasFoxLoader() {
-        this.hasFoxLoader = true;
+        ((NetServerHandlerAccessor) this.playerNetServerHandler).notifyHasFoxLoader();
+    }
+
+    @Override
+    public void notifyClientHello() {
+        ((NetServerHandlerAccessor) this.playerNetServerHandler).notifyClientHello();
+    }
+
+    @Override
+    public boolean hasClientHello() {
+        return ((NetServerHandlerAccessor) this.playerNetServerHandler).hasClientHello();
     }
 
     @Override
     public void sendNetworkDataRaw(String modContainer, byte[] data) {
-        if (this.hasFoxLoader) {
-            this.playerNetServerHandler.sendPacket(new Packet250PluginMessage(modContainer, data));
-        }
+        this.playerNetServerHandler.sendPacket(new Packet250PluginMessage(modContainer, data));
     }
 
     @Override

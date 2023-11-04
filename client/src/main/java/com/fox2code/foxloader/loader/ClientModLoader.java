@@ -45,7 +45,8 @@ public final class ClientModLoader extends ModLoader {
         final byte[] nullSHA256 = new byte[32];
         try {
             ArrayList<ClientHello.ClientModData> clientModData =
-                    new ArrayList<>(ModLoader.modContainers.size());
+                    new ArrayList<>(ModLoader.modContainers.size() +
+                            ModLoader.coreMods.size());
             for (File coreMod : ModLoader.coreMods) {
                 byte[] sha256 = NetUtils.hashOf(coreMod);
                 clientModData.add(new ClientHello.ClientModData(
@@ -74,6 +75,12 @@ public final class ClientModLoader extends ModLoader {
     @Override
     public void onServerStart(NetworkPlayer.ConnectionType connectionType) {
         GameRegistryClient.resetMappings(connectionType.isServer);
+    }
+
+    @Override
+    public void onReceiveServerPacket(NetworkPlayer networkPlayer, byte[] data) {
+        ModLoader.foxLoader.logger.info("Received server packet");
+        LoaderNetworkManager.executeServerPacketData(networkPlayer, data);
     }
 
     @Override

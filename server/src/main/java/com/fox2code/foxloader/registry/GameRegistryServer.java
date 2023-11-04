@@ -345,6 +345,7 @@ public class GameRegistryServer extends GameRegistry {
     // END Common code //
 
     public void sendRegistryData(EntityPlayerMP networkPlayer) {
+        ModLoader.getModLoaderLogger().info("Player " + networkPlayer.username + " has FoxLoader");
         ((NetworkPlayerImpl) networkPlayer).sendNetworkDataRaw(
                 ModLoader.FOX_LOADER_MOD_ID, serverHello);
     }

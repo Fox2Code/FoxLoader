@@ -365,6 +365,27 @@ class GradlePlugin implements Plugin<Project> {
                 try {
                     System.out.println("Decompiling patched ReIndev " + logSideName)
                     new FoxLoaderDecompiler(unpickedJarFox, sourcesJarFox, client).decompile()
+                } catch (OutOfMemoryError oom) {
+                    boolean deleteFailed = false
+                    try {
+                        closeJarFileSystem(unpickedJarFox)
+                        closeJarFileSystem(sourcesJarFox)
+                    } finally {
+                        if (!sourcesJarFox.delete()) {
+                            sourcesJarFox.deleteOnExit()
+                            deleteFailed = true
+                        }
+                    }
+                    Throwable root = oom
+                    while (root.getCause() != null)
+                        root = root.getCause()
+
+                    root.initCause(deleteFailed ? // If delete failed, restart
+                            UserMessage.UNRECOVERABLE_STATE_DECOMPILE :
+                            client ? UserMessage.FAIL_DECOMPILE_CLIENT :
+                                    UserMessage.FAIL_DECOMPILE_SERVER)
+                    if (deleteFailed) throw oom // If delete failed, we can't recover
+                    oom.printStackTrace()
                 } catch (Throwable throwable) {
                     boolean deleteFailed = false
                     try {

@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.launcher;
 
+import com.fox2code.foxloader.launcher.utils.FastThreadLocal;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -37,8 +38,8 @@ public final class StackTraceStringifier {
         return stringBuilder.toString();
     }
 
-    private static final ThreadLocal<StackTraceStringifier> stringifier =
-            ThreadLocal.withInitial(StackTraceStringifier::new);
+    private static final FastThreadLocal<StackTraceStringifier> stringifier =
+            FastThreadLocal.withInitial(StackTraceStringifier::new);
 
     public static String stringifyStackTrace(Throwable throwable) {
         return stringifier.get().stringify(throwable);
