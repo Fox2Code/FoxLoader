@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class InstallerGUI implements FileDropHelper.FileDropHandler {
@@ -50,6 +51,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
     private final FileDropHelper dropHelper;
     private final JButton minecraftButton;
     private final JButton mmcButton;
+    private final JButton serverButton;
     private final JProgressBar progressBar;
     private boolean runningTask;
     private File reIndevSource;
@@ -88,15 +90,15 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         }
         this.mmcButton = mmcButton;
         this.minecraftButton = minecraftButton;
+        JButton serverButton = null;
         if (this.installerPlatform.fullscreenLayout) {
             makeButton(clientContainer, "installer.exit-installer", this::exitInstaller);
         } else {
-            JPanel serverContainer = makeContainer("installer.install-server");
-            // makeButton(serverContainer, "Install modded server here!", null);
-            //serverContainer.add(new Label("You can add \"--server\" argument to"));
-            //serverContainer.add(new Label("the installer to run the server."));
+            JPanel serverContainer = makeContainerEx("installer.install-server", true);
+            serverButton = makeButton(serverContainer, "installer.extract-server", this::extractServer);
             serverContainer.add(new SelectableTranslatableLabel("installer.install-server.text.*"));
         }
+        this.serverButton = serverButton;
         progressBar = new JProgressBar();
         progressBar.setMaximum(PROGRESS_BAR_MAX);
         progressBar.setString("");
@@ -127,15 +129,23 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         dropHelper = null;
         minecraftButton = null;
         mmcButton = null;
+        serverButton = null;
         progressBar = new JProgressBar();
         progressBar.setMaximum(PROGRESS_BAR_MAX);
     }
 
     private JPanel makeContainer(final String text) {
+        return this.makeContainerEx(text, false);
+    }
+
+    private JPanel makeContainerEx(final String text, final boolean specialLayout) {
         final JPanel container = new JPanel();
         if (text != null) {
             container.setLayout(installerPlatform.fullscreenLayout ?
-                    new FlowLayout(FlowLayout.CENTER) : new GridLayout(0, 1, 0, 3));
+                    new FlowLayout(FlowLayout.CENTER) :
+                    // specialLayout is a workaround for layout building.
+                    specialLayout ? new VerticalGridBagLayout() :
+                            new GridLayout(0, 1, 0, 3));
             container.setBorder(TranslateEngine.createTitledBorder(text));
             globalContainer.add(container);
         } else {
@@ -369,7 +379,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 fileName.substring(0, fileName.length() - 4) + "-mmc.zip");
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(instanceDest.toPath()))) {
             zipOutputStream.putNextEntry(new ZipEntry("libraries/foxloader-" + BuildConfig.FOXLOADER_VERSION + ".jar"));
-            copy(Files.newInputStream(Main.currentInstallerFile.toPath()), zipOutputStream);
+            copyCloseIn(Files.newInputStream(Main.currentInstallerFile.toPath()), zipOutputStream);
             zipOutputStream.closeEntry();
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             for (String entry : new String[]{"patches/com.fox2code.foxloader.json",
@@ -379,7 +389,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 byteArrayOutputStream.reset();
                 IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
                         "/mmc/" + entry), byteArrayOutputStream);
-                copy(new ByteArrayInputStream(byteArrayOutputStream.toString()
+                copyCloseIn(new ByteArrayInputStream(byteArrayOutputStream.toString()
                         .replace("#version#", this.versionName)
                         .replace("#jvm_args#", Main.optJvmArgs)
                         .replace("#foxloader_version#", BuildConfig.FOXLOADER_VERSION)
@@ -392,8 +402,46 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
             return;
         }
         progressBar.setValue(PROGRESS_BAR_MAX);
-        showMessage(TranslateEngine.getTranslationFormat(
-                "installer.multimc.text.*", BuildConfig.FOXLOADER_VERSION, BuildConfig.REINDEV_VERSION), false);
+        showMessage(TranslateEngine.getTranslationFormat("installer.multimc.text.*",
+                BuildConfig.FOXLOADER_VERSION, BuildConfig.REINDEV_VERSION), false);
+    }
+
+    public void extractServer() {
+        if (this.checkInstaller()) {
+            return;
+        }
+
+        String fileName = Main.currentInstallerFile.getName();
+        File serverDest = new File(Main.currentInstallerFile.getParentFile(),
+                fileName.substring(0, fileName.length() - 4) + "-server.jar");
+        try (ZipInputStream zipInputStream = new ZipInputStream(
+                Files.newInputStream(Main.currentInstallerFile.toPath()));
+             ZipOutputStream zipOutputStream = new ZipOutputStream(
+                     Files.newOutputStream(serverDest.toPath()))) {
+            ZipEntry zipEntry;
+            while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+                if (zipEntry.getName().equals("META-INF/MANIFEST.MF")) {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    IOUtils.copy(zipInputStream, byteArrayOutputStream);
+                    zipOutputStream.putNextEntry(new ZipEntry(zipEntry.getName()));
+                    copyCloseIn(new ByteArrayInputStream(byteArrayOutputStream.toString()
+                            .replace("com.fox2code.foxloader.installer.Main",
+                                    "com.fox2code.foxloader.launcher.ServerMain")
+                            .getBytes(StandardCharsets.UTF_8)), zipOutputStream);
+                    zipOutputStream.closeEntry();
+                } else {
+                    zipOutputStream.putNextEntry(zipEntry);
+                    IOUtils.copy(zipInputStream, zipOutputStream);
+                    zipOutputStream.closeEntry();
+                }
+            }
+        } catch (IOException e) {
+            showError(e);
+            return;
+        }
+        progressBar.setValue(PROGRESS_BAR_MAX);
+        showMessage(TranslateEngine.getTranslationFormat("installer.server.text.*",
+                BuildConfig.FOXLOADER_VERSION, BuildConfig.REINDEV_VERSION), false);
     }
 
     public void doSilentInstall(String arg) throws IOException {
@@ -486,7 +534,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
         System.exit(0);
     }
 
-    private static void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
+    private static void copyCloseIn(InputStream inputStream, OutputStream outputStream) throws IOException {
         try (InputStream is = inputStream) {
             byte[] byteChunk = new byte[4096];
             int n;
@@ -525,6 +573,8 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
 
             this.minecraftButton.setEnabled(false);
             this.mmcButton.setEnabled(false);
+            if (this.serverButton != null)
+                this.serverButton.setEnabled(false);
             this.versionName = CUSTOM_VERSION_NAME_BASE + "-with-" +
                     file.getName().substring(0, file.getName().length() - 4);
             this.reIndevSource = file;

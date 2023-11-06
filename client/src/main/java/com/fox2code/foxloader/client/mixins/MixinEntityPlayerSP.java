@@ -48,4 +48,10 @@ public abstract class MixinEntityPlayerSP implements NetworkPlayer {
     public NetworkPlayerController getNetworkPlayerController() {
         return (NetworkPlayerController) Minecraft.getInstance().playerController;
     }
+
+    @Override
+    public boolean isConnected() {
+        final Minecraft mc = Minecraft.getInstance();
+        return mc.theWorld != null && !mc.isMultiplayerWorld();
+    }
 }

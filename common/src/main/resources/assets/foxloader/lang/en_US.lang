@@ -29,6 +29,7 @@ installer.install-special=Install on %s Launcher
 installer.install-minecraft=Install on Minecraft Launcher
 installer.install-betacraft=Install on BetaCraft Launcher
 installer.extract-multimc=Extract MultiMC Instance
+installer.extract-server=Extract Server Jar
 installer.exit-installer=Exit installer
 installer.install-server=Install Server
 installer.install-server.text.1=You can add "--server" argument to
@@ -46,4 +47,6 @@ installer.multimc.text.4=To import a zip: Add Instance -> Import from zip -> Bro
 installer.multimc.text.5=You can also drag and drop the zip file onto your MMC main launcher GUI to create the new instance.
 installer.multimc.text.6=
 installer.multimc.text.7=MMM = MultiMC based launcher (MultiMC/PolyMC/PrismLauncher)
+installer.server.text.1=FoxLoader %s server for ReIndev %s has been successfully extracted!
+installer.server.text.2=(The file should be a "-server.jar" next to the installer)
 installer.comment=(You can select the FoxLoader version you want to use in the version list)

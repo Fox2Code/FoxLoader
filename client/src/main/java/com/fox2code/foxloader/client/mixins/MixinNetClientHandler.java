@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.packets.*;
 import net.minecraft.src.game.level.WorldClient;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,6 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(NetClientHandler.class)
 public class MixinNetClientHandler implements NetClientHandlerExtensions {
+    @Shadow private boolean disconnected;
+    @Shadow private NetworkManager netManager;
     @Unique boolean isFoxLoader = false;
 
     @Inject(method = "handlePickupSpawn", at = @At("HEAD"))
@@ -84,5 +87,10 @@ public class MixinNetClientHandler implements NetClientHandlerExtensions {
     @Override
     public boolean isFoxLoader() {
         return this.isFoxLoader;
+    }
+
+    @Override
+    public boolean isDisconnected() {
+        return this.disconnected;
     }
 }

@@ -1,6 +1,5 @@
 package com.fox2code.foxloader.loader;
 
-import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
@@ -15,6 +14,8 @@ import net.minecraft.server.MinecraftServer;
 import java.util.Objects;
 
 public final class ServerModLoader extends ModLoader {
+    public static boolean shouldKickOnOutdatedLoader = false;
+
     public static void launchModdedServer(String... args) {
         ModLoader.foxLoader.serverMod = new ServerModLoader();
         ModLoader.foxLoader.serverMod.modContainer = ModLoader.foxLoader;
@@ -25,18 +26,29 @@ public final class ServerModLoader extends ModLoader {
     }
 
     public static void notifyNetworkPlayerJoined(NetworkPlayer networkPlayer) {
-        if (networkPlayer.hasFoxLoader()) {
-            ModLoader.getModLoaderLogger().info("Starting Thread check");
-            new Thread(() -> {
-                try {
-                    Thread.sleep(2500);
-                    if (!((NetworkPlayerImpl) networkPlayer).hasClientHello())
-                        networkPlayer.kick("You have a broken and outdated version of FoxLoader");
-                } catch (InterruptedException ignored) {}
-            }, "Async - Client Hello Player Check").start();
-        }
         for (ModContainer modContainer : ModLoader.modContainers.values()) {
             modContainer.notifyNetworkPlayerJoined(networkPlayer);
+        }
+        if (networkPlayer.hasFoxLoader() && networkPlayer.isConnected()) {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(5500);
+                    if (networkPlayer.isConnected() && !((NetworkPlayerImpl) networkPlayer).hasClientHello()) {
+                        // This can also trigger at very high ping...
+                        if (shouldKickOnOutdatedLoader) {
+                            networkPlayer.kick(
+                                    "You have a broken and outdated version of FoxLoader\n\n" +
+                                            "You can update via the Mods button in Main Menu\n" +
+                                            "Mods -> FoxLoader -> Update Mod (Then restart to apply changes)");
+                        } else {
+                            networkPlayer.displayChatMessage(
+                                    "You have a broken and outdated version of FoxLoader\n" +
+                                            "You can update via the mods button in Main Menu or InGame Menu\n" +
+                                            "Mods -> FoxLoader -> Update Mod (Then restart to apply changes)");
+                        }
+                    }
+                } catch (InterruptedException ignored) {}
+            }, "Async - Client Hello Player Check").start();
         }
     }
 

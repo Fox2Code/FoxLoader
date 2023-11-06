@@ -12,7 +12,6 @@ import net.minecraft.src.game.item.*;
 import net.minecraft.src.game.recipe.*;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;

@@ -5,6 +5,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class IOUtils {
+    public static void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
+        byte[] byteChunk = new byte[4096];
+        int n;
+
+        while ((n = inputStream.read(byteChunk)) > 0) {
+            outputStream.write(byteChunk, 0, n);
+        }
+    }
+
     public static void copyAndClose(InputStream inputStream, OutputStream outputStream) throws IOException {
         try (InputStream is = inputStream;
              OutputStream out = outputStream) {

@@ -14,7 +14,6 @@ import org.objectweb.asm.tree.ClassNode;
 
 import java.io.*;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;

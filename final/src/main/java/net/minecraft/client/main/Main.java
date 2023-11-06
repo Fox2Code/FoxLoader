@@ -1,7 +1,6 @@
 package net.minecraft.client.main;
 
 import com.fox2code.foxloader.launcher.ClientMain;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.MinecraftApplet;
 
 /**

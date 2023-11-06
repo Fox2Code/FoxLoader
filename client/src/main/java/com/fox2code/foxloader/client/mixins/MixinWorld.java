@@ -8,11 +8,8 @@ import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.other.EntityItem;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
-import net.minecraft.src.game.level.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.List;
 

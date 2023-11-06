@@ -2,7 +2,6 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.launcher.ClassTransformer;
 import com.fox2code.foxloader.launcher.FoxClassLoader;
-import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.loader.transformer.JvmCompatTransformer;
 import org.objectweb.asm.*;

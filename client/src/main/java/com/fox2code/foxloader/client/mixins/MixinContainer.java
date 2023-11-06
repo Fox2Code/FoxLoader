@@ -2,19 +2,13 @@ package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.client.gui.ContainerWrapped;
 import net.minecraft.src.client.gui.Container;
-import net.minecraft.src.client.gui.GuiContainer;
-import net.minecraft.src.client.gui.Slot;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.List;
 
 
 @Mixin(Container.class)

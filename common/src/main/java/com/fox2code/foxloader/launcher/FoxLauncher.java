@@ -3,9 +3,12 @@ package com.fox2code.foxloader.launcher;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 public class FoxLauncher {
@@ -107,7 +110,28 @@ public class FoxLauncher {
         if (wronglyInstalled && wronglyInstalledUnrecoverable)
             throw new IllegalStateException("FoxClassLoader cannot initialize!");
         client = false;
+        File parent = null;
+        // When double-clicked on, the jar may be launched in the
+        // user home directory instead of where the file is located.
+        if (Objects.equals(System.getProperty("user.dir"), System.getProperty("user.home"))) {
+            System.setProperty("user.dir", (parent = SourceUtil.getSourceFile(FoxLauncher.class)
+                    .getAbsoluteFile().getParentFile()).getAbsolutePath());
+        }
         FoxLauncher.gameDir = new File("").getAbsoluteFile();
+        if (parent != null && !parent.getPath().equals(FoxLauncher.gameDir.getPath())) {
+            String message = "FoxLoader was unable to recover an invalid initial\n" +
+                    "state caused by your desktop environment due to the current\n" +
+                    "JVM not allowing fixing up the current JVM state.\n\n" +
+                    "Please launch the server via your terminal or PowerShell";
+            System.out.println("-----\n" + message + "\n-----");
+            if (!GraphicsEnvironment.isHeadless()) {
+                JOptionPane.showMessageDialog(null, message,
+                        "FoxLoader server launch failure",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            System.exit(-1);
+            return;
+        }
         // Special case for development environment.
         if (isDirGradle(gameDir)) {
             throw new RuntimeException("You should not run a server inside a gradle project!");

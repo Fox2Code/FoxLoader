@@ -1,6 +1,5 @@
 package com.fox2code.foxloader.client.mixins;
 
-import com.fox2code.foxloader.loader.ClientModLoader;
 import com.fox2code.foxloader.registry.GameRegistryClient;
 import net.minecraft.src.game.level.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;

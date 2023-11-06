@@ -1,7 +1,6 @@
 package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.client.KeyBindingAPI;
-import net.minecraft.src.client.EnumOptions;
 import net.minecraft.src.client.GameSettings;
 import net.minecraft.src.client.KeyBinding;
 import org.lwjgl.input.Keyboard;
@@ -11,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(GameSettings.class)
 public class MixinGameSettings {

@@ -1,7 +1,5 @@
 package com.fox2code.foxloader.loader;
 
-import com.fox2code.foxloader.launcher.utils.IOUtils;
-import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.FoxPacket;
 import com.fox2code.foxloader.loader.packet.ServerHello;
@@ -11,10 +9,7 @@ import com.fox2code.foxloader.network.io.NetworkDataOutputStream;
 
 import java.io.*;
 import java.util.logging.Level;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.*;
 
 final class LoaderNetworkManager {
     static void executeClientPacketData(NetworkPlayer networkPlayer, byte[] data) {
@@ -62,7 +57,7 @@ final class LoaderNetworkManager {
                     inputStream = new GZIPInputStream(inputStream);
                     break;
                 case 2:
-                    inputStream = new DeflaterInputStream(inputStream);
+                    inputStream = new InflaterInputStream(inputStream);
                     break;
                 default:
                     ModLoader.foxLoader.logger.log(Level.WARNING, "Unknown compression: " + compressed);
@@ -74,23 +69,7 @@ final class LoaderNetworkManager {
         try (DataInputStream dataInputStream =
                      new NetworkDataInputStream(inputStream)) {
             int packetId = dataInputStream.readUnsignedByte();
-            ModLoader.foxLoader.logger.info("PacketID: " + packetId);
 
-            if (packetId == 120) {
-                StringBuilder stringBuilder = new StringBuilder();
-                try {
-                    while (true)
-                        stringBuilder.append(Integer.toHexString(dataInputStream.readUnsignedByte())).append(" ");
-                } catch (Exception e) {
-                    ModLoader.foxLoader.logger.info("PacketOfDeath: " + stringBuilder);
-                    stringBuilder.setLength(0);
-                    for (byte b : data) {
-                        stringBuilder.append(String.format("%02X", b));
-                    }
-                    ModLoader.foxLoader.logger.info("RAW Data: " + stringBuilder);
-                    System.exit(1);
-                }
-            }
             //noinspection SwitchStatementWithTooFewBranches
             switch (packetId) {
                 case 0:
@@ -124,9 +103,10 @@ final class LoaderNetworkManager {
     @SuppressWarnings("SameParameterValue")
     static byte[] compileServerPacketData(FoxPacket foxPacket, int compression) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream headerOutputStream = new DataOutputStream(byteArrayOutputStream);
         OutputStream outputStream = byteArrayOutputStream;
-        byteArrayOutputStream.write(compression);
         try {
+            headerOutputStream.writeByte(compression);
             switch (compression) {
                 case 0:
                     break;
@@ -139,7 +119,9 @@ final class LoaderNetworkManager {
                 default:
                     throw new IllegalArgumentException("Unknown compression: " + compression);
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to setup compression stream.", e);
+        }
 
         try (DataOutputStream dataOutputStream = new DataOutputStream(outputStream)) {
             dataOutputStream.writeByte(foxPacket.id);

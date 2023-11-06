@@ -3,7 +3,6 @@ package com.fox2code.foxloader.loader;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
-import com.fox2code.foxloader.launcher.utils.IOUtils;
 import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
@@ -17,7 +16,6 @@ import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.src.client.gui.StringTranslate;
 
 import java.io.*;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;

@@ -104,4 +104,9 @@ public class Main {
         return (userHome.startsWith("/storage/emulated/") && (index = userHome.indexOf('/', 18)) != -1 &&
                 userHome.substring(index).startsWith("/Android/data/") || userHome.startsWith("/sdcard/Android/data/"));
     }
+
+    static {
+        System.setProperty("file.encoding", "UTF-8");
+        System.setProperty("user.language", "en");
+    }
 }

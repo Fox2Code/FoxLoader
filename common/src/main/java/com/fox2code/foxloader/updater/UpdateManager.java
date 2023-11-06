@@ -1,7 +1,6 @@
 package com.fox2code.foxloader.updater;
 
 import com.fox2code.foxloader.launcher.FoxLauncher;
-import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.loader.FLJitPackUpdater;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;

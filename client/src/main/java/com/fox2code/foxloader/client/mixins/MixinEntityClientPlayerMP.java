@@ -59,4 +59,10 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
     public boolean isOperator() {
         return false;
     }
+
+    @Override
+    public boolean isConnected() {
+        return sendQueue != null && Minecraft.getInstance().isMultiplayerWorld() &&
+                !((NetClientHandlerExtensions) sendQueue).isDisconnected();
+    }
 }

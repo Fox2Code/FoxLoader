@@ -4,7 +4,6 @@ import com.fox2code.foxloader.commands.WorldReplace;
 import com.fox2code.foxloader.commands.WorldSet;
 import com.fox2code.foxloader.launcher.*;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
-import com.fox2code.foxloader.loader.lua.LuaVMHelper;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.network.NetworkPlayer;
@@ -23,7 +22,6 @@ import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ModLoader extends Mod {
@@ -214,6 +212,11 @@ public class ModLoader extends Mod {
                     " because it used the reserved mod id: " + id);
             return;
         }
+        if (id.length() > MAX_MOD_ID_LENGTH) {
+            foxLoader.logger.warning("Unable to load " + file.getName() +
+                    " because it use a too large mod id: " + id);
+            return;
+        }
         if (name == null || name.isEmpty()) {
             name = id.substring(0, 1).toLowerCase(Locale.ROOT) + id.substring(1);
         }
@@ -304,6 +307,11 @@ public class ModLoader extends Mod {
         if (FOX_LOADER_MOD_ID.equals(id) || "minecraft".equals(id) || "reindev".equals(id) || "null".equals(id)) {
             foxLoader.logger.warning("Unable to load " + file.getName() +
                     " because it used the reserved mod id: " + id);
+            return;
+        }
+        if (id.length() > MAX_MOD_ID_LENGTH) {
+            foxLoader.logger.warning("Unable to load " + file.getName() +
+                    " because it use a too large mod id: " + id);
             return;
         }
         if (name == null || name.isEmpty()) {

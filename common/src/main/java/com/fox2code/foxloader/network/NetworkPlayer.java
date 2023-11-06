@@ -44,6 +44,11 @@ public interface NetworkPlayer extends RegisteredEntityLiving, RegisteredCommand
      */
     default NetworkPlayerController getNetworkPlayerController() { throw new RuntimeException(); }
 
+    /**
+     * @return if the player is currently connected
+     */
+    default boolean isConnected() { throw new RuntimeException(); }
+
     enum ConnectionType {
         SINGLE_PLAYER(true, true), CLIENT_ONLY(true, false), SERVER_ONLY(false, true);
 
