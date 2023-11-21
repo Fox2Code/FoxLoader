@@ -3,6 +3,7 @@ package com.fox2code.foxloader.network;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.registry.RegisteredCommandSender;
 import com.fox2code.foxloader.registry.RegisteredEntityLiving;
+import com.fox2code.foxloader.registry.RegisteredItemStack;
 
 public interface NetworkPlayer extends RegisteredEntityLiving, RegisteredCommandSender {
     /**
@@ -48,6 +49,11 @@ public interface NetworkPlayer extends RegisteredEntityLiving, RegisteredCommand
      * @return if the player is currently connected
      */
     default boolean isConnected() { throw new RuntimeException(); }
+
+    /**
+     * @return the player current held item or null.
+     */
+    default RegisteredItemStack getRegisteredHeldItem() { throw new RuntimeException(); }
 
     enum ConnectionType {
         SINGLE_PLAYER(true, true), CLIENT_ONLY(true, false), SERVER_ONLY(false, true);

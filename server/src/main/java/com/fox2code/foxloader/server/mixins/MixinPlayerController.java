@@ -3,6 +3,7 @@ package com.fox2code.foxloader.server.mixins;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.ServerMod;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import net.minecraft.src.game.MathHelper;
 import net.minecraft.src.game.block.Block;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.entity.player.EntityPlayerMP;
@@ -115,6 +116,34 @@ public abstract class MixinPlayerController implements NetworkPlayer.NetworkPlay
         ((EntityPlayerMP)this.player).playerNetServerHandler.sendPacket(
                 new Packet53BlockChange(x, y, z, this.worldObj)
         );
+        int rot = MathHelper.floor_double((double)(player.rotationYaw * 4.0F / 360.0F) + 0.5) & 3;
+        byte xoffs = 0;
+        byte zoffs = 0;
+        int ignoreFacing;
+        switch (rot) {
+            default:
+                return;
+            case 0:
+                zoffs = 1;
+                ignoreFacing = 3;
+                break;
+            case 1:
+                xoffs = -1;
+                ignoreFacing = 4;
+                break;
+            case 2:
+                zoffs = -1;
+                ignoreFacing = 2;
+                break;
+            case 3:
+                xoffs = 1;
+                ignoreFacing = 5;
+                break;
+        }
+        ((EntityPlayerMP) this.player).playerNetServerHandler.sendPacket(
+                new Packet53BlockChange(x + xoffs, y, z + zoffs, this.worldObj)
+        );
+        if (facing == ignoreFacing) return;
         switch(facing) {
             case 0:
                 --y;

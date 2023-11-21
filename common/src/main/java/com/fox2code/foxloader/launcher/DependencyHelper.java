@@ -31,10 +31,10 @@ public class DependencyHelper {
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.0",
+            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.1",
                     JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap",
                     // Need fallback URL cause JitPack links can ded at any time
-                    "https://github.com/LlamaLad7/MixinExtras/releases/download/0.2.0/mixinextras-common-0.2.0.jar"),
+                    "https://github.com/LlamaLad7/MixinExtras/releases/download/0.2.1/mixinextras-common-0.2.1.jar"),
     };
 
     public static final Dependency sparkDependency =

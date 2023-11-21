@@ -1,13 +1,16 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.client.renderer.TextureDynamic;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.ClientModLoader;
 import com.fox2code.foxloader.loader.ModLoader;
+import com.fox2code.foxloader.loader.packet.ServerDynamicTexture;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.GameSettings;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.level.WorldSettings;
 import org.lwjgl.input.Keyboard;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,15 +23,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
     @Shadow public volatile boolean running;
     @Shadow public GameSettings gameSettings;
     @Shadow private static File minecraftDir;
+    @Shadow public File mcDataDir;
     @Unique private NetworkPlayer.ConnectionType loadedWorldType;
     @Unique private boolean closeGameDelayed;
     @Unique private boolean showDebugInfoPrevious;
@@ -103,6 +109,22 @@ public class MixinMinecraft {
         if (this.closeGameDelayed) {
             this.closeGameDelayed = false;
             this.running = false;
+        }
+    }
+
+    @Inject(method = "startWorld", at = @At("RETURN"))
+    public void onStartWorldHook(String var1, String var2, WorldSettings worldInfo, CallbackInfo ci) {
+        try {
+            int loadedTextures = 0;
+            for (ServerDynamicTexture serverDynamicTexture : ServerDynamicTexture.readFromWorld(
+                    new File(new File(this.mcDataDir, "saves_ReIndev"), var1))) {
+                TextureDynamic.Hooks.getServerDynTex(serverDynamicTexture.slot)
+                        .setRenderingData(serverDynamicTexture.texture);
+                loadedTextures++;
+            }
+            ModLoader.getModLoaderLogger().info("Loaded " + loadedTextures + " dynamic textures!");
+        } catch (IOException e) {
+            ModLoader.getModLoaderLogger().log(Level.WARNING, "Failed to load dynamic textures!", e);
         }
     }
 }

@@ -6,7 +6,14 @@ public interface RegisteredCommandSender {
     RegisteredCommandSender CONSOLE_COMMAND_SENDER = new RegisteredCommandSender() {
         @Override
         public void displayChatMessage(String chatMessage) {
-            ModLoader.getModLoaderLogger().info(chatMessage);
+            if (chatMessage.indexOf('\n') == -1) {
+                ModLoader.getModLoaderLogger().info(chatMessage);
+            } else {
+                String[] splits = chatMessage.split("\\n");
+                for (String split : splits) {
+                    ModLoader.getModLoaderLogger().info(split);
+                }
+            }
         }
 
         @Override

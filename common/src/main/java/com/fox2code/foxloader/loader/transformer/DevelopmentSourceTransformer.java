@@ -6,6 +6,7 @@ import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.Textifier;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -62,8 +63,45 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
                 }
             }
         };
+        ConstantUnpick bufferedImageType = new IntStaticConstantUnpick("java/awt/image/BufferedImage") {
+            @Override
+            public String unpick(int value) {
+                switch (value) {
+                    case BufferedImage.TYPE_CUSTOM:
+                        return "TYPE_CUSTOM";
+                    case BufferedImage.TYPE_INT_RGB:
+                        return "TYPE_INT_RGB";
+                    case BufferedImage.TYPE_INT_ARGB:
+                        return "TYPE_INT_ARGB";
+                    case BufferedImage.TYPE_INT_ARGB_PRE:
+                        return "TYPE_INT_ARGB_PRE";
+                    case BufferedImage.TYPE_INT_BGR:
+                        return "TYPE_INT_BGR";
+                    case BufferedImage.TYPE_3BYTE_BGR:
+                        return "TYPE_3BYTE_BGR";
+                    case BufferedImage.TYPE_4BYTE_ABGR:
+                        return "TYPE_4BYTE_ABGR";
+                    case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+                        return "TYPE_4BYTE_ABGR_PRE";
+                    case BufferedImage.TYPE_USHORT_565_RGB:
+                        return "TYPE_USHORT_565_RGB";
+                    case BufferedImage.TYPE_USHORT_555_RGB:
+                        return "TYPE_USHORT_555_RGB";
+                    case BufferedImage.TYPE_BYTE_GRAY:
+                        return "TYPE_BYTE_GRAY";
+                    case BufferedImage.TYPE_USHORT_GRAY:
+                        return "TYPE_USHORT_GRAY";
+                    case BufferedImage.TYPE_BYTE_BINARY:
+                        return "TYPE_BYTE_BINARY";
+                    case BufferedImage.TYPE_BYTE_INDEXED:
+                        return "TYPE_BYTE_INDEXED";
+                }
+                return null;
+            }
+        };
         virtualConstantUnpicks.put("java/awt/Frame.add(Ljava/awt/Component;Ljava/lang/Object;)V", borderLayoutUnpick);
         virtualConstantUnpicks.put("javax/swing/JPanel.add(Ljava/awt/Component;Ljava/lang/Object;)V", borderLayoutUnpick);
+        virtualConstantUnpicks.put("java/awt/image/BufferedImage.<init>(III)V", bufferedImageType);
         // Minecraft specific AWT/Swing Unpicks
         virtualConstantUnpicks.put("net/minecraft/client/MinecraftApplet.add(Ljava/awt/Component;Ljava/lang/Object;)V", borderLayoutUnpick);
         virtualConstantUnpicks.put("net/minecraft/src/server/ServerGUI.add(Ljava/awt/Component;Ljava/lang/Object;)V", borderLayoutUnpick);
@@ -162,6 +200,14 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
                 new ParamsConstantUnpick(glParam, null));
         // Minecraft specific LWJGL/OpenGL Unpicks
         virtualConstantUnpicks.put("net/minecraft/src/client/renderer/Tessellator.startDrawing(I)V", glParam);
+        virtualConstantUnpicks.put("net/minecraft/src/client/renderer/block/TextureManager" +
+                ".createEmptyTexture(Ljava/lang/String;IIII)Lnet/minecraft/src/client/renderer/block/Texture;",
+                new ParamsConstantUnpick(null, glParam, null, null, glParam));
+        virtualConstantUnpicks.put("net/minecraft/src/client/renderer/block/TextureManager" +
+                ".makeTexture(Ljava/lang/String;IIIIIIIZLjava/awt/image/BufferedImage;)" +
+                "Lnet/minecraft/src/client/renderer/block/Texture;",
+                new ParamsConstantUnpick(null, glParam, null, null,
+                        glParam, glParam, glParam, glParam, null, null));
         putStaticConstantUnpicks.put("net/minecraft/src/client/renderer/OpenGlHelper2#lightmapDisabled", glParam);
         putStaticConstantUnpicks.put("net/minecraft/src/client/renderer/OpenGlHelper2#lightmapEnabled", glParam);
         putStaticConstantUnpicks.put("net/minecraft/src/client/renderer/entity/OpenGlHelper#defaultTexUnit", glParam);
@@ -246,6 +292,27 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
 
     public static abstract class ConstantUnpick {
         private StringBuilder testDebug;
+        final boolean forceFailSafe;
+
+        protected ConstantUnpick() {
+            this.forceFailSafe = false;
+        }
+
+        protected ConstantUnpick(boolean forceFailSafe) {
+            this.forceFailSafe = forceFailSafe;
+        }
+
+        protected ConstantUnpick(ConstantUnpick... unpicks) {
+            boolean forceFailSafe = true;
+            for (ConstantUnpick constantUnpick : unpicks) {
+                if (constantUnpick != null &&
+                        !constantUnpick.forceFailSafe) {
+                    forceFailSafe = false;
+                    break;
+                }
+            }
+            this.forceFailSafe = forceFailSafe;
+        }
 
         public abstract void unpick(InsnList insnList, AbstractInsnNode constant);
 
@@ -291,6 +358,7 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
         private final ConstantUnpick[] constantUnpicks;
 
         public MultiConstantUnpick(ConstantUnpick... constantUnpicks) {
+            super(constantUnpicks);
             this.constantUnpicks = constantUnpicks;
         }
 
@@ -425,9 +493,16 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
                     testDbg("Processing...");
                     AbstractInsnNode previous = constant.getPrevious();
                     constantUnpick.unpick(insnList, constant);
+                    final AbstractInsnNode constantBackup = constant;
                     if (previous == null ||
                             (constant = previous.getNext()) == null) {
-                        return;
+                        if (constantUnpick.forceFailSafe) {
+                            if (constantBackup.getPrevious() != null) {
+                                constant = constantBackup;
+                            } else {
+                                throw new IllegalStateException("Fail safe failed?");
+                            }
+                        } else return;
                     }
                 }
                 constant = constant.getPrevious();
@@ -445,6 +520,10 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
     }
 
     public static abstract class IntConstantUnpick extends ConstantUnpick {
+        public IntConstantUnpick() {
+            super(true);
+        }
+
         @Override
         public final void unpick(InsnList insnList, AbstractInsnNode constant) {
             switch (constant.getOpcode()) {
@@ -502,6 +581,7 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
         private final String type;
 
         private CheckCastConstantUnpick(String type) {
+            super(true);
             this.type = type;
         }
 

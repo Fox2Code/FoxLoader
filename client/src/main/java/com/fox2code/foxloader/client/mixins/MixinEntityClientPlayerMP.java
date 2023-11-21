@@ -42,7 +42,14 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
 
     @Override
     public void displayChatMessage(String chatMessage) {
-        Minecraft.getInstance().ingameGUI.addChatMessage(chatMessage);
+        if (chatMessage.indexOf('\n') == -1) {
+            Minecraft.getInstance().ingameGUI.addChatMessage(chatMessage);
+        } else {
+            String[] splits = chatMessage.split("\\n");
+            for (String split : splits) {
+                Minecraft.getInstance().ingameGUI.addChatMessage(split);
+            }
+        }
     }
 
     @Override

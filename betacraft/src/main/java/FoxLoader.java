@@ -11,6 +11,7 @@ public class FoxLoader extends Wrapper {
     static {
         System.clearProperty("http.proxyHost");
         System.clearProperty("http.proxyPort");
+        System.setProperty("foxloader.internal.betacraft-wrapper", "true");
         System.out.println("FoxLoader BetaCraft wrapper loaded!");
     }
 
@@ -26,14 +27,20 @@ public class FoxLoader extends Wrapper {
 
     public FoxLoader(String user, String ver_prefix, String version, String sessionid, String mainFolder, Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String uuid, String USR, String VER, Image img, ArrayList<?> addons) {
         super(user, ver_prefix, version, sessionid, mainFolder, height, width,
-                RPC && checkAllowDiscordRpc(mainFolder),
+                RPC == Boolean.TRUE && checkAllowDiscordRpc(mainFolder),
                 launchMethod, server, mppass, uuid, USR, VER, img, addons);
+        try {
+            this.ogaddons.clear();
+        } catch (Throwable ignored) {}
     }
 
     public FoxLoader(String user, String ver_prefix, String version, String sessionid, String mainFolder, Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String USR, String VER, Image img, ArrayList<?> addons) {
         super(user, ver_prefix, version, sessionid, mainFolder, height, width,
-                RPC && checkAllowDiscordRpc(mainFolder),
+                RPC == Boolean.TRUE && checkAllowDiscordRpc(mainFolder),
                 launchMethod, server, mppass, USR, VER, img, addons);
+        try {
+            this.ogaddons.clear();
+        } catch (Throwable ignored) {}
     }
 
     @Override

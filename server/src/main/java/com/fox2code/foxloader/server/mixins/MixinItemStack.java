@@ -13,12 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemStack.class)
 public abstract class MixinItemStack implements RegisteredItemStack {
-    @Shadow
-    public int itemID;
-    @Shadow
-    public int stackSize;
-    @Shadow
-    public int itemDamage;
+    @Shadow public int itemID;
+    @Shadow public int stackSize;
+    @Shadow public int itemDamage;
+    @Shadow public NBTTagCompound nbtTagCompound;
 
     @Shadow public abstract Item getItem();
     @Shadow public abstract String getDisplayName();
@@ -81,10 +79,27 @@ public abstract class MixinItemStack implements RegisteredItemStack {
     }
 
     @Override
-    public void verifyRegisteredItemStack() {
-        if (this.itemID != 0 && this.stackSize <= 0 && false) {
-            this.itemDamage = 0;
-            this.itemID = 0;
-        }
+    public int getRegisteredDynamicTextureId() {
+        NBTTagCompound nbtTagCompound = this.nbtTagCompound;
+        return nbtTagCompound == null || // Avoid NPEs here
+                !nbtTagCompound.hasKey("DynamicTextureId") ? -1 :
+                nbtTagCompound.getByte("DynamicTextureId");
     }
+
+    @Override
+    public void setRegisteredDynamicTextureId(int dynamicTextureSlot) {
+        NBTTagCompound nbtTagCompound = this.nbtTagCompound;
+        if (dynamicTextureSlot == -1) {
+            if (nbtTagCompound != null)
+                nbtTagCompound.removeTag("DynamicTextureId");
+            return;
+        }
+        if (nbtTagCompound == null) {
+            this.nbtTagCompound = nbtTagCompound = new NBTTagCompound();
+        }
+        nbtTagCompound.setByte("DynamicTextureId", (byte) dynamicTextureSlot);
+    }
+
+    @Override
+    public void verifyRegisteredItemStack() {}
 }

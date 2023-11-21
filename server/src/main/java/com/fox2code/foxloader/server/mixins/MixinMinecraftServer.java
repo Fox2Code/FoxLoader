@@ -2,8 +2,10 @@ package com.fox2code.foxloader.server.mixins;
 
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.ServerModLoader;
+import com.fox2code.foxloader.loader.packet.ServerDynamicTexture;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.src.game.level.ISaveFormat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -11,6 +13,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.logging.Level;
 
 @Mixin(MinecraftServer.class)
 public class MixinMinecraftServer {
@@ -43,6 +50,18 @@ public class MixinMinecraftServer {
         if (this.hasServerStarted) {
             ModLoader.Internal.notifyOnServerStop(
                     NetworkPlayer.ConnectionType.SERVER_ONLY);
+        }
+    }
+
+    @Inject(method = "initWorld", at = @At("RETURN"))
+    public void initWorldHook(ISaveFormat var1, String var2, long var3, CallbackInfo ci) {
+        try {
+            ServerModLoader.dynamicTexturesPackets = ServerDynamicTexture.readFromWorld(new File(var2));
+            ModLoader.getModLoaderLogger().info("Loaded " +
+                    ServerModLoader.dynamicTexturesPackets.size() + " dynamic textures!");
+        } catch (IOException e) {
+            ModLoader.getModLoaderLogger().log(Level.WARNING, "Failed to load dynamic textures!", e);
+            ServerModLoader.dynamicTexturesPackets = Collections.emptyList();
         }
     }
 }

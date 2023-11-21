@@ -1,7 +1,9 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.loader.ClientMod;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.registry.RegisteredItemStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.entity.Entity;
@@ -21,7 +23,14 @@ public abstract class MixinEntityPlayerSP implements NetworkPlayer {
 
     @Override
     public void displayChatMessage(String chatMessage) {
-        Minecraft.getInstance().ingameGUI.addChatMessage(chatMessage);
+        if (chatMessage.indexOf('\n') == -1) {
+            Minecraft.getInstance().ingameGUI.addChatMessage(chatMessage);
+        } else {
+            String[] splits = chatMessage.split("\\n");
+            for (String split : splits) {
+                Minecraft.getInstance().ingameGUI.addChatMessage(split);
+            }
+        }
     }
 
     @Override
@@ -53,5 +62,11 @@ public abstract class MixinEntityPlayerSP implements NetworkPlayer {
     public boolean isConnected() {
         final Minecraft mc = Minecraft.getInstance();
         return mc.theWorld != null && !mc.isMultiplayerWorld();
+    }
+
+    @Override
+    public RegisteredItemStack getRegisteredHeldItem() {
+        EntityPlayerSP networkPlayerSP = (EntityPlayerSP) (Object) this;
+        return ClientMod.toRegisteredItemStack(networkPlayerSP.inventory.getCurrentItem());
     }
 }

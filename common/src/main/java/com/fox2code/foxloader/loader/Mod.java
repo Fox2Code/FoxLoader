@@ -153,6 +153,25 @@ public abstract class Mod implements LifecycleListener {
         return false;
     }
 
+    /**
+     * Called when a player use an item while pointing at an entity
+     * @return true to cancel the interaction.
+     */
+    public boolean onPlayerUseItemOnEntity(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                           RegisteredEntity entity, boolean cancelled) {
+        return false;
+    }
+
+    /**
+     * Called when a player use an item while pointing at an entity
+     * @return true to cancel the interaction.
+     */
+    public boolean onPlayerAttackEntity(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                        RegisteredEntity entity, boolean cancelled) {
+        return false;
+    }
+
+
     // GameRegistry mirror
 
     /**

@@ -16,5 +16,5 @@ public abstract class FoxPacket {
 
     public abstract void readData(DataInputStream dataInputStream) throws IOException;
 
-    public abstract void writeData(DataOutputStream dataInputStream) throws IOException;
+    public abstract void writeData(DataOutputStream dataOutputStream) throws IOException;
 }

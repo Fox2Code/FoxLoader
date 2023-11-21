@@ -32,7 +32,9 @@ public class FoxLoaderDecompiler extends SingleFileSaver implements IResultSaver
         engine = new Fernflower(this, options, new PrintStreamLogger(System.out));
         engine.addLibrary(SourceUtil.getSourceFile(FoxLoaderDecompiler.class));
         if (client) {
-            engine.addLibrary(SourceUtil.getSourceFile(LWJGLUtil.class));
+            try {
+                engine.addLibrary(SourceUtil.getSourceFile(LWJGLUtil.class));
+            } catch (Throwable ignored) {}
         }
         engine.addSource(source);
     }

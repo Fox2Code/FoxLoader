@@ -1,7 +1,9 @@
 package com.fox2code.foxloader.server.mixins;
 
 import com.fox2code.foxloader.loader.ModContainer;
+import com.fox2code.foxloader.loader.ServerMod;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.registry.RegisteredItemStack;
 import com.fox2code.foxloader.server.network.NetServerHandlerAccessor;
 import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import net.minecraft.server.MinecraftServer;
@@ -45,7 +47,14 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
 
     @Override
     public void displayChatMessage(String chatMessage) {
-        this.playerNetServerHandler.sendPacket(new Packet3Chat(chatMessage));
+        if (chatMessage.indexOf('\n') == -1) {
+            this.playerNetServerHandler.sendPacket(new Packet3Chat(chatMessage));
+        } else {
+            String[] splits = chatMessage.split("\\n");
+            for (String split : splits) {
+                this.playerNetServerHandler.sendPacket(new Packet3Chat(split));
+            }
+        }
     }
 
     @Override
@@ -97,5 +106,10 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
     public boolean isConnected() {
         return (!this.playerNetServerHandler.connectionClosed) &&
                 NetworkManager.isRunning(this.playerNetServerHandler.netManager);
+    }
+
+    @Override
+    public RegisteredItemStack getRegisteredHeldItem() {
+        return ServerMod.toRegisteredItemStack(this.inventory.getCurrentItem());
     }
 }

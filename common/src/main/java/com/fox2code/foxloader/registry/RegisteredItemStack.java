@@ -15,5 +15,9 @@ public interface RegisteredItemStack extends GameRegistry.Ingredient {
 
     default void setRegisteredDisplayName(String displayName) { throw new RuntimeException(); }
 
+    default int getRegisteredDynamicTextureId() { throw new RuntimeException(); }
+
+    default void setRegisteredDynamicTextureId(int dynamicTextureSlot) { throw new RuntimeException(); }
+
     default void verifyRegisteredItemStack() { throw new RuntimeException(); }
 }

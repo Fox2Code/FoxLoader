@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.loader.packet.ClientHello;
+import com.fox2code.foxloader.loader.packet.ServerDynamicTexture;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.GameRegistryServer;
@@ -11,10 +12,13 @@ import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public final class ServerModLoader extends ModLoader {
     public static boolean shouldKickOnOutdatedLoader = false;
+    public static List<ServerDynamicTexture> dynamicTexturesPackets = Collections.emptyList();
 
     public static void launchModdedServer(String... args) {
         ModLoader.foxLoader.serverMod = new ServerModLoader();
@@ -37,9 +41,7 @@ public final class ServerModLoader extends ModLoader {
                         // This can also trigger at very high ping...
                         if (shouldKickOnOutdatedLoader) {
                             networkPlayer.kick(
-                                    "You have a broken and outdated version of FoxLoader\n\n" +
-                                            "You can update via the Mods button in Main Menu\n" +
-                                            "Mods -> FoxLoader -> Update Mod (Then restart to apply changes)");
+                                    "You have a broken and outdated version of FoxLoader");
                         } else {
                             networkPlayer.displayChatMessage(
                                     "You have a broken and outdated version of FoxLoader\n" +

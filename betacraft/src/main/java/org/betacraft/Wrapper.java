@@ -14,6 +14,7 @@ public class Wrapper extends Applet {
     public String mainFolder;
     public URLClassLoader classLoader;
     public boolean discord = false;
+    public ArrayList<Class<Addon>> ogaddons = new ArrayList<>();
 
     public Wrapper(String user, String ver_prefix, String version, String sessionid,
                    String mainFolder, Integer height, Integer width, Boolean RPC, String launchMethod, String server,

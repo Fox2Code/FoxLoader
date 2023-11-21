@@ -1,13 +1,16 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.commands.SetDynTex;
 import com.fox2code.foxloader.commands.WorldReplace;
 import com.fox2code.foxloader.commands.WorldSet;
 import com.fox2code.foxloader.launcher.*;
+import com.fox2code.foxloader.launcher.utils.AsyncItrLinkedList;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.loader.rebuild.ClassDataProvider;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
+import com.fox2code.foxloader.registry.RegisteredEntity;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -179,6 +182,7 @@ public class ModLoader extends Mod {
 
     @Override
     public void onPostInit() {
+        CommandCompat.registerCommand(new SetDynTex());
         CommandCompat.registerCommand(new WorldSet());
         CommandCompat.registerCommand(new WorldReplace());
     }
@@ -375,11 +379,15 @@ public class ModLoader extends Mod {
         return gameThread;
     }
 
+    public static boolean isOnGameThread() {
+        return Thread.currentThread() == gameThread;
+    }
+
     public static Logger getModLoaderLogger() {
         return foxLoader.logger;
     }
 
-    static final LinkedList<LifecycleListener> listeners = new LinkedList<>();
+    static final AsyncItrLinkedList<LifecycleListener> listeners = new AsyncItrLinkedList<>();
 
     public static class Internal {
         public static Properties fallbackTranslations = new Properties();
@@ -441,6 +449,26 @@ public class ModLoader extends Mod {
             for (ModContainer modContainer : modContainers.values()) {
                 cancelled = modContainer.notifyPlayerUseItemOnBlock(
                         networkPlayer, itemStack, x, y, z, facing, xOffset, yOffset, zOffset, cancelled);
+            }
+            return cancelled;
+        }
+
+        public static boolean notifyPlayerUseItemOnEntity(
+                NetworkPlayer networkPlayer, RegisteredItemStack itemStack, RegisteredEntity targetEntity) {
+            boolean cancelled = false;
+            for (ModContainer modContainer : modContainers.values()) {
+                cancelled = modContainer.notifyPlayerUseItemOnEntity(
+                        networkPlayer, itemStack, targetEntity, cancelled);
+            }
+            return cancelled;
+        }
+
+        public static boolean notifyPlayerAttackEntity(
+                NetworkPlayer networkPlayer, RegisteredItemStack itemStack, RegisteredEntity targetEntity) {
+            boolean cancelled = false;
+            for (ModContainer modContainer : modContainers.values()) {
+                cancelled = modContainer.notifyPlayerAttackEntity(
+                        networkPlayer, itemStack, targetEntity, cancelled);
             }
             return cancelled;
         }

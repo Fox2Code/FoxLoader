@@ -13,7 +13,9 @@ import java.io.IOException;
 
 public class MinecraftApplet extends Applet {
     static {
-        if (FoxLauncher.getFoxClassLoader() == null) {
+        if (FoxLauncher.getFoxClassLoader() == null &&
+                FoxLauncher.getLauncherType() != LauncherType.BETA_CRAFT &&
+                System.getProperty("foxloader.internal.betacraft-wrapper") == null) {
             FoxLauncher.markWronglyInstalledUnrecoverable();
             LauncherType launcherType = FoxLauncher.getLauncherType();
             System.out.println("Auto-detected launcher type: " + launcherType);

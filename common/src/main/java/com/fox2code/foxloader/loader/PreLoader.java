@@ -188,6 +188,7 @@ public class PreLoader {
         }
         registerPrePatch(new VarNameTransformer());
         registerPrePatch(new RegistryTransformer());
+        registerPrePatch(new AsyncCapabilitiesTransformer());
         if (client) {
             registerPrePatch(new MinecraftClientDebugTransformer());
             registerPrePatch(new FrustrumHelperTransformer());

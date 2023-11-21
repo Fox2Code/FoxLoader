@@ -26,6 +26,7 @@ import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.text.Normalizer
+import java.util.jar.JarFile
 
 class GradlePlugin implements Plugin<Project> {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -357,7 +358,7 @@ class GradlePlugin implements Plugin<Project> {
                     "net/silveros/" + sideName + "/" + versionFox + "/" +
                             sideName + "-" + versionFox + "-sources.jar")
             if (config.forceReload && sourcesJarFox.exists()) sourcesJarFox.delete()
-            if (!sourcesJarFox.exists()) {
+            if (!jarFileExists(sourcesJarFox)) {
                 closeJarFileSystem(unpickedJarFox)
                 if (unpickedJarFox.exists()) unpickedJarFox.delete()
                 System.out.println("Unpicking ReIndev " + logSideName + " references for source")
@@ -445,6 +446,15 @@ class GradlePlugin implements Plugin<Project> {
                 }
                 throw e
             }
+        }
+    }
+
+    static boolean jarFileExists(File file) {
+        if (!file.exists()) return false
+        try (JarFile jarFile = new JarFile(file)) {
+            return jarFile.manifest != null
+        } catch (Exception ignored) {
+            return false
         }
     }
 

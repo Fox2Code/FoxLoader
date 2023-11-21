@@ -6,6 +6,7 @@ import com.fox2code.foxloader.loader.lua.LuaVMHelper;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.transformer.PreClassTransformer;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.registry.RegisteredEntity;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
 import org.semver4j.Semver;
 
@@ -345,6 +346,34 @@ public final class ModContainer {
         if (serverMod != null)
             cancelled |= serverMod.onPlayerUseItemOnBlock(networkPlayer, itemStack,
                     x, y, z, facing, xOffset, yOffset, zOffset, cancelled);
+        return cancelled;
+    }
+
+    boolean notifyPlayerUseItemOnEntity(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                        RegisteredEntity targetEntity, boolean cancelled) {
+        if (commonMod != null)
+            cancelled |= commonMod.onPlayerUseItemOnEntity(
+                    networkPlayer, itemStack, targetEntity, cancelled);
+        if (clientMod != null)
+            cancelled |= clientMod.onPlayerUseItemOnEntity(
+                    networkPlayer, itemStack, targetEntity, cancelled);
+        if (serverMod != null)
+            cancelled |= serverMod.onPlayerUseItemOnEntity(
+                    networkPlayer, itemStack, targetEntity, cancelled);
+        return cancelled;
+    }
+
+    boolean notifyPlayerAttackEntity(NetworkPlayer networkPlayer, RegisteredItemStack itemStack,
+                                     RegisteredEntity targetEntity, boolean cancelled) {
+        if (commonMod != null)
+            cancelled |= commonMod.onPlayerAttackEntity(
+                    networkPlayer, itemStack, targetEntity, cancelled);
+        if (clientMod != null)
+            cancelled |= clientMod.onPlayerAttackEntity(
+                    networkPlayer, itemStack, targetEntity, cancelled);
+        if (serverMod != null)
+            cancelled |= serverMod.onPlayerAttackEntity(
+                    networkPlayer, itemStack, targetEntity, cancelled);
         return cancelled;
     }
 }

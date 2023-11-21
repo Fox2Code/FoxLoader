@@ -2,16 +2,20 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.FoxPacket;
+import com.fox2code.foxloader.loader.packet.ServerDynamicTexture;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.network.io.NetworkDataInputStream;
 import com.fox2code.foxloader.network.io.NetworkDataOutputStream;
 
 import java.io.*;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.zip.*;
 
 final class LoaderNetworkManager {
+    public static Consumer<ServerDynamicTexture> serverCustomTextureConsumer;
+
     static void executeClientPacketData(NetworkPlayer networkPlayer, byte[] data) {
         try (DataInputStream dataInputStream =
                      new NetworkDataInputStream(new ByteArrayInputStream(data))) {
@@ -70,15 +74,25 @@ final class LoaderNetworkManager {
                      new NetworkDataInputStream(inputStream)) {
             int packetId = dataInputStream.readUnsignedByte();
 
-            //noinspection SwitchStatementWithTooFewBranches
             switch (packetId) {
-                case 0:
+                case 0: {
                     ServerHello serverHello = new ServerHello();
                     serverHello.readData(dataInputStream);
                     ModLoader.foxLoader.getMod()
                             .loaderHandleServerHello(
                                     networkPlayer, serverHello);
                     break;
+                }
+                case 1: {
+                    ServerDynamicTexture serverDynamicTexture = new ServerDynamicTexture();
+                    serverDynamicTexture.readData(dataInputStream);
+                    Consumer<ServerDynamicTexture> serverCustomTextureConsumer =
+                            LoaderNetworkManager.serverCustomTextureConsumer;
+                    if (serverCustomTextureConsumer != null) {
+                        serverCustomTextureConsumer.accept(serverDynamicTexture);
+                    }
+                    break;
+                }
             }
         } catch (IOException e) {
             ModLoader.foxLoader.logger.log(Level.SEVERE, "Failed to read server packet", e);
