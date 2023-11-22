@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.security.MessageDigest
+
 plugins {
     id 'java-base'
 }
@@ -105,14 +108,66 @@ File clientFile = new File(project.rootDir, "client" + File.separator +
         "libs" + File.separator + project['reindev.clientJar'])
 
 if (!clientFile.exists()) {
-    println("Downloading client...")
-    download(new URL(project['reindev.clientUrl'] as String), clientFile)
+    println("Downloading client from " + project['reindev.clientUrl'])
+
+    for (int i = 0; i < 2; i++) { // Max 1 retry for downloading
+        if (i > 0) {
+            println("Retrying download in 1 second...")
+            Thread.sleep(1000);
+        }
+
+        download(new URL(project['reindev.clientUrl'] as String), clientFile)
+
+        byte[] data = Files.readAllBytes(clientFile.toPath())
+        byte[] hash = MessageDigest.getInstance("SHA-256").digest(data)
+        String hashString = new BigInteger(1, hash).toString(16)
+
+        println("SHA256 hash: " + hashString)
+        if (hashString == project['reindev.clientSHA256Sum'] as String) {
+            println("Hash matched expected")
+            break
+        } else {
+            println("Hash did not match! Expected: " + project['reindev.clientSHA256Sum'])
+            if (clientFile.delete()) {
+                println("Client jar file deleted")
+            } else {
+                println("Failed to delete client jar file")
+                break;
+            }
+        }
+    }
 }
 
 File serverFile = new File(project.rootDir, "server" + File.separator +
         "libs" + File.separator + project['reindev.serverJar'])
 
 if (!serverFile.exists()) {
-    println("Downloading server...")
-    download(new URL(project['reindev.serverUrl'] as String), serverFile)
+    println("\nDownloading server from " + project['reindev.serverUrl'])
+
+    for (int i = 0; i < 2; i++) { // Max 1 retry for downloading
+        if (i > 0) {
+            println("Retrying download in 1 second...")
+            Thread.sleep(1000);
+        }
+
+        download(new URL(project['reindev.serverUrl'] as String), serverFile)
+
+        byte[] data = Files.readAllBytes(serverFile.toPath())
+        byte[] hash = MessageDigest.getInstance("SHA-256").digest(data)
+        String hashString = new BigInteger(1, hash).toString(16)
+
+        println("SHA256 hash: " + hashString)
+        if (hashString == project['reindev.serverSHA256Sum'] as String) {
+            println("Hash matched expected")
+            break
+        } else {
+            println("Hash did not match! Expected: " + project['reindev.serverSHA256Sum'])
+            if (serverFile.delete()) {
+                println("Server file deleted")
+            } else {
+                println("Failed to delete server file")
+                break;
+            }
+        }
+    }
 }
