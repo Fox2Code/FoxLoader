@@ -4,7 +4,6 @@ import static com.fox2code.foxloader.loader.ClientMod.*;
 
 import com.fox2code.foxloader.client.CreativeItems;
 import com.fox2code.foxloader.client.registry.RegisteredBlockImpl;
-import com.fox2code.foxloader.client.renderer.TextureDynamic;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import net.minecraft.src.client.gui.StringTranslate;
@@ -53,8 +52,6 @@ public class GameRegistryClient extends GameRegistry {
         if (Block.blocksList[0].blockID != Item.itemsList[0].itemID) {
             throw new IllegalStateException("Air block is not air?");
         }
-        // Only used for Rendering.
-        TextureDynamic.Hooks.ensureItemCache();
     }
 
     public static void freeze() {

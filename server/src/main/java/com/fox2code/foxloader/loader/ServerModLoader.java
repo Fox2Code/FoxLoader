@@ -1,7 +1,6 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.loader.packet.ClientHello;
-import com.fox2code.foxloader.loader.packet.ServerDynamicTexture;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.GameRegistryServer;
@@ -12,13 +11,10 @@ import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 public final class ServerModLoader extends ModLoader {
     public static boolean shouldKickOnOutdatedLoader = false;
-    public static List<ServerDynamicTexture> dynamicTexturesPackets = Collections.emptyList();
 
     public static void launchModdedServer(String... args) {
         ModLoader.foxLoader.serverMod = new ServerModLoader();

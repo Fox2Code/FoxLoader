@@ -1,6 +1,5 @@
 package com.fox2code.foxloader.loader;
 
-import com.fox2code.foxloader.commands.SetDynTex;
 import com.fox2code.foxloader.commands.WorldReplace;
 import com.fox2code.foxloader.commands.WorldSet;
 import com.fox2code.foxloader.launcher.*;
@@ -182,7 +181,6 @@ public class ModLoader extends Mod {
 
     @Override
     public void onPostInit() {
-        CommandCompat.registerCommand(new SetDynTex());
         CommandCompat.registerCommand(new WorldSet());
         CommandCompat.registerCommand(new WorldReplace());
     }

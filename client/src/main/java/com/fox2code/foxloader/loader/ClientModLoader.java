@@ -1,15 +1,12 @@
 package com.fox2code.foxloader.loader;
 
-import com.fox2code.foxloader.client.renderer.TextureDynamic;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
-import com.fox2code.foxloader.loader.gui.IHaveEnoughOfThis;
 import com.fox2code.foxloader.loader.packet.ClientHello;
-import com.fox2code.foxloader.loader.packet.ServerDynamicTexture;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.GameRegistryClient;
@@ -35,8 +32,6 @@ public final class ClientModLoader extends ModLoader {
         ModLoader.foxLoader.clientMod = new ClientModLoader();
         ModLoader.foxLoader.clientMod.modContainer = ModLoader.foxLoader;
         Objects.requireNonNull(ModLoader.foxLoader.getMod(), "WTF???");
-        LoaderNetworkManager.serverCustomTextureConsumer =
-                ClientModLoader::runServerCustomTexture;
         ModLoader.initializeModdedInstance(true);
         Platform.getPlatform().setupLwjgl2();
         ClientSelfTest.selfTest();
@@ -73,23 +68,11 @@ public final class ClientModLoader extends ModLoader {
         }
     }
 
-    private static void runServerCustomTexture(ServerDynamicTexture serverDynamicTexture) {
-        if (serverDynamicTexture.slot >= ServerDynamicTexture.SERVER_DYN_MAX_ID) return;
-        TextureDynamic.DynamicDataHolder dynamicDataHolder =
-                TextureDynamic.Hooks.getServerDynTex(serverDynamicTexture.slot);
-        if (dynamicDataHolder != null) dynamicDataHolder.setRenderingData(serverDynamicTexture.texture);
-    }
-
     private ClientModLoader() {}
 
     @Override
     public void onServerStart(NetworkPlayer.ConnectionType connectionType) {
         GameRegistryClient.resetMappings(connectionType.isServer);
-    }
-
-    @Override
-    public void onTick() {
-        IHaveEnoughOfThis.update();
     }
 
     @Override
