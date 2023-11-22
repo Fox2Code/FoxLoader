@@ -15,7 +15,6 @@
     "MixinEntityClientPlayerMP",
     "MixinEntityItem",
     "MixinEntityLiving",
-    "MixinEntityPlayer",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
     "MixinGameSettings",
@@ -24,7 +23,6 @@
     "MixinGuiMainMenu",
     "MixinGuiTextField",
     "MixinItem",
-    "MixinItemRenderer",
     "MixinItemStack",
     "MixinMinecraft",
     "MixinNetClientHandler",
@@ -36,12 +34,8 @@
     "MixinPlayerControllerMP",
     "MixinPlayerControllerSP",
     "MixinPlayerControllerTest",
-    "MixinRenderItem",
     "MixinStringTranslate",
-    "MixinTexture",
-    "MixinTextureManager",
     "MixinTextureMap",
-    "MixinTextureStitched",
     "MixinTileEntity",
     "MixinWorld"
   ]

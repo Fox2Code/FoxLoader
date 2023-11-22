@@ -1,8 +1,6 @@
 package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.client.network.NetworkItemStack;
-import com.fox2code.foxloader.client.renderer.TextureDynamic;
-import com.fox2code.foxloader.loader.ClientMod;
 import com.fox2code.foxloader.registry.GameRegistryClient;
 import com.fox2code.foxloader.registry.RegisteredItem;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
@@ -18,20 +16,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
-public abstract class MixinItemStack implements RegisteredItemStack,
-        NetworkItemStack, TextureDynamic.Hooks.TexCacheItemStackRender {
+public abstract class MixinItemStack implements RegisteredItemStack, NetworkItemStack {
     @Shadow public int itemID;
     @Shadow public int stackSize;
     @Shadow public int itemDamage;
     @Unique private int networkId;
-    @Unique private ItemStack renderCache;
 
     @Shadow public abstract Item getItem();
     @Shadow public abstract String getDisplayName();
     @Shadow public abstract void setItemName(String par1Str);
     @Shadow public abstract boolean hasDisplayName();
-
-    @Shadow public NBTTagCompound nbtTagCompound;
 
     @Inject(method = "<init>(II)V", at = @At("RETURN"))
     public void onNewItemStack(int id, int count, CallbackInfo ci) {
@@ -51,7 +45,6 @@ public abstract class MixinItemStack implements RegisteredItemStack,
     @Inject(method = "readFromNBT", at = @At("RETURN"))
     public void onReadFromNBT(NBTTagCompound nbtTagCompound, CallbackInfo ci) {
         this.verifyRegisteredItemStack();
-        this.renderCache = null;
     }
 
     @Inject(method = "splitStack", at = @At("RETURN"))
@@ -100,28 +93,6 @@ public abstract class MixinItemStack implements RegisteredItemStack,
     }
 
     @Override
-    public int getRegisteredDynamicTextureId() {
-        NBTTagCompound nbtTagCompound = this.nbtTagCompound;
-        return nbtTagCompound == null || // Avoid NPEs here
-                !nbtTagCompound.hasKey("DynamicTextureId") ? -1 :
-                nbtTagCompound.getByte("DynamicTextureId");
-    }
-
-    @Override
-    public void setRegisteredDynamicTextureId(int dynamicTextureSlot) {
-        NBTTagCompound nbtTagCompound = this.nbtTagCompound;
-        if (dynamicTextureSlot == -1) {
-            if (nbtTagCompound != null)
-                nbtTagCompound.removeTag("DynamicTextureId");
-            return;
-        }
-        if (nbtTagCompound == null) {
-            this.nbtTagCompound = nbtTagCompound = new NBTTagCompound();
-        }
-        nbtTagCompound.setByte("DynamicTextureId", (byte) dynamicTextureSlot);
-    }
-
-    @Override
     public int getRemoteItemId() {
         int networkId = this.networkId;
         if (networkId != 0)
@@ -136,20 +107,4 @@ public abstract class MixinItemStack implements RegisteredItemStack,
 
     @Override
     public void verifyRegisteredItemStack() {}
-
-    @Override
-    public ItemStack getRenderItemCache(Item item) {
-        if (this.networkId == -1)
-            return ClientMod.toItemStack(this);
-        if (this.renderCache == null) {
-            ItemStack cache = new ItemStack(item, this.stackSize, this.itemDamage, this.nbtTagCompound);
-            ((NetworkItemStack) (Object) cache).setRemoteNetworkId(-1);
-            return this.renderCache = cache;
-        }
-        this.renderCache.itemID = item.itemID;
-        this.renderCache.stackSize = this.stackSize;
-        this.renderCache.itemDamage = this.itemDamage;
-        this.renderCache.nbtTagCompound = this.nbtTagCompound;
-        return this.renderCache;
-    }
 }
