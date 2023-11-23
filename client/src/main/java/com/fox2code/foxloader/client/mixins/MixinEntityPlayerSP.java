@@ -8,10 +8,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.player.EntityPlayerSP;
 import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.player.EntityPlayer;
+import net.minecraft.src.game.level.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(EntityPlayerSP.class)
-public abstract class MixinEntityPlayerSP implements NetworkPlayer {
+public abstract class MixinEntityPlayerSP extends EntityPlayer implements NetworkPlayer {
+
+    @Shadow public Minecraft mc;
+
+    public MixinEntityPlayerSP(World var1) {
+        super(var1);
+    }
 
     @Override
     public ConnectionType getConnectionType() {
@@ -68,5 +76,11 @@ public abstract class MixinEntityPlayerSP implements NetworkPlayer {
     public RegisteredItemStack getRegisteredHeldItem() {
         EntityPlayerSP networkPlayerSP = (EntityPlayerSP) (Object) this;
         return ClientMod.toRegisteredItemStack(networkPlayerSP.inventory.getCurrentItem());
+    }
+
+    @Override
+    public void sendPlayerThroughPortalRegistered() {
+        this.mc.usePortal();
+        this.inPortal = false;
     }
 }

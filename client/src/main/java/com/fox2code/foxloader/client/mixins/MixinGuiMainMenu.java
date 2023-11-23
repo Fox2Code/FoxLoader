@@ -4,10 +4,13 @@ import com.fox2code.foxloader.client.gui.GuiModList;
 import com.fox2code.foxloader.client.gui.GuiUpdateButton;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.loader.ModLoader;
+import com.fox2code.foxloader.network.ChatColors;
+import net.minecraft.src.client.Session;
 import net.minecraft.src.client.gui.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GuiMainMenu.class)
@@ -23,6 +26,16 @@ public abstract class MixinGuiMainMenu extends GuiScreen {
             this.mc.displayGuiScreen(new GuiModList(this));
             ci.cancel();
         }
+    }
+
+    @Redirect(method = "drawScreen", at = @At(value = "FIELD", target =
+            "Lnet/minecraft/src/client/Session;username:Ljava/lang/String;"))
+    public String onGetUsername(Session instance) {
+        final String username = instance.username;
+        if (ModLoader.Contributors.hasContributorName(username)) {
+            return ChatColors.RAINBOW + username;
+        }
+        return username;
     }
 
     @Inject(method = "drawScreen", at = @At(value = "INVOKE",

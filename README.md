@@ -2,6 +2,8 @@
 
 ModLoader for Minecraft ReIndev
 
+[![](https://www.jitpack.io/v/com.fox2code/FoxLoader.svg)](https://www.jitpack.io/#com.fox2code/FoxLoader)
+
 ## Community
 
 You can [join the official ReIndev Discord here](https://discord.gg/38Vfes6NpR)
@@ -11,7 +13,7 @@ A feature missing to make your mod? [Just open an issue!](https://github.com/Fox
 ## Installation
 
 For client side installation, just run the jar file.
-Either by double clicking on it, or running `java -jar FoxLoader.jar`
+Either by double-clicking on it, or running `java -jar FoxLoader.jar`
 
 To run FoxLoader as a server just run `java -jar FoxLoader.jar --server`
 
@@ -37,6 +39,7 @@ For example mod check here: https://github.com/Fox2Code/FoxLoaderExampleMod
 - Load core-mods (Aka. Legacy mods) into class loader
 - Load pre-patches (FoxLoader asm patches)
 - Load mods into class loader
+- Do full game pre-patching
 - Initialize mixins
 - Allow game to be loaded
 - Load mods
@@ -46,7 +49,7 @@ As you see the game is allowed to be loaded very late into the boot process, eve
 
 This ensures that all patches introduced by mods are applied, 
 but also prevent code loaded in MixinPlugins to load Minecraft classes,
-please keep that in mind when messing with mixins.
+please keep that in mind when messing with mixins plugins.
 
 ## Lua mods
 

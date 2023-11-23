@@ -112,4 +112,11 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
     public RegisteredItemStack getRegisteredHeldItem() {
         return ServerMod.toRegisteredItemStack(this.inventory.getCurrentItem());
     }
+
+    @Override
+    public void sendPlayerThroughPortalRegistered() {
+        this.mcServer.configManager.sendPlayerToOtherDimension(
+                ServerMod.toEntityPlayerMP(this));
+        this.inPortal = false;
+    }
 }

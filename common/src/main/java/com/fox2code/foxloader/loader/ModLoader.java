@@ -470,5 +470,44 @@ public class ModLoader extends Mod {
             }
             return cancelled;
         }
+
+        public static boolean notifyNetworkPlayerDisconnected(
+                NetworkPlayer networkPlayer, String kickMessage) {
+            boolean cancelled = false;
+            for (ModContainer modContainer : modContainers.values()) {
+                cancelled = modContainer.notifyNetworkPlayerDisconnected(
+                        networkPlayer, kickMessage, cancelled);
+            }
+            return cancelled;
+        }
+    }
+
+    public static class Contributors {
+        private static final HashSet<String> contributorsUUIDs = new HashSet<>();
+        private static final HashSet<String> contributorsNames = new HashSet<>();
+
+        static {
+            // If your name is not there, and you contributed, just open an issue on GitHub
+            addContributor("a5adabf9-0c1f-4d03-855b-61e334cd96d7", "Fox2Code");
+            addContributor("76982056-c381-46f6-ab25-2415e1e4d554", "kivattt");
+            addContributor("898febf0-4bd0-4a77-892c-2b1cbf534830", "_Dereku");
+        }
+
+        private static void addContributor(String uuid, String name) {
+            contributorsUUIDs.add(uuid);
+            contributorsNames.add(name.toLowerCase(Locale.ROOT));
+        }
+
+        public static boolean hasContributorUUID(UUID uuid) {
+            return contributorsUUIDs.contains(uuid.toString());
+        }
+
+        public static boolean hasContributorUUID(String uuid) {
+            return contributorsUUIDs.contains(uuid);
+        }
+
+        public static boolean hasContributorName(String name) {
+            return contributorsNames.contains(name.toLowerCase(Locale.ROOT));
+        }
     }
 }

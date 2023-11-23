@@ -376,4 +376,17 @@ public final class ModContainer {
                     networkPlayer, itemStack, targetEntity, cancelled);
         return cancelled;
     }
+
+    boolean notifyNetworkPlayerDisconnected(NetworkPlayer networkPlayer, String kickMessage, boolean cancelled) {
+        if (commonMod != null)
+            cancelled |= commonMod.onNetworkPlayerDisconnected(
+                    networkPlayer, kickMessage, cancelled);
+        if (clientMod != null)
+            cancelled |= clientMod.onNetworkPlayerDisconnected(
+                    networkPlayer, kickMessage, cancelled);
+        if (serverMod != null)
+            cancelled |= serverMod.onNetworkPlayerDisconnected(
+                    networkPlayer, kickMessage, cancelled);
+        return cancelled;
+    }
 }

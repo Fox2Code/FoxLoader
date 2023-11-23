@@ -1,13 +1,16 @@
 package com.fox2code.foxloader.launcher;
 
+import com.fox2code.foxloader.launcher.utils.IOUtils;
 import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 
 import java.io.*;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.net.*;
 import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
 import java.util.jar.JarFile;
 
 public class DependencyHelper {
@@ -42,11 +45,13 @@ public class DependencyHelper {
 
     public static final Dependency[] clientDependencies = new Dependency[]{
             new Dependency("net.silveros:reindev:" + BuildConfig.REINDEV_VERSION,
-                    BuildConfig.CLIENT_URL, "net.minecraft.src.client.MinecraftImpl")
+                    BuildConfig.CLIENT_URL, "net.minecraft.src.client.MinecraftImpl",
+                    null, BuildConfig.CLIENT_SHA256_SUM)
     };
     public static final Dependency[] serverDependencies = new Dependency[]{
             new Dependency("net.silveros:reindev-server:" + BuildConfig.REINDEV_VERSION,
-                    BuildConfig.SERVER_URL, "net.minecraft.server.MinecraftServer")
+                    BuildConfig.SERVER_URL, "net.minecraft.server.MinecraftServer",
+                    null, BuildConfig.SERVER_SHA256_SUM)
     };
 
     private static File mcLibraries;
@@ -139,6 +144,7 @@ public class DependencyHelper {
         String postURL = resolvePostURL(dependency.name);
         File file = new File(mcLibraries, fixUpPath(postURL));
         boolean justDownloaded = false;
+        checkHashOrDelete(file, dependency, false);
         if (!file.exists()) {
             File parentFile = file.getParentFile();
             if (!parentFile.isDirectory() && !parentFile.mkdirs()) {
@@ -167,6 +173,7 @@ public class DependencyHelper {
                 }
             }
         }
+        checkHashOrDelete(file, dependency, true);
         if (dev) return file; // We don't have a FoxClass loader in dev environment.
         try {
             if (minecraft) {
@@ -191,6 +198,28 @@ public class DependencyHelper {
             throw new RuntimeException(e);
         }
         return file;
+    }
+
+    private static void checkHashOrDelete(File file, Dependency dependency, boolean errorOut) {
+        if (dependency.sha256Sum == null || !file.exists()) return;
+        String hashString;
+        try {
+            hashString = new BigInteger(1, IOUtils.sha256Of(file)).toString(16);
+        } catch (IOException e) {
+            hashString = "";
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        if (!dependency.sha256Sum.equals(hashString)) {
+            boolean deleteSuccessful = file.delete();
+            if (errorOut) {
+                throw new RuntimeException("Remote dependency " + dependency.name + " checksum mismatch " +
+                        "(got: " + hashString + ", expected: " + dependency.sha256Sum + ")");
+            }
+            if (!deleteSuccessful) {
+                throw new RuntimeException("Can't delete dependency with checksum mismatch " + dependency.name);
+            }
+        }
     }
 
     public static class Agent {
@@ -302,17 +331,22 @@ public class DependencyHelper {
     }
 
     public static class Dependency {
-        public final String name, repository, classCheck, fallbackUrl;
+        public final String name, repository, classCheck, fallbackUrl, sha256Sum;
 
         public Dependency(String name, String repository, String classCheck) {
-            this(name, repository, classCheck, null);
+            this(name, repository, classCheck, null, null);
         }
 
         public Dependency(String name, String repository, String classCheck, String fallbackUrl) {
+            this(name, repository, classCheck, fallbackUrl, null);
+        }
+
+        public Dependency(String name, String repository, String classCheck, String fallbackUrl, String sha256Sum) {
             this.name = name;
             this.repository = repository;
             this.classCheck = classCheck;
             this.fallbackUrl = fallbackUrl;
+            this.sha256Sum = sha256Sum;
         }
     }
 }

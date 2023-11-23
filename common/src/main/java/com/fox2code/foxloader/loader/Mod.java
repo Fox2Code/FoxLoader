@@ -171,6 +171,16 @@ public abstract class Mod implements LifecycleListener {
         return false;
     }
 
+    /**
+     * Executed before player data is saved, on single player, return value is ignored.
+     *
+     * @param kickMessage if non-null, the player was kicked instead of disconnecting.
+     *
+     * @return true to cancel the game sending the default "player has left the game message"
+     * */
+    public boolean onNetworkPlayerDisconnected(NetworkPlayer networkPlayer, String kickMessage, boolean cancelled) {
+        return false;
+    }
 
     // GameRegistry mirror
 

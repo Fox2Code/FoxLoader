@@ -2,6 +2,9 @@ package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.client.gui.GuiModList;
 import com.fox2code.foxloader.client.gui.GuiUpdateButton;
+import com.fox2code.foxloader.loader.ModLoader;
+import com.fox2code.foxloader.network.NetworkPlayer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.gui.GuiButton;
 import net.minecraft.src.client.gui.GuiIngameMenu;
 import net.minecraft.src.client.gui.GuiScreen;
@@ -18,8 +21,16 @@ public class MixinGuiIngameMenu extends GuiScreen {
     }
 
     @Inject(method = "actionPerformed", at = @At(value = "HEAD"), cancellable = true)
-    public void onActionPerformed(GuiButton var1, CallbackInfo ci) {
-        if (var1.id == 500) {
+    public void onActionPerformed(GuiButton button, CallbackInfo ci) {
+        if (button.id == 1) {
+            NetworkPlayer networkPlayer = (NetworkPlayer) Minecraft.getInstance().thePlayer;
+            if (networkPlayer != null && networkPlayer.getConnectionType() ==
+                    NetworkPlayer.ConnectionType.SINGLE_PLAYER) {
+                ModLoader.Internal.notifyNetworkPlayerDisconnected(networkPlayer, null);
+            }
+        }
+
+        if (button.id == 500) {
             this.mc.displayGuiScreen(new GuiModList(this));
             ci.cancel();
         }

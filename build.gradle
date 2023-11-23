@@ -41,6 +41,7 @@ subprojects {
         }
 
         withSourcesJar()
+        withJavadocJar()
     }
 
     test {
@@ -86,8 +87,18 @@ subprojects {
 
 // We need to download client and server to be able to compile the project.
 // Let's do that there really quick.
-static void download(URL url, File file) {
+static void downloadIfNeeded(URL url, File file, String hash) {
     file.getParentFile().mkdirs()
+    if (file.exists()) {
+        byte[] localData = Files.readAllBytes(file.toPath())
+        byte[] localHash = MessageDigest.getInstance("SHA-256").digest(localData)
+        String hashString = new BigInteger(1, localHash).toString(16)
+        if (hashString == hash) return
+        if (!file.delete()) {
+            throw new IOException("Failed to delete corrupted file: " + file.getName())
+        }
+    }
+    println("Downloading " + url)
     HttpURLConnection connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY)
     String javaVendor = System.getProperty("java.vendor")
     String javaVersion = System.getProperty("java.version")
@@ -102,72 +113,20 @@ static void download(URL url, File file) {
     file.withOutputStream { fileOut ->
         fileOut << connection.getInputStream()
     }
+    byte[] fileData = Files.readAllBytes(file.toPath())
+    byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
+    String hashString = new BigInteger(1, fileHash).toString(16)
+    if (hash != hashString) {
+        throw new IOException("Excpeted HASH: " + hash + " got " + hashString)
+    }
 }
 
 File clientFile = new File(project.rootDir, "client" + File.separator +
         "libs" + File.separator + project['reindev.clientJar'])
-
-if (!clientFile.exists()) {
-    println("Downloading client from " + project['reindev.clientUrl'])
-
-    for (int i = 0; i < 2; i++) { // Max 1 retry for downloading
-        if (i > 0) {
-            println("Retrying download in 1 second...")
-            Thread.sleep(1000);
-        }
-
-        download(new URL(project['reindev.clientUrl'] as String), clientFile)
-
-        byte[] data = Files.readAllBytes(clientFile.toPath())
-        byte[] hash = MessageDigest.getInstance("SHA-256").digest(data)
-        String hashString = new BigInteger(1, hash).toString(16)
-
-        println("SHA256 hash: " + hashString)
-        if (hashString == project['reindev.clientSHA256Sum'] as String) {
-            println("Hash matched expected")
-            break
-        } else {
-            println("Hash did not match! Expected: " + project['reindev.clientSHA256Sum'])
-            if (clientFile.delete()) {
-                println("Client jar file deleted")
-            } else {
-                println("Failed to delete client jar file")
-                break;
-            }
-        }
-    }
-}
-
 File serverFile = new File(project.rootDir, "server" + File.separator +
         "libs" + File.separator + project['reindev.serverJar'])
 
-if (!serverFile.exists()) {
-    println("\nDownloading server from " + project['reindev.serverUrl'])
-
-    for (int i = 0; i < 2; i++) { // Max 1 retry for downloading
-        if (i > 0) {
-            println("Retrying download in 1 second...")
-            Thread.sleep(1000);
-        }
-
-        download(new URL(project['reindev.serverUrl'] as String), serverFile)
-
-        byte[] data = Files.readAllBytes(serverFile.toPath())
-        byte[] hash = MessageDigest.getInstance("SHA-256").digest(data)
-        String hashString = new BigInteger(1, hash).toString(16)
-
-        println("SHA256 hash: " + hashString)
-        if (hashString == project['reindev.serverSHA256Sum'] as String) {
-            println("Hash matched expected")
-            break
-        } else {
-            println("Hash did not match! Expected: " + project['reindev.serverSHA256Sum'])
-            if (serverFile.delete()) {
-                println("Server file deleted")
-            } else {
-                println("Failed to delete server file")
-                break;
-            }
-        }
-    }
-}
+downloadIfNeeded(new URL(project['reindev.clientUrl'] as String), clientFile,
+        project['reindev.clientSHA256Sum'] as String)
+downloadIfNeeded(new URL(project['reindev.serverUrl'] as String), serverFile,
+        project['reindev.serverSHA256Sum'] as String)

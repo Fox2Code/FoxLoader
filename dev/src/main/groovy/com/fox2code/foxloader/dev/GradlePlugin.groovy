@@ -140,11 +140,20 @@ class GradlePlugin implements Plugin<Project> {
             if (config.foxLoaderLibVersionOverride != null) {
                 foxLoaderVersion = config.foxLoaderLibVersionOverride
             }
+            final String foxLoaderGroupId = config.useLegacyFoxLoaderGroupId ?
+                    "com.github.Fox2Code.FoxLoader" : "com.fox2code.FoxLoader"
             project.dependencies {
                 runtimeOnly(BuildConfig.SPARK_DEPENDENCY)
-                implementation("com.github.Fox2Code.FoxLoader:common:${foxLoaderVersion}")
-                clientImplementation("com.github.Fox2Code.FoxLoader:client:${foxLoaderVersion}")
-                serverImplementation("com.github.Fox2Code.FoxLoader:server:${foxLoaderVersion}")
+                implementation("${foxLoaderGroupId}:common:${foxLoaderVersion}")
+                clientImplementation("${foxLoaderGroupId}:client:${foxLoaderVersion}")
+                serverImplementation("${foxLoaderGroupId}:server:${foxLoaderVersion}")
+            }
+            if (!config.useLegacyFoxLoaderGroupId) {
+                project.configurations.all {
+                    exclude group: 'com.github.Fox2Code.FoxLoader', module: 'common'
+                    exclude group: 'com.github.Fox2Code.FoxLoader', module: 'client'
+                    exclude group: 'com.github.Fox2Code.FoxLoader', module: 'server'
+                }
             }
             if (config.useLWJGLX) {
                 String lwjglNatives
@@ -527,6 +536,7 @@ class GradlePlugin implements Plugin<Project> {
         public boolean forceReload = false
         public boolean unofficial = false
         public boolean useLWJGLX = false
+        public boolean useLegacyFoxLoaderGroupId
         public String LWJGLXVersion = "0.21"
         public String LWJGLXLWJGLVersion = "3.3.1"
     }

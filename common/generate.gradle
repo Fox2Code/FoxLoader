@@ -35,6 +35,8 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
     final String REINDEV_VERSION = project['reindev.version']
     final String CLIENT_URL = project['reindev.clientUrl']
     final String SERVER_URL = project['reindev.serverUrl']
+    final String CLIENT_SHA256_SUM = project['reindev.clientSHA256Sum']
+    final String SERVER_SHA256_SUM = project['reindev.serverSHA256Sum']
     FileOutputStream fileOutputStream = new FileOutputStream(buildConfigSrc)
     try {
         PrintStream printStream = new PrintStream(fileOutputStream)
@@ -52,6 +54,8 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
         printStream.println("    public static final String REINDEV_VERSION = \"" + REINDEV_VERSION + "\";")
         printStream.println("    public static final String CLIENT_URL = \"" + CLIENT_URL + "\";")
         printStream.println("    public static final String SERVER_URL = \"" + SERVER_URL + "\";")
+        printStream.println("    public static final String CLIENT_SHA256_SUM = \"" + CLIENT_SHA256_SUM + "\";")
+        printStream.println("    public static final String SERVER_SHA256_SUM = \"" + SERVER_SHA256_SUM + "\";")
         printStream.println("}")
     } finally {
         fileOutputStream.close()

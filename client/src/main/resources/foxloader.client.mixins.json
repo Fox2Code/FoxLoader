@@ -15,6 +15,7 @@
     "MixinEntityClientPlayerMP",
     "MixinEntityItem",
     "MixinEntityLiving",
+    "MixinEntityPlayer",
     "MixinEntityPlayerSP",
     "MixinEntityRenderer",
     "MixinGameSettings",

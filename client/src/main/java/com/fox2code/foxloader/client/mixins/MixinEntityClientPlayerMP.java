@@ -72,4 +72,9 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
         return sendQueue != null && Minecraft.getInstance().isMultiplayerWorld() &&
                 !((NetClientHandlerExtensions) sendQueue).isDisconnected();
     }
+
+    @Override
+    public void sendPlayerThroughPortalRegistered() {
+        throw new RuntimeException("No authority over player");
+    }
 }

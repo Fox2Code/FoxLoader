@@ -60,4 +60,11 @@ public interface RegisteredWorld {
     default List<? extends NetworkPlayer> getRegisteredNetworkPlayers() {
         throw new RuntimeException();
     }
+
+    /**
+     * @return the current dimension id
+     *
+     * Note: Multiples worlds with the same dimension ID can exist at a time
+     */
+    default int getRegisteredDimensionID() { throw new RuntimeException(); }
 }

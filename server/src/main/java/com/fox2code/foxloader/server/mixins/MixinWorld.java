@@ -28,6 +28,8 @@ public abstract class MixinWorld implements RegisteredWorld {
     @Shadow public abstract boolean setBlockAndMetadataWithNotify(int xCoord, int yCoord, int zCoord, int block, int metadata);
     @Shadow public abstract boolean entityJoinedWorld(Entity entity);
 
+    @Shadow public int dimension;
+
     @Override
     public boolean hasRegisteredControl() {
         return true;
@@ -79,6 +81,11 @@ public abstract class MixinWorld implements RegisteredWorld {
     @SuppressWarnings("unchecked")
     public List<? extends NetworkPlayer> getRegisteredNetworkPlayers() {
         return (List<? extends NetworkPlayer>) (Object) this.playerEntities;
+    }
+
+    @Override
+    public int getRegisteredDimensionID() {
+        return this.dimension;
     }
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target =

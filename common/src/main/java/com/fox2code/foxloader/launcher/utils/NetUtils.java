@@ -2,9 +2,8 @@ package com.fox2code.foxloader.launcher.utils;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
@@ -12,6 +11,7 @@ import java.util.HashSet;
 
 public class NetUtils {
     private static final String GRADLE_USER_AGENT;
+    private static final Charset DEFAULT_ENCODING;
 
     static {
         String javaVendor = System.getProperty("java.vendor");
@@ -20,8 +20,9 @@ public class NetUtils {
         String osName = System.getProperty("os.name");
         String osVersion = System.getProperty("os.version");
         String osArch = System.getProperty("os.arch");
-        GRADLE_USER_AGENT = String.format("Gradle/7.5.1 (%s;%s;%s) (%s;%s;%s)",
+        GRADLE_USER_AGENT = String.format("Gradle/8.4 (%s;%s;%s) (%s;%s;%s)",
                 osName, osVersion, osArch, javaVendor, javaVersion, javaVendorVersion);
+        DEFAULT_ENCODING = StandardCharsets.UTF_8;
     }
 
     public static boolean isValidURL(String url) {
@@ -33,36 +34,14 @@ public class NetUtils {
         }
     }
 
+    @Deprecated
     public static byte[] hashOf(File file) throws IOException, NoSuchAlgorithmException {
-        byte[] buffer= new byte[8192];
-        int count;
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
-            while ((count = bis.read(buffer)) > 0) {
-                digest.update(buffer, 0, count);
-            }
-        }
-
-        byte[] hash = digest.digest();
-        if (hash.length != 32) {
-            throw new AssertionError(
-                    "Result hash is not the result hash of a SHA-256 hash " +
-                            "(got " + hash.length + ", expected 32)");
-        }
-        return hash;
+        return IOUtils.sha256Of(file);
     }
 
+    @Deprecated
     public static byte[] hashOf(String text) throws IOException, NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        digest.update(text.getBytes(StandardCharsets.UTF_8));
-
-        byte[] hash = digest.digest();
-        if (hash.length != 32) {
-            throw new AssertionError(
-                    "Result hash is not the result hash of a SHA-256 hash " +
-                            "(got " + hash.length + ", expected 32)");
-        }
-        return hash;
+        return IOUtils.sha256Of(text);
     }
 
     public static void downloadTo(String url, OutputStream outputStream) throws IOException {
@@ -70,13 +49,27 @@ public class NetUtils {
     }
 
     public static void downloadTo(URL url, OutputStream outputStream) throws IOException {
+        downloadToImpl(url, outputStream, false);
+    }
+
+    public static String downloadAsString(String url) throws IOException {
+        return downloadAsString(URI.create(url).toURL());
+    }
+
+    public static String downloadAsString(URL url) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        Charset charset = downloadToImpl(url, byteArrayOutputStream, true);
+        return new String(byteArrayOutputStream.toByteArray(), charset);
+    }
+
+    private static Charset downloadToImpl(URL url, OutputStream outputStream, boolean findCharset) throws IOException {
         if (BrowserLike.DESKTOP_MODE_DOMAINS.contains(url.getHost())) {
             // Good practice is to always say when we are a bot, unless...
-            BrowserLike.downloadTo(url, outputStream);
-            return;
+            return BrowserLike.downloadToImpl(url, outputStream, findCharset);
         }
         HttpURLConnection con = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
         con.setConnectTimeout(5000);
+        con.setInstanceFollowRedirects(true);
         con.setRequestProperty("Connection", "keep-alive");
         con.setRequestProperty("User-Agent", GRADLE_USER_AGENT);
         try (InputStream is = con.getInputStream()) {
@@ -89,16 +82,42 @@ public class NetUtils {
 
             outputStream.flush();
         }
+        return findCharset ? charsetFromContentTypeImpl(con.getContentType(), true) : DEFAULT_ENCODING;
     }
 
-    public static String downloadAsString(String url) throws IOException {
-        return downloadAsString(URI.create(url).toURL());
-    }
-
-    public static String downloadAsString(URL url) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        downloadTo(url, byteArrayOutputStream);
-        return new String(byteArrayOutputStream.toByteArray(), StandardCharsets.UTF_8);
+    private static Charset charsetFromContentTypeImpl(String contentType, boolean allowJank) {
+        if (contentType == null || contentType.isEmpty())
+            return DEFAULT_ENCODING;
+        int start = contentType.indexOf(";charset=");
+        if (start != -1) {
+            start += 9;
+        } else {
+            start = contentType.indexOf("; charset=");
+            if (start == -1) return DEFAULT_ENCODING;
+            start += 10;
+        }
+        start += 9;
+        int end = contentType.indexOf(';', start);
+        if (end == -1) end = contentType.length();
+        try {
+            if (contentType.charAt(start) == ' ')
+                start++;
+            String charset;
+            if (contentType.charAt(start) == '"') {
+                start++;
+                if (allowJank) {
+                    charset = contentType.substring(start, end);
+                    if (charset.contains("\\\""))
+                        return DEFAULT_ENCODING;
+                    charset = charset.replace("\"", "");
+                } else if (contentType.charAt(end - 1) == '"') {
+                    end--;
+                    charset = contentType.substring(start, end);
+                } else return DEFAULT_ENCODING;
+            } else charset = contentType.substring(start, end);
+            return Charset.forName(charset);
+        } catch (Exception ignored) {}
+        return DEFAULT_ENCODING;
     }
 
     private static class BrowserLike {
@@ -109,7 +128,7 @@ public class NetUtils {
                 new String(Base64.getDecoder().decode("bWVkaWEuZGlzY29yZGFwcC5uZXQ="), StandardCharsets.UTF_8)
         ));
 
-        static void downloadTo(URL url, OutputStream outputStream) throws IOException {
+        static Charset downloadToImpl(URL url, OutputStream outputStream, boolean findCharset) throws IOException {
             HttpURLConnection con = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
 
             con.setRequestMethod("GET");
@@ -118,7 +137,9 @@ public class NetUtils {
             con.setDoInput(true);
             con.setDoOutput(true);
             con.setUseCaches(false);
+            con.setRequestProperty("Connection", "keep-alive");
             con.setRequestProperty("User-Agent", DESKTOP_USER_AGENT);
+            con.setRequestProperty("Upgrade-Insecure-Requests", "1");
 
             int http = con.getResponseCode();
 
@@ -133,6 +154,8 @@ public class NetUtils {
 
                 outputStream.flush();
             }
+
+            return findCharset ? charsetFromContentTypeImpl(con.getContentType(), false) : DEFAULT_ENCODING;
         }
     }
 }

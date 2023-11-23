@@ -3,6 +3,7 @@ package com.fox2code.foxloader.loader;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
+import com.fox2code.foxloader.launcher.utils.IOUtils;
 import com.fox2code.foxloader.launcher.utils.NetUtils;
 import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
@@ -46,14 +47,14 @@ public final class ClientModLoader extends ModLoader {
                     new ArrayList<>(ModLoader.modContainers.size() +
                             ModLoader.coreMods.size());
             for (File coreMod : ModLoader.coreMods) {
-                byte[] sha256 = NetUtils.hashOf(coreMod);
+                byte[] sha256 = IOUtils.sha256Of(coreMod);
                 clientModData.add(new ClientHello.ClientModData(
                         coreMod.getName(), sha256, "", ""));
             }
             for (ModContainer modContainer : ModLoader.modContainers.values()) {
                 byte[] sha256 = nullSHA256;
                 if (modContainer.file != null) {
-                    sha256 = NetUtils.hashOf(modContainer.file);
+                    sha256 = IOUtils.sha256Of(modContainer.file);
                 }
                 clientModData.add(new ClientHello.ClientModData(
                         modContainer.id, sha256,
