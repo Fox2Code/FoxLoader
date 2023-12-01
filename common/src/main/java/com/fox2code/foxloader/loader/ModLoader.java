@@ -44,7 +44,7 @@ public class ModLoader extends Mod {
     public static final String FOX_LOADER_VERSION = BuildConfig.FOXLOADER_VERSION;
     static final ModContainer foxLoader = new ModContainer(
             FoxLauncher.foxLoaderFile, FOX_LOADER_MOD_ID, "FoxLoader", FOX_LOADER_VERSION,
-            "ReIndev mod loader with foxes!!!", "com.github.Fox2Code.FoxLoader:final", false);
+            "ReIndev mod loader with foxes!!!", "com.fox2code.FoxLoader:final", false);
     // https://www.jitpack.io/com/github/Fox2Code/FoxLoader/final/0.3.0/final-0.3.0.pom
     // https://www.jitpack.io/com/github/Fox2Code/FoxLoader/final/maven-metadata.xml
     static final LinkedList<File> coreMods = new LinkedList<>();

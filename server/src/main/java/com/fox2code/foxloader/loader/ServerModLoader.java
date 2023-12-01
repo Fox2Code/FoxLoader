@@ -32,7 +32,7 @@ public final class ServerModLoader extends ModLoader {
         if (networkPlayer.hasFoxLoader() && networkPlayer.isConnected()) {
             new Thread(() -> {
                 try {
-                    Thread.sleep(5500);
+                    Thread.sleep(10500); // <- This is max I can reasonably put here
                     if (networkPlayer.isConnected() && !((NetworkPlayerImpl) networkPlayer).hasClientHello()) {
                         // This can also trigger at very high ping...
                         if (shouldKickOnOutdatedLoader) {

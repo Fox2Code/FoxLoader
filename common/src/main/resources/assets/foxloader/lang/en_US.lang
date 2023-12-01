@@ -17,6 +17,7 @@ command.error.invalid-meta-data=Invalid meta data: %s
 command.error.changing-too-many-blocks=You were about to change %s blocks and it seemed too much...
 command.error.internal-error=An internal error happened durring the execution of the command.
 command.changing-blocks=Changing %s blocks...
+command.replaced-blocks-done=Replaced %s out of %s blocks!
 command.done=Done!
 
 

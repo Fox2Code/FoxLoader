@@ -77,8 +77,8 @@ public class WorldReplace extends CommandCompat {
         final int maxY = networkPlayerController.getMaxY();
         final int minZ = networkPlayerController.getMinZ();
         final int maxZ = networkPlayerController.getMaxZ();
-        final long blockChanged = (maxX - (long) minX) * (maxX - minX) * (maxX - minX);
-        if (blockChanged > 1000000) {
+        final long blockChanged = ((maxX - (long) minX) + 1) * ((maxX - minX) + 1) * ((maxX - minX) + 1);
+        if (blockChanged > 1000000000) {
             commandExecutor.displayChatMessage(gameRegistry.translateKeyFormat(
                     "command.error.changing-too-many-blocks", Long.toString(blockChanged)));
             return;
@@ -86,6 +86,7 @@ public class WorldReplace extends CommandCompat {
         commandExecutor.displayChatMessage(gameRegistry.translateKeyFormat(
                 "command.changing-blocks", Long.toString(blockChanged)));
 
+        long changedBlock = 0;
         final RegisteredWorld world = commandExecutor.getCurrentRegisteredWorld();
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
@@ -93,11 +94,13 @@ public class WorldReplace extends CommandCompat {
                     if (world.getRegisteredBlockId(x, y, z) == idSource && (metaSource == -1 ||
                             world.getRegisteredBlockMetadata(x, y, z) == metaSource)) {
                         world.setRegisteredBlockAndMetadataWithNotify(x, y, z, idTarget, metaTarget);
+                        changedBlock++;
                     }
                 }
             }
         }
 
-        commandExecutor.displayChatMessage(gameRegistry.translateKey("command.done"));
+        commandExecutor.displayChatMessage(gameRegistry.translateKeyFormat(
+                "command.replaced-blocks-done", Long.toString(changedBlock), Long.toString(blockChanged)));
     }
 }

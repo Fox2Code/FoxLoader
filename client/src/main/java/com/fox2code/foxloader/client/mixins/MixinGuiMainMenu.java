@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.client.mixins;
 
+import com.fox2code.foxloader.client.ResourceReloadingHelper;
 import com.fox2code.foxloader.client.gui.GuiModList;
 import com.fox2code.foxloader.client.gui.GuiUpdateButton;
 import com.fox2code.foxloader.launcher.BuildConfig;
@@ -42,9 +43,16 @@ public abstract class MixinGuiMainMenu extends GuiScreen {
             target = "Lnet/minecraft/src/client/gui/GuiScreen;drawScreen(IIF)V"))
     public void onDrawGuiScreen(int n, int n2, float deltaTicks, CallbackInfo ci) {
         this.drawString(this.fontRenderer, "FoxLoader " + BuildConfig.FOXLOADER_VERSION, 2, this.height - 20, 16777215);
+        String extraMessage = null;
         if (ModLoader.I_AM_EXPERIMENTAL) {
-            this.drawCenteredString(this.fontRenderer, "You are using an Experimental Version of FoxLoader",
-                    this.width / 2, this.height / 4 + 36, 16764108);
+            extraMessage = "You are using an Experimental Version of FoxLoader";
+        }
+        if (ResourceReloadingHelper.hasResourceError()) {
+            extraMessage = "Some game resources failed to load properly!";
+        }
+        if (extraMessage != null) {
+            this.drawCenteredString(this.fontRenderer, extraMessage,
+                    this.width / 2, this.height / 4 + 36, 0xcc2200);
         }
     }
 }

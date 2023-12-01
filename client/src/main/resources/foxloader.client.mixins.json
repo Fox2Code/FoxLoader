@@ -35,6 +35,7 @@
     "MixinPlayerControllerMP",
     "MixinPlayerControllerSP",
     "MixinPlayerControllerTest",
+    "MixinRenderEngine",
     "MixinStringTranslate",
     "MixinTextureMap",
     "MixinTileEntity",

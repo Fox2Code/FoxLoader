@@ -56,8 +56,8 @@ public class WorldSet extends CommandCompat {
         final int maxY = networkPlayerController.getMaxY();
         final int minZ = networkPlayerController.getMinZ();
         final int maxZ = networkPlayerController.getMaxZ();
-        final long blockChanged = (maxX - (long) minX) * (maxX - minX) * (maxX - minX);
-        if (blockChanged > 1000000) {
+        final long blockChanged = ((maxX - (long) minX) + 1) * ((maxX - minX) + 1) * ((maxX - minX) + 1);
+        if (blockChanged > 1000000000) {
             commandExecutor.displayChatMessage(gameRegistry.translateKeyFormat(
                     "command.error.changing-too-many-blocks", Long.toString(blockChanged)));
             return;
