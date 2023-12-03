@@ -210,7 +210,7 @@ public class GameRegistryClient extends GameRegistry {
                 break;
         }
         if (selfNotify) {
-            Block.selfNotify[blockId] = true;
+            Block.selfNotify.set(blockId, true);
         }
         block.stepSound = STEP_SOUND.translate(blockBuilder.builtInStepSounds);
         if (blockBuilder.blockHardness != 0f) {
