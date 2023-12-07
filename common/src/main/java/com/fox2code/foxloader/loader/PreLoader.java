@@ -120,6 +120,30 @@ public class PreLoader {
         coreMods.add(coreMod);
     }
 
+    private static void initializePrePatchReadme(File configFolder) {
+        File readme = new File(configFolder, "README.md");
+        if (!readme.exists()) {
+            try (PrintStream printStream = new PrintStream(readme)) {
+                printStream.println("# FoxLoader patched jar PatchedMinecraft(Client/Server).jar");
+                printStream.println("This file is the result of core-mods and mods pre-patchers");
+                printStream.println("As replacing this file may cause issues, FoxLoader doesn't allow it's replacement");
+                printStream.println();
+                printStream.println("If you think you absolutely need to change this file, you are wrong.");
+                printStream.println("You should put your jar-mods/core-mods in \"/coremods\" instead.");
+                printStream.println();
+                printStream.println("To do it, just download the vanilla server or client from ReIndev Discord server");
+                printStream.println("Change it's bytecode, then place it in \"/coremods\"");
+                printStream.println("Putting a full server jar in \"/coremods\" is officially supported.");
+                printStream.println();
+                printStream.println("Need help? Contact me on Discord: @fox2code");
+                printStream.println("ReIndev Discord: https://discord.gg/38Vfes6NpR");
+                printStream.flush();
+            } catch (FileNotFoundException e) {
+                ModLoader.getModLoaderLogger().log(Level.WARNING, "Failed to create README file!", e);
+            }
+        }
+    }
+
     static void initializePrePatch(boolean client) {
         prePatchInitialized = true;
         preLoadMetaJarHash.freeze();
@@ -130,6 +154,7 @@ public class PreLoader {
             ModLoader.foxLoader.logger.severe("Can't create FoxLoader config folder!");
             return;
         }
+        PreLoader.initializePrePatchReadme(configFolder);
         File jar = new File(configFolder, client ? "PatchedMinecraftClient.jar" : "PatchedMinecraftServer.jar");
         File hash = new File(configFolder, client ? "PatchedMinecraftClient.hash" : "PatchedMinecraftServer.hash");
         String jarSize = "";

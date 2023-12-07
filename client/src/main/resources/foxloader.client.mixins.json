@@ -26,6 +26,7 @@
     "MixinItem",
     "MixinItemStack",
     "MixinMinecraft",
+    "MixinNBTTagIntArray",
     "MixinNetClientHandler",
     "MixinPacket",
     "MixinPacket2Handshake",
