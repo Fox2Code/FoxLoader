@@ -17,6 +17,7 @@
     "MixinItemStack",
     "MixinMinecraftServer",
     "MixinNBTTagIntArray",
+    "MixinNetherPortalHandler",
     "MixinNetLoginHandler",
     "MixinNetServerHandler",
     "MixinPlayerController",

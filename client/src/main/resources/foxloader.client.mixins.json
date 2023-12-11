@@ -28,6 +28,7 @@
     "MixinMinecraft",
     "MixinNBTTagIntArray",
     "MixinNetClientHandler",
+    "MixinNetherPortalHandler",
     "MixinPacket",
     "MixinPacket2Handshake",
     "MixinPlayerCommandHandler",
