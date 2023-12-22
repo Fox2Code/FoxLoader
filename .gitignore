@@ -11,6 +11,7 @@
 
 /.project
 /.classpath
+/.profileconfig.json
 
 /client/libs/*.jar
 /server/libs/*.jar

@@ -72,7 +72,8 @@ public class PreLoader {
                     try {
                         preClassTransformer.transform(classNode, className);
                     } catch (RuntimeException e) {
-                        e.printStackTrace();
+                        ModLoader.foxLoader.logger.log(Level.SEVERE,
+                                "Failed to apply " + preClassTransformer.getClass().getName(), e);
                         throw e;
                     }
                 }
@@ -89,17 +90,31 @@ public class PreLoader {
             try {
                 preClassTransformer.transform(classNode, className);
             } catch (Exception e) {
-                e.printStackTrace();
+                ModLoader.foxLoader.logger.log(Level.WARNING,
+                        "Failed to apply " + preClassTransformer.getClass().getName(), e);
             }
         }
     }
 
     public static void patchForMixin(ClassNode classNode, String className) {
+        if (ignoreMinecraft && FoxClassLoader.isGameClassName(className)) return;
+        patch(classNode, className, false);
+    }
+
+    private static void patch(ClassNode classNode, String className, boolean rethrow) {
         for (PreClassTransformer preClassTransformer : preTransformers) {
             try {
                 preClassTransformer.transform(classNode, className);
             } catch (Exception e) {
-                e.printStackTrace();
+                ModLoader.getModLoaderLogger().log(rethrow ? Level.SEVERE : Level.WARNING,
+                        "Failed to apply " + preClassTransformer.getClass().getName(), e);
+                if (rethrow) {
+                    if (e instanceof RuntimeException) {
+                        throw (RuntimeException) e;
+                    } else {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                }
             }
         }
         if (jvmCompatTransformer != null) {
@@ -164,6 +179,8 @@ public class PreLoader {
                         hash.toPath()), StandardCharsets.UTF_8);
                 jarSize = String.format("%08X", jar.length());
             } catch (Exception ignored) {}
+        } else if (hash.exists() && !hash.delete()) {
+            ModLoader.foxLoader.logger.severe("Failed to delete previous corrupted hash");
         }
         String expectedHashAndSize = currentHash + jarSize;
         ModLoader.foxLoader.logger.info("PreLoader hash: " + currentHash);
@@ -194,10 +211,11 @@ public class PreLoader {
             if (!ModLoader.DEV_MODE) ignoreMinecraft = true;
         } catch (Exception e) {
             ModLoader.foxLoader.logger.log(Level.SEVERE, "Failed to patch jar file", e);
+            System.exit(-1); // Exit on failed jar patch
         }
     }
 
-    static void loadPrePatches(boolean client) {
+    static void loadPrePatches(boolean client, boolean forLiveGame) {
         preTransformers.clear();
         if (FoxLauncher.getFoxClassLoader() != null) {
             final int jvmVersion = Platform.getJvmVersion();
@@ -211,6 +229,7 @@ public class PreLoader {
                 jvmCompatTransformer = null;
             }
         }
+        if (forLiveGame && ModLoader.DEV_MODE) return;
         registerPrePatch(new VarNameTransformer());
         registerPrePatch(new RegistryTransformer());
         registerPrePatch(new AsyncCapabilitiesTransformer());
@@ -219,6 +238,7 @@ public class PreLoader {
             registerPrePatch(new FrustrumHelperTransformer());
             registerPrePatch(new NetworkMappingTransformer());
             registerPrePatch(new ClientOnlyInventoryTransformer());
+            registerPrePatch(new DeApplet281Hotfix());
         } else {
             registerPrePatch(new ConsoleLogManagerTransformer());
         }
@@ -227,7 +247,7 @@ public class PreLoader {
     public static void patchReIndevForDev(File in, File out, boolean client) throws IOException {
         if (FoxLauncher.getFoxClassLoader() != null)
             throw new IllegalStateException("Not in development environment!");
-        loadPrePatches(client);
+        loadPrePatches(client, false);
         registerPrePatch(new DevelopmentModeTransformer());
         patchJar(in, out, false);
     }
@@ -254,8 +274,8 @@ public class PreLoader {
             try (ZipInputStream zipInputStream = new ZipInputStream(
                     new BufferedInputStream(Files.newInputStream(source.toPath())))) {
                 while (null != (entry = zipInputStream.getNextEntry())) {
-                    if (!entry.isDirectory() &&
-                            !hashMap.containsKey(entry.getName())) {
+                    if (FoxClassLoader.isGamePath(entry.getName()) &&
+                            !entry.isDirectory() && !hashMap.containsKey(entry.getName())) {
                         baos.reset();
                         while ((nRead = zipInputStream.read(buffer, 0, buffer.length)) != -1) {
                             baos.write(buffer, 0, nRead);
@@ -289,10 +309,10 @@ public class PreLoader {
                 ClassNode classNode = new ClassNode();
                 classReader.accept(classNode,
                         ignoreFrames ? ClassReader.SKIP_FRAMES : 0);
-                patchForMixin(classNode, entryName);
+                patch(classNode, entryName, true);
                 ClassWriter classWriter = ignoreFrames ?
                         new ClassWriter(ClassWriter.COMPUTE_MAXS) :
-                        classDataProviderOverride.newClassWriter();
+                        classDataProvider.newClassWriter();
                 classNode.accept(classWriter);
                 element.setValue(classWriter.toByteArray());
             }

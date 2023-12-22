@@ -18,7 +18,7 @@ public enum LauncherType {
      */
     GRADLE(false),
     /**
-     * Ex: Vanilla launcher & Pojav launcher
+     * Ex: Vanilla launcher &amp; Pojav launcher
      */
     VANILLA_LIKE(false),
     /**

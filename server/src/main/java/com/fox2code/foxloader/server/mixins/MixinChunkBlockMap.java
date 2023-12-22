@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.Overwrite;
 public class MixinChunkBlockMap {
     /**
      * @author Fox2Cdoe
-     * @reason Need full replace
      */
     @Overwrite
     public static void cleanupInvalidBlocks(short[] bmap) {

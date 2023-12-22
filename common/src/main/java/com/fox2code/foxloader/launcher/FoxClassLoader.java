@@ -23,6 +23,7 @@ public final class FoxClassLoader extends URLClassLoader {
     private WrappedExtensions wrappedExtensions;
     private ArrayList<URL> coreMods;
     private boolean didPrintedTransformFail = false;
+    private boolean patchedExclusiveSource = false;
     static URL earlyMinecraftURL;
 
     FoxClassLoader() {
@@ -164,6 +165,10 @@ public final class FoxClassLoader extends URLClassLoader {
             }
             if (name.equals(CLASS_TO_DUMP)) {
                 Files.write(new File(FoxLauncher.gameDir, "class_dump.class").toPath(), bytes);
+                String loaderType = this.gameExclusiveSource == resourceClassLoader ? "exclusive" :
+                        this == resourceClassLoader ? "main" : "parent";
+                new Throwable("Dumped " + CLASS_TO_DUMP + " with source " + url +
+                        " from " + loaderType + " loader").printStackTrace();
             }
             clas = defineClass(name,bytes,0,bytes.length, url == null ?
                     null : new CodeSource(url, new CodeSigner[]{}));
@@ -184,9 +189,7 @@ public final class FoxClassLoader extends URLClassLoader {
     @Override
     public URL getResource(String name) {
         // Don't allow mods from adding classes in net.minecraft.
-        if ((name.startsWith("net/minecraft/") &&
-                name.endsWith(".class")) ||
-                name.equals("font.txt")) {
+        if (isGamePath(name)) {
             if (gameExclusiveSource != null) {
                 return gameExclusiveSource.findResource(name);
             } else {
@@ -263,12 +266,14 @@ public final class FoxClassLoader extends URLClassLoader {
         if (allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
         gameExclusiveSource = new URLClassLoader(makeURLClassPathForSource(url), null);
+        patchedExclusiveSource = false;
     }
 
     public void setPatchedMinecraftURL(URL url) {
         if (allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
         gameExclusiveSource = new URLClassLoader(new URL[]{url}, null);
+        patchedExclusiveSource = true;
     }
 
     public URL[] makeURLClassPathForSource(URL source) {
@@ -284,7 +289,9 @@ public final class FoxClassLoader extends URLClassLoader {
         if (allowLoadingGame) return;
         if (coreMods != null) {
             try {
-                setMinecraftURL(getMinecraftSource());
+                if (!patchedExclusiveSource) {
+                    setMinecraftURL(getMinecraftSource());
+                }
                 coreMods = null;
                 allowLoadingGame = true;
             } catch (IOException e) {
@@ -336,8 +343,19 @@ public final class FoxClassLoader extends URLClassLoader {
     public static boolean isGameClassName(String cls) {
         // Allow game pre-transforming
         return cls.startsWith("net.minecraft.") ||
+                cls.startsWith("com.indigo3d.") ||
                 cls.startsWith("paulscode.sound.") ||
                 cls.startsWith("com.jcraft.");
+    }
+
+    public static boolean isGamePath(String cls) {
+        // Only allow core-mods to modify these files
+        return cls.startsWith("net/minecraft/") ||
+                cls.startsWith("com/indigo3d/") ||
+                cls.startsWith("paulscode/sound/") ||
+                cls.startsWith("com/jcraft/") ||
+                // font.txt is a protected game file
+                cls.equals("font.txt");
     }
 
     private static class ClassTransformException extends Exception {

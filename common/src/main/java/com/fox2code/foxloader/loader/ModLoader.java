@@ -100,9 +100,7 @@ public class ModLoader extends Mod {
                 PreLoader.addCoreMod(coremod);
                 coreMods.add(coremod);
             }
-            if (!DEV_MODE) {
-                PreLoader.loadPrePatches(client);
-            }
+            PreLoader.loadPrePatches(client, true);
             for (File mod : Objects.requireNonNull(mods.listFiles(
                     (dir, name) -> name.endsWith(".jar")))) {
                 loadModContainerFromJar(mod, false);
@@ -120,7 +118,7 @@ public class ModLoader extends Mod {
                 loadModContainerFromLua(mod);
             }
         }
-        // Inject mod is used by the gradle plugin to load dev mod
+        // Inject mod that the gradle dev plugin asked us to load
         if (DEV_MODE && INJECT_MOD != null && !INJECT_MOD.isEmpty()) {
             loadModContainerFromJar(new File(INJECT_MOD).getAbsoluteFile(), true);
         }

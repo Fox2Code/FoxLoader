@@ -3,6 +3,7 @@ import java.security.MessageDigest
 
 plugins {
     id 'java-base'
+    id 'com.diffplug.eclipse.apt' version '3.44.0' apply false
 }
 
 group 'com.fox2code'
@@ -12,6 +13,7 @@ tasks.register('publishToMavenLocal', Task)
 
 subprojects {
     apply plugin: 'java-library'
+    apply plugin: 'com.diffplug.eclipse.apt'
 
     repositories {
         mavenCentral()
@@ -43,6 +45,9 @@ subprojects {
         withSourcesJar()
         withJavadocJar()
     }
+
+    // Support "@reason" javadoc Mixin tag mandated by Minecraft-Dev Intellij plugin
+    javadoc.options.tags = [ "reason" ]
 
     test {
         useJUnitPlatform()

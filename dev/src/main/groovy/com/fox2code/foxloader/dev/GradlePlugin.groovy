@@ -71,6 +71,8 @@ class GradlePlugin implements Plugin<Project> {
 
             withSourcesJar()
         }
+        // Support "@reason" javadoc Mixin tag mandated by Minecraft-Dev Intellij plugin
+        project.javadoc.options.tags = [ "reason" ]
         project.sourceSets {
             main
             client {

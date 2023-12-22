@@ -5,7 +5,7 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 
 /**
  * Should never be loaded in memory, if it is loaded, it means something wrong happened
- * <br/>
+ * <p>
  * Use {@link ClientMain} instead to start the game.
  */
 public class Minecraft {

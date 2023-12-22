@@ -58,7 +58,7 @@ public interface NetworkPlayer extends RegisteredEntityLiving, RegisteredCommand
     /**
      * Call code to switch player between nether and overworld, if
      * the player is in neither, it will send the player to the nether.
-     * <br/>
+     * <p>
      * This will also make a new nether portal if needed
      */
     default void sendPlayerThroughPortalRegistered() { throw new RuntimeException(); }
