@@ -1,5 +1,7 @@
 package com.fox2code.foxloader.launcher;
 
+import com.fox2code.foxloader.launcher.utils.Enumerations;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +26,7 @@ public final class FoxClassLoader extends URLClassLoader {
     private ArrayList<URL> coreMods;
     private boolean didPrintedTransformFail = false;
     private boolean patchedExclusiveSource = false;
+    private URL minecraftURL;
     static URL earlyMinecraftURL;
 
     FoxClassLoader() {
@@ -146,7 +149,7 @@ public final class FoxClassLoader extends URLClassLoader {
                     throw new ClassTransformException("Can't compute frames for "+name, e);
                 }
             } else switch (name) {
-                // We need to apply some patches to mixins to make the actually work.
+                // We need to apply some patches to mixins to make them actually work.
                 case MIXIN_CONFIG:
                     if (wrappedExtensions == null)
                         throw new ClassTransformException("wrappedExtensions not initialized yet");
@@ -208,6 +211,26 @@ public final class FoxClassLoader extends URLClassLoader {
         return this.getParent().getResource(name);
     }
 
+    @Override
+    public URL findResource(String name) {
+        if (isGamePath(name)) {
+            if (gameExclusiveSource != null) {
+                return gameExclusiveSource.findResource(name);
+            } else {
+                return this.getParent().getResource(name);
+            }
+        }
+        return super.findResource(name);
+    }
+
+    @Override
+    public Enumeration<URL> findResources(String name) throws IOException {
+        if (isGamePath(name)) {
+            return Enumerations.optional(this.findResource(name));
+        }
+        return super.findResources(name);
+    }
+
     public boolean isClassLoaded(String className) {
         return this.findLoadedClass(className) != null;
     }
@@ -263,17 +286,25 @@ public final class FoxClassLoader extends URLClassLoader {
     }
 
     public void setMinecraftURL(URL url) {
-        if (allowLoadingGame)
+        if (this.allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
-        gameExclusiveSource = new URLClassLoader(makeURLClassPathForSource(url), null);
-        patchedExclusiveSource = false;
+        this.gameExclusiveSource = new URLClassLoader(makeURLClassPathForSource(url), null);
+        this.patchedExclusiveSource = false;
+        this.minecraftURL = url;
     }
 
     public void setPatchedMinecraftURL(URL url) {
-        if (allowLoadingGame)
+        if (this.allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
-        gameExclusiveSource = new URLClassLoader(new URL[]{url}, null);
-        patchedExclusiveSource = true;
+        URL minecraftURL;
+        try {
+            minecraftURL = this.getOriginalMinecraftSource();
+        } catch (IOException e) {
+            throw new IllegalStateException("Original Minecraft jar not set", e);
+        }
+        this.gameExclusiveSource = new URLClassLoader(new URL[]{url, minecraftURL}, null);
+        this.patchedExclusiveSource = true;
+        this.minecraftURL = minecraftURL;
     }
 
     public URL[] makeURLClassPathForSource(URL source) {
@@ -290,7 +321,7 @@ public final class FoxClassLoader extends URLClassLoader {
         if (coreMods != null) {
             try {
                 if (!patchedExclusiveSource) {
-                    setMinecraftURL(getMinecraftSource());
+                    setMinecraftURL(getOriginalMinecraftSource());
                 }
                 coreMods = null;
                 allowLoadingGame = true;
@@ -305,9 +336,13 @@ public final class FoxClassLoader extends URLClassLoader {
                 this.getResource("font.txt")).openConnection();
         if (urlConnection instanceof JarURLConnection) {
           return ((JarURLConnection) urlConnection).getJarFileURL();
-        } else if (earlyMinecraftURL != null) {
-            return earlyMinecraftURL;
+        } else if (this.minecraftURL != null) {
+            return this.minecraftURL;
         } else throw new IOException("Invalid reindev.jar source...");
+    }
+
+    public URL getOriginalMinecraftSource() throws IOException {
+        return this.minecraftURL != null ? this.minecraftURL : this.getMinecraftSource();
     }
 
     public boolean isAllowLoadingGame() {
@@ -348,14 +383,14 @@ public final class FoxClassLoader extends URLClassLoader {
                 cls.startsWith("com.jcraft.");
     }
 
-    public static boolean isGamePath(String cls) {
+    public static boolean isGamePath(String path) {
         // Only allow core-mods to modify these files
-        return cls.startsWith("net/minecraft/") ||
-                cls.startsWith("com/indigo3d/") ||
-                cls.startsWith("paulscode/sound/") ||
-                cls.startsWith("com/jcraft/") ||
+        return path.startsWith("net/minecraft/") ||
+                path.startsWith("com/indigo3d/") ||
+                path.startsWith("paulscode/sound/") ||
+                path.startsWith("com/jcraft/") ||
                 // font.txt is a protected game file
-                cls.equals("font.txt");
+                path.equals("font.txt");
     }
 
     private static class ClassTransformException extends Exception {
