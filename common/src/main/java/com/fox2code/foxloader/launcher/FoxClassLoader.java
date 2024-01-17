@@ -19,6 +19,7 @@ public final class FoxClassLoader extends URLClassLoader {
     private static final URL[] NO_URLs = new URL[0];
     private final LinkedList<String> exclusions;
     private final LinkedList<ClassTransformer> classTransformers;
+    private final LinkedList<ClassGenerator> classGenerators;
     private final HashMap<String, byte[]> injectedClasses;
     private URLClassLoader gameExclusiveSource;
     private boolean allowLoadingGame;
@@ -33,7 +34,9 @@ public final class FoxClassLoader extends URLClassLoader {
         super(new URL[0], FoxClassLoader.class.getClassLoader());
         this.exclusions = new LinkedList<>();
         this.classTransformers = new LinkedList<>();
+        this.classGenerators = new LinkedList<>();
         this.injectedClasses = new HashMap<>();
+        this.classGenerators.add(this.injectedClasses::remove);
         // Allow to set a Minecraft URL before loader is initialized.
         if (earlyMinecraftURL != null) {
             this.setMinecraftURL(earlyMinecraftURL);
@@ -109,9 +112,16 @@ public final class FoxClassLoader extends URLClassLoader {
                                 name.replace('.', '/').concat(".class"));
             }
             URLConnection urlConnection;
+            ClassGenerator generator = null;
             if (resource == null) {
                 urlConnection = null;
-                bytes = injectedClasses.remove(name);
+                for (ClassGenerator classGenerator : this.classGenerators) {
+                    bytes = classGenerator.generate(name);
+                    if (bytes != null) {
+                        generator = classGenerator;
+                        break;
+                    }
+                }
                 if (bytes == null) {
                     throw new ClassNotFoundException(name);
                 }
@@ -132,6 +142,7 @@ public final class FoxClassLoader extends URLClassLoader {
             String tmpName = name.replace('/','.');
             if (wrappedExtensions != null && !isTransformExclude(tmpName)) {
                 for (ClassTransformer classTransformer : classTransformers) {
+                    if (classTransformer == generator) continue;
                     try {
                         bytes = classTransformer.transform(bytes, tmpName);
                     } catch (Throwable e) {
@@ -165,6 +176,8 @@ public final class FoxClassLoader extends URLClassLoader {
             URL url = null;
             if (urlConnection instanceof JarURLConnection) {
                 url = ((JarURLConnection) urlConnection).getJarFileURL();
+            } else if (generator != null) {
+                url = generator.source(name);
             }
             if (name.equals(CLASS_TO_DUMP)) {
                 Files.write(new File(FoxLauncher.gameDir, "class_dump.class").toPath(), bytes);
@@ -251,26 +264,40 @@ public final class FoxClassLoader extends URLClassLoader {
         }
     }
 
+    public boolean hasClass(String className) {
+        return this.isClassLoaded(className) ||
+                this.isClassInClassPath(className) ||
+                this.injectedClasses.containsKey(className);
+    }
+
     public void addClassTransformers(ClassTransformer classTransformer) {
         String pkg = classTransformer.getClass().getPackage().getName();
         if (!isTransformExclude(pkg)) {
-            exclusions.add(pkg);
+            this.exclusions.add(pkg);
         }
-        classTransformers.add(classTransformer);
+        this.classTransformers.add(classTransformer);
+    }
+
+    public void addClassGenerator(ClassGenerator classGenerator) {
+        this.classGenerators.add(Objects.requireNonNull(classGenerator));
     }
 
     public void injectRuntimeClass(String className, byte[] classData) {
         if (isClassLoaded(className))
             throw new IllegalStateException("Cannot redefine already loaded classes");
-        injectedClasses.put(className, classData);
+        this.injectedClasses.put(className, classData);
     }
 
     public int getClassTransformersCount() {
-        return classTransformers.size();
+        return this.classTransformers.size();
+    }
+
+    public int getClassGeneratorsCount() {
+        return this.classGenerators.size();
     }
 
     public void addTransformerExclusion(String exclusion) {
-        exclusions.add(exclusion);
+        this.exclusions.add(exclusion);
     }
 
     public void addURL(URL url) {
@@ -278,11 +305,11 @@ public final class FoxClassLoader extends URLClassLoader {
     }
 
     public void addCoreModURL(URL url) {
-        if (allowLoadingGame)
+        if (this.allowLoadingGame)
             throw new IllegalStateException("Minecraft jar already loaded!");
-        if (coreMods == null)
-            coreMods = new ArrayList<>(16);
-       coreMods.add(url);
+        if (this.coreMods == null)
+            this.coreMods = new ArrayList<>(16);
+        this.coreMods.add(url);
     }
 
     public void setMinecraftURL(URL url) {
@@ -371,6 +398,7 @@ public final class FoxClassLoader extends URLClassLoader {
     public static boolean isSpecialClassName(String cls) {
         // Check mixins to fix them in development environment.
         return cls.startsWith("com.llamalad7.mixinextras.") ||
+                cls.startsWith("com.bawnorton.mixinsquared.") ||
                 cls.startsWith("org.spongepowered.") ||
                 cls.startsWith("org.objectweb.asm.");
     }

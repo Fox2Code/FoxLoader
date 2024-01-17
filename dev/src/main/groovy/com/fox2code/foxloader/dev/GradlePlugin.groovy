@@ -59,6 +59,12 @@ class GradlePlugin implements Plugin<Project> {
             }
             maven {
                 url 'https://repo.spongepowered.org/maven'
+                content {
+                    includeGroup "org.spongepowered"
+                }
+            }
+            maven {
+                url 'https://cdn.fox2code.com/maven'
             }
             maven {
                 url 'https://jitpack.io/'

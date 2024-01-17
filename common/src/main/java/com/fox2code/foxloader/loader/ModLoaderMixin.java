@@ -1,5 +1,8 @@
 package com.fox2code.foxloader.loader;
 
+import com.bawnorton.mixinsquared.MixinSquaredBootstrap;
+import com.fox2code.foxloader.launcher.ClassGenerator;
+import com.fox2code.foxloader.launcher.ClassTransformer;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.mixin.MixinBootstrapService;
 import com.fox2code.foxloader.loader.mixin.MixinService;
@@ -37,9 +40,11 @@ final class ModLoaderMixin {
         MixinBootstrap.getPlatform().inject();
         IMixinTransformer mixinTransformer = // Inject mixin transformer into class loader.
                 (IMixinTransformer) MixinEnvironment.getCurrentEnvironment().getActiveTransformer();
-        FoxLauncher.getFoxClassLoader().addClassTransformers((bytes, className) ->
-                mixinTransformer.transformClassBytes(className, className, bytes));
+        FoxLoaderMixinWrapper foxLoaderMixinWrapper = new FoxLoaderMixinWrapper(mixinTransformer);
+        FoxLauncher.getFoxClassLoader().addClassTransformers(foxLoaderMixinWrapper);
+        FoxLauncher.getFoxClassLoader().addClassGenerator(foxLoaderMixinWrapper);
         MixinExtrasBootstrap.init();
+        MixinSquaredBootstrap.init();
     }
 
     static boolean addMixinConfigurationSafe(String modId, String mixin) {
@@ -62,5 +67,23 @@ final class ModLoaderMixin {
             }
         }
         return false;
+    }
+
+    private static final class FoxLoaderMixinWrapper implements ClassGenerator, ClassTransformer {
+        private final IMixinTransformer mixinTransformer;
+
+        private FoxLoaderMixinWrapper(IMixinTransformer mixinTransformer) {
+            this.mixinTransformer = mixinTransformer;
+        }
+
+        @Override
+        public byte[] generate(String className) {
+            return this.mixinTransformer.transformClassBytes(className, className, null);
+        }
+
+        @Override
+        public byte[] transform(byte[] bytes, String className) {
+            return this.mixinTransformer.transformClassBytes(className, className, bytes);
+        }
     }
 }

@@ -34,10 +34,11 @@ public class DependencyHelper {
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
             new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("com.github.LlamaLad7.MixinExtras:mixinextras-common:0.2.1",
-                    JITPACK, "com.llamalad7.mixinextras.MixinExtrasBootstrap",
-                    // Need fallback URL cause JitPack links can ded at any time
-                    "https://github.com/LlamaLad7/MixinExtras/releases/download/0.2.1/mixinextras-common-0.2.1.jar"),
+            new Dependency("io.github.llamalad7:mixinextras-common:0.3.2",
+                    MAVEN_CENTRAL, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
+            new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.1",
+                    JITPACK, "com.bawnorton.mixinsquared.MixinSquaredBootstrap",
+                    "https://github.com/Bawnorton/MixinSquared/releases/download/0.1.1/mixinsquared-common-0.1.1.jar"),
     };
 
     public static final Dependency sparkDependency =
@@ -242,13 +243,6 @@ public class DependencyHelper {
         }
 
         static void addToClassPath(final File library) {
-            if (inst == null) {
-                System.err.println("Unable to retrieve Instrumentation API to add Paper jar to classpath. If you're " +
-                        "running paperclip without -jar then you also need to include the -javaagent:<paperclip_jar> JVM " +
-                        "command line option.");
-                System.exit(1);
-                return;
-            }
             try {
                 inst.appendToSystemClassLoaderSearch(new JarFile(library));
             } catch (final IOException e) {
@@ -314,7 +308,7 @@ public class DependencyHelper {
     }
 
     public static boolean hasClass(String cls) {
-        return FoxLauncher.getFoxClassLoader().isClassInClassPath(cls);
+        return FoxLauncher.getFoxClassLoader().hasClass(cls);
     }
 
     private static String resolvePostURL(String string) {

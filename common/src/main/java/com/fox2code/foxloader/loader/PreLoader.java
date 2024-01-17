@@ -203,7 +203,7 @@ public class PreLoader {
             File sourceJar = new File(FoxLauncher.getFoxClassLoader()
                     .getMinecraftSource().toURI().getPath());
             ModLoader.foxLoader.logger.info("Source jar file: " + sourceJar.getAbsolutePath());
-            patchJar(sourceJar, jar, false);
+            patchJar(sourceJar, jar, false, false);
             jarSize = String.format("%08X", jar.length());
             Files.write(hash.toPath(), (currentHash + jarSize).getBytes(StandardCharsets.UTF_8));
             ModLoader.foxLoader.logger.info("Jar patched successfully, using that!");
@@ -249,7 +249,7 @@ public class PreLoader {
             throw new IllegalStateException("Not in development environment!");
         loadPrePatches(client, false);
         registerPrePatch(new DevelopmentModeTransformer());
-        patchJar(in, out, false);
+        patchJar(in, out, false, true);
     }
 
     public static void patchDevReIndevForSource(File in, File out) throws IOException {
@@ -257,10 +257,10 @@ public class PreLoader {
             throw new IllegalStateException("Not in development environment!");
         preTransformers.clear();
         registerPrePatch(new DevelopmentSourceTransformer());
-        patchJar(in, out, true);
+        patchJar(in, out, true, true);
     }
 
-    private static void patchJar(File in, File out, boolean ignoreFrames) throws IOException {
+    private static void patchJar(File in, File out, boolean ignoreFrames, boolean dev) throws IOException {
         LinkedHashMap<String, byte[]> hashMap = new LinkedHashMap<>();
         hashMap.put(metaInfPath, metaInf); // Set META-INF first
         final byte[] empty = new byte[0];
@@ -271,17 +271,18 @@ public class PreLoader {
         ArrayList<File> sources = new ArrayList<>(coreMods);
         sources.add(in);
         for (File source : sources) {
+            boolean forceComplete = dev && source == in;
             try (ZipInputStream zipInputStream = new ZipInputStream(
                     new BufferedInputStream(Files.newInputStream(source.toPath())))) {
                 while (null != (entry = zipInputStream.getNextEntry())) {
-                    if (FoxClassLoader.isGamePath(entry.getName()) &&
+                    if ((FoxClassLoader.isGamePath(entry.getName()) || forceComplete) &&
                             !entry.isDirectory() && !hashMap.containsKey(entry.getName())) {
                         baos.reset();
                         while ((nRead = zipInputStream.read(buffer, 0, buffer.length)) != -1) {
                             baos.write(buffer, 0, nRead);
                         }
-                        byte[] bytes = baos.toByteArray();
-                        if (bytes.length == 0) bytes = empty;
+                        byte[] bytes = baos.size() == 0 ?
+                                empty : baos.toByteArray();
                         hashMap.put(entry.getName(), bytes);
                     }
                 }

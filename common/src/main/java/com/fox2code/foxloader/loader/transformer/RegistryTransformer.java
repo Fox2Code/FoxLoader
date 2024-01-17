@@ -11,6 +11,7 @@ public class RegistryTransformer implements PreClassTransformer {
     private static final String GAME_REGISTRY = "com/fox2code/foxloader/registry/GameRegistry";
     private static final String BLOCK = "net/minecraft/src/game/block/Block";
     private static final String ITEM = "net/minecraft/src/game/item/Item";
+    private static final String BITSET = "java/util/BitSet";
 
     private int oldBlockcap = -1;
 
@@ -33,8 +34,10 @@ public class RegistryTransformer implements PreClassTransformer {
             if (insnNode.getOpcode() == SIPUSH) {
                 IntInsnNode intInsnNode = (IntInsnNode) insnNode;
                 int opcode;
+                AbstractInsnNode next;
                 if (intInsnNode.operand == oldBlockcap && ((opcode =
-                        intInsnNode.getNext().getOpcode()) == ANEWARRAY || opcode == NEWARRAY)) {
+                        (next = intInsnNode.getNext()).getOpcode()) == ANEWARRAY || opcode == NEWARRAY ||
+                        (opcode == INVOKESPECIAL && ((MethodInsnNode) next).owner.equals(BITSET)))) {
                     intInsnNode.operand = MAXIMUM_BLOCK_ID;
                 }
             }
@@ -50,18 +53,16 @@ public class RegistryTransformer implements PreClassTransformer {
         for (MethodNode methodNode : classNode.methods) {
             InsnList insnList = methodNode.instructions;
             for (AbstractInsnNode insnNode : insnList) {
-                if (insnNode.getOpcode() == NEWARRAY) {
-                    IntInsnNode newArray = (IntInsnNode) insnNode;
-                    if (newArray.operand == T_INT) {
-                        insnNode = insnNode.getPrevious();
-                        if (insnNode instanceof IntInsnNode &&
-                                ((IntInsnNode) insnNode).operand == oldBlockcap) {
-                            insnList.insert(newArray,
-                                    new MethodInsnNode(INVOKESTATIC, GAME_REGISTRY,
-                                            "getTemporaryBlockIntArray", "()[I"));
-                            insnList.remove(insnNode);
-                            insnList.remove(newArray);
-                        }
+                if ((insnNode.getOpcode() == NEWARRAY && ((IntInsnNode) insnNode).operand == T_INT) ||
+                        (insnNode.getOpcode() == INVOKESPECIAL && ((MethodInsnNode) insnNode).owner.equals(BITSET))) {
+                    AbstractInsnNode previous = insnNode.getPrevious();
+                    if (previous instanceof IntInsnNode &&
+                            ((IntInsnNode) previous).operand == oldBlockcap) {
+                        insnList.insert(insnNode,
+                                new MethodInsnNode(INVOKESTATIC, GAME_REGISTRY,
+                                        "getTemporaryBlockIntArray", "()[I"));
+                        insnList.remove(previous);
+                        insnList.remove(insnNode);
                     }
                 }
             }
