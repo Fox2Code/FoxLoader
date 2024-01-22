@@ -39,6 +39,7 @@ public class DependencyHelper {
             new Dependency("org.semver4j:semver4j:5.2.2", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
+            new Dependency("it.unimi.dsi:fastutil-core:8.5.12", MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair"),
             // new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
             new Dependency("net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5", FABRIC_MC, "org.spongepowered.asm.mixin.Mixins"),
             new Dependency("io.github.llamalad7:mixinextras-common:0.3.2",
