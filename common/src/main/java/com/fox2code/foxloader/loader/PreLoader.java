@@ -38,7 +38,6 @@ public class PreLoader {
             "FoxLoader-Transformer-Version: " + BuildConfig.FOXLOADER_TRANSFORMER_VERSION +
             "FoxLoader-ReIndev-Version: " + BuildConfig.REINDEV_VERSION +
             "Multi-Release: true\n").getBytes(StandardCharsets.UTF_8);
-    private static JvmCompatTransformer jvmCompatTransformer = null;
     private static final boolean devFoxLoader = FoxLauncher.foxLoaderFile.getAbsolutePath().replace('\\', '/')
             .endsWith("/common/build/libs/common-" + BuildConfig.FOXLOADER_VERSION + ".jar");
     private static final HashSet<File> preComputedFilesForHash = new HashSet<>();
@@ -116,9 +115,6 @@ public class PreLoader {
                     }
                 }
             }
-        }
-        if (jvmCompatTransformer != null) {
-            jvmCompatTransformer.transform(classNode, className);
         }
     }
 
@@ -217,18 +213,6 @@ public class PreLoader {
 
     static void loadPrePatches(boolean client, boolean forLiveGame) {
         preTransformers.clear();
-        if (FoxLauncher.getFoxClassLoader() != null) {
-            final int jvmVersion = Platform.getJvmVersion();
-            if (jvmVersion < 11) {
-                ModLoader.foxLoader.logger.info( // Tell the user we are doing that :3
-                        "Registering JvmCompatTransformer to run Java11 code on Java" + jvmVersion);
-                preTransformers.add(jvmCompatTransformer = new JvmCompatTransformer(jvmVersion));
-            } else {
-                ModLoader.foxLoader.logger.info( // Tell the user their jvm version
-                        "You are currently running on Java" + jvmVersion);
-                jvmCompatTransformer = null;
-            }
-        }
         if (forLiveGame && ModLoader.DEV_MODE) return;
         registerPrePatch(new VarNameTransformer());
         registerPrePatch(new RegistryTransformer());
@@ -439,9 +423,5 @@ public class PreLoader {
         public void freeze() {
             this.cache = this.makeHash();
         }
-    }
-
-    static JvmCompatTransformer getJvmCompatTransformer() {
-        return jvmCompatTransformer;
     }
 }

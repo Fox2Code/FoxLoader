@@ -1,8 +1,6 @@
 package com.fox2code.foxloader.loader.lua;
 
 import com.fox2code.foxloader.loader.ModContainer;
-import com.fox2code.foxloader.loader.lua.mt.LuaNetworkPlayerMt;
-import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.GameRegistry;
 import org.luaj.vm2.*;
 import org.luaj.vm2.compiler.LuaC;
@@ -10,6 +8,7 @@ import org.luaj.vm2.lib.*;
 import org.luaj.vm2.lib.jse.*;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
@@ -40,8 +39,7 @@ public class LuaVMHelper {
             classLuaToDefaultTransformerFunction = c -> v ->
             v == null ? LuaValue.NIL : c.cast(((LuaUserdata) v).m_instance);
     public static final Function<?, LuaValue> defaultToLuaTransformer = v ->
-            v == null ? LuaValue.NIL : v instanceof String ? LuaString.valueOf((String) v) :
-                    LuaValue.userdataOf(v);
+            v == null ? LuaValue.NIL : luaDataOf(v);
     public static final Function<Void, LuaValue> voidToLuaTransformer = v -> LuaValue.NIL;
     public static final Function<Boolean, LuaValue> booleanToLuaTransformer = v ->
             v == null ? LuaValue.NIL : v ? LuaValue.TRUE : LuaValue.FALSE;
@@ -50,7 +48,6 @@ public class LuaVMHelper {
     private static final LuaString KEY_GET_MOD_CONTAINER = LuaString.valueOf("getModContainer");
     private static final LuaString KEY_PRINT = LuaString.valueOf("print");
     private static final LuaString KEY_MOD = LuaString.valueOf("mod");
-    private static final LuaTable networkPlayerMt = new LuaTable();
     private static Globals globals;
 
     public static void initialize() {
@@ -114,16 +111,6 @@ public class LuaVMHelper {
         globals.load(new LuaGameRegistryLib());
         LoadState.install(globals);
         LuaC.install(globals);
-        networkPlayerMt.set("__index", new TwoArgFunction() {
-            @Override
-            public LuaValue call(LuaValue arg1, LuaValue arg2) {
-                if (arg1 instanceof LuaUserdata &&
-                        ((LuaUserdata) arg1).m_instance instanceof NetworkPlayer) {
-                    return LuaNetworkPlayerMt.metaTable.getOrDefault(arg2.tojstring(), LuaValue.NIL);
-                }
-                return LuaValue.NIL;
-            }
-        });
     }
 
     @SuppressWarnings("unchecked")
@@ -256,16 +243,18 @@ public class LuaVMHelper {
         if (o instanceof Number) {
             return LuaDouble.valueOf(((Number) o).doubleValue());
         }
-        if (o instanceof String) {
-            return LuaString.valueOf(((String) o));
+        if (o instanceof LuaObjectHolder) {
+            LuaObjectHolder luaObjectHolder = ((LuaObjectHolder) o);
+            WeakReference<LuaValue> reference = luaObjectHolder.foxLoader$getLuaObject();
+            LuaValue luaValue;
+            if (reference != null && (luaValue = reference.get()) != null) {
+                return luaValue;
+            }
+            luaObjectHolder.foxLoader$setLuaObject(new WeakReference<>(
+                    luaValue = CoerceJavaToLua.coerce(o)));
+            return luaValue;
         }
-        if (o instanceof Boolean) {
-            return booleanToLuaTransformer.apply((Boolean) o);
-        }
-        if (o instanceof NetworkPlayer) {
-            return LuaValue.userdataOf(o, networkPlayerMt);
-        }
-        return LuaValue.userdataOf(o);
+        return CoerceJavaToLua.coerce(o);
     }
 
     public static LuaValue[] luaDataOf(Object... o) {

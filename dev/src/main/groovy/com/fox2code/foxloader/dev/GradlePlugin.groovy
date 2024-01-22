@@ -29,7 +29,8 @@ import java.text.Normalizer
 import java.util.jar.JarFile
 
 class GradlePlugin implements Plugin<Project> {
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static FoxLoaderDecompilerHelper decompilerHelper
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create()
     private File foxLoaderCache
     private File foxLoaderData
 
@@ -61,6 +62,13 @@ class GradlePlugin implements Plugin<Project> {
                 url 'https://repo.spongepowered.org/maven'
                 content {
                     includeGroup "org.spongepowered"
+                }
+            }
+            maven {
+                name = 'Fabric'
+                url 'https://maven.fabricmc.net/'
+                content {
+                    includeGroup "net.fabricmc"
                 }
             }
             maven {
@@ -133,14 +141,21 @@ class GradlePlugin implements Plugin<Project> {
         }
         project.afterEvaluate {
             FoxLoaderConfig config = ((FoxLoaderConfig) project.extensions.getByName("foxloader"))
+            if (config.decompileSources && decompilerHelper == null) {
+                decompilerHelper = new FoxLoaderDecompilerHelper()
+            }
             project.tasks.jar {
                 from(project.sourceSets.client.output)
                 from(project.sourceSets.server.output)
             }
             for (DependencyHelper.Dependency dependency : DependencyHelper.commonDependencies) {
+                if (dependency == DependencyHelper.jFallback) continue
                 project.dependencies {
                     implementation(dependency.name)
                 }
+            }
+            project.configurations.all {
+                exclude group: 'org.spongepowered', module: 'mixin'
             }
             process(project, foxLoaderCache, config)
             String foxLoaderVersion = config.localTesting ?
@@ -367,7 +382,7 @@ class GradlePlugin implements Plugin<Project> {
             System.out.println("Patching ReIndev " + logSideName)
             PreLoader.patchReIndevForDev(jar, jarFox, client)
         }
-        if (config.decompileSources) {
+        if (config.decompileSources && decompilerHelper != null) {
             File unpickedJarFox = new File(foxLoaderCache,
                     "net/silveros/" + sideName + "/" + versionFox + "/" +
                             sideName + "-" + versionFox + "-unpicked.jar")
@@ -382,7 +397,7 @@ class GradlePlugin implements Plugin<Project> {
                 PreLoader.patchDevReIndevForSource(jarFox, unpickedJarFox)
                 try {
                     System.out.println("Decompiling patched ReIndev " + logSideName)
-                    new FoxLoaderDecompiler(unpickedJarFox, sourcesJarFox, client).decompile()
+                    decompilerHelper.decompile(unpickedJarFox, sourcesJarFox, client)
                 } catch (OutOfMemoryError oom) {
                     boolean deleteFailed = false
                     try {

@@ -46,7 +46,7 @@ public class NetUtils {
     }
 
     public static void downloadTo(URL url, OutputStream outputStream) throws IOException {
-        downloadToImpl(url, outputStream, false);
+        downloadToImpl(url, outputStream, null, false);
     }
 
     public static String downloadAsString(String url) throws IOException {
@@ -55,7 +55,7 @@ public class NetUtils {
 
     public static String downloadAsString(URL url) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        Charset charset = downloadToImpl(url, byteArrayOutputStream, true);
+        Charset charset = downloadToImpl(url, byteArrayOutputStream, null, true);
         try {
             return new String(byteArrayOutputStream.toByteArray(), charset);
         } catch (Exception e) {
@@ -63,7 +63,17 @@ public class NetUtils {
         }
     }
 
-    private static Charset downloadToImpl(URL url, OutputStream outputStream, boolean findCharset) throws IOException {
+    public static String postRequest(URL url, String post) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        Charset charset = downloadToImpl(url, byteArrayOutputStream, post == null ? "" : post, true);
+        try {
+            return new String(byteArrayOutputStream.toByteArray(), charset);
+        } catch (Exception e) {
+            throw new IOException("Failed to decode string with charset", e);
+        }
+    }
+
+    private static Charset downloadToImpl(URL url, OutputStream outputStream, String postData, boolean findCharset) throws IOException {
         HttpURLConnection con = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
         con.setConnectTimeout(5000);
         con.setInstanceFollowRedirects(true);

@@ -53,7 +53,9 @@ please keep that in mind when messing with mixins plugins.
 
 ## Lua mods
 
-If you are too lazy to learn java you can just use put `.lua` files in your `mods` folder
+If you are too lazy to learn java you can just use put `.lua` files in your `mods` folder,
+while the lua API is a lot more limited than the java one, it should be enough to allow 
+you to customize your server to your likings without putting too much effort.
 
 ```lua
 -- modId: lua_example
@@ -73,4 +75,4 @@ mod.onNetworkPlayerJoined = function(player)
 end
 ```
 
-Note: You can use the [`luajava`](https://github.com/luaj/luaj#user-content-luajava) extension from [LuaJ](https://github.com/luaj/luaj)
+Note: You can also use the [`luajava`](https://github.com/luaj/luaj#user-content-luajava) extension from [LuaJ](https://github.com/luaj/luaj)

@@ -7,13 +7,15 @@ group 'com.fox2code'
 version project['foxloader.version']
 
 dependencies {
-    // TODO Don't forget to update DependencyHelper
+    // TODO: Don't forget to update DependencyHelper
     api 'org.ow2.asm:asm-util:9.6'
     api 'org.ow2.asm:asm-commons:9.6'
     api 'org.semver4j:semver4j:5.2.2'
-    api 'org.spongepowered:mixin:0.8.5'
+    // api 'org.spongepowered:mixin:0.8.5'
+    api 'net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5'
     api 'io.github.llamalad7:mixinextras-common:0.3.2'
     api 'com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.1'
+    api 'it.unimi.dsi:fastutil-core:8.5.12'
     api 'org.luaj:luaj-jse:3.0.1'
 
     // Mixin dependencies
@@ -22,12 +24,15 @@ dependencies {
     api 'org.apache.commons:commons-lang3:3.3.2'
 
     // Dev annotations
-    api 'org.jetbrains:annotations:13.0'
+    api 'org.jetbrains:annotations:24.1.0'
 
     // Unpick transformer helper
     compileOnly('org.lwjgl.lwjgl:lwjgl:2.9.3') {
         transitive = false
     }
+
+    // Do not expose JFallback API to mods
+    implementation("com.fox2code:JFallback:0.0.1")
 
     // Do no expose spark APIs to mods
     implementation(project['spark.dependency'] as String)

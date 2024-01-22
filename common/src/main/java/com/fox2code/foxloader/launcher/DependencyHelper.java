@@ -11,18 +11,24 @@ import java.math.BigInteger;
 import java.net.*;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
+import java.util.function.Consumer;
 import java.util.jar.JarFile;
 
 public class DependencyHelper {
     public static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2";
     public static final String SPONGE_POWERED = "https://repo.spongepowered.org/maven";
+    public static final String FABRIC_MC = "https://maven.fabricmc.net/";
     public static final String JITPACK = "https://jitpack.io";
     public static final String MODRINTH = "https://api.modrinth.com/maven";
+    public static final String FOX2CODE = "https://cdn.fox2code.com/maven";
 
     public static final Dependency GSON_DEPENDENCY = // Used by installer.
             new Dependency("com.google.code.gson:gson:2.10.1", MAVEN_CENTRAL, "com.google.gson.Gson");
 
     // Extra dependencies not included in ReIndev
+    public static final Dependency jFallback =
+            new Dependency("com.fox2code:JFallback:0.0.1", FOX2CODE, "com.fox2code.jfallback.JFallbackClassVisitor");
+
     public static final Dependency[] commonDependencies = new Dependency[]{
             new Dependency("org.ow2.asm:asm:9.6", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),
             new Dependency("org.ow2.asm:asm-tree:9.6", MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode"),
@@ -33,16 +39,21 @@ public class DependencyHelper {
             new Dependency("org.semver4j:semver4j:5.2.2", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
-            new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
+            // new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
+            new Dependency("net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5", FABRIC_MC, "org.spongepowered.asm.mixin.Mixins"),
             new Dependency("io.github.llamalad7:mixinextras-common:0.3.2",
                     MAVEN_CENTRAL, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
             new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.1",
                     JITPACK, "com.bawnorton.mixinsquared.MixinSquaredBootstrap",
                     "https://github.com/Bawnorton/MixinSquared/releases/download/0.1.1/mixinsquared-common-0.1.1.jar"),
+            jFallback, // jFallback have special handling in dev plugin
     };
 
     public static final Dependency sparkDependency =
             new Dependency(BuildConfig.SPARK_DEPENDENCY, MODRINTH, "me.lucko.spark.common.SparkPlugin");
+
+    public static final Dependency vineFlower = new Dependency(
+            BuildConfig.VINEFLOWER_DEPENDENCY, MAVEN_CENTRAL, "org.jetbrains.java.decompiler.main.Fernflower");
 
     public static final Dependency[] clientDependencies = new Dependency[]{
             new Dependency("net.silveros:reindev:" + BuildConfig.REINDEV_VERSION,
@@ -253,6 +264,10 @@ public class DependencyHelper {
         }
     }
 
+    public static File loadDependencyAsFile(Dependency dependency) {
+        return loadDependencyImpl(dependency, false, true);
+    }
+
     public static void loadDependencySelf(Dependency dependency) {
         if (FoxLauncher.foxClassLoader != null)
             throw new IllegalStateException("FoxClassLoader already initialized!");
@@ -261,7 +276,7 @@ public class DependencyHelper {
             return; // Great news, we already have the library loaded!
         }
         if (mcLibraries == null) setMCLibraryRoot();
-        File file = loadDependencyImpl(dependency, false, true);
+        File file = loadDependencyAsFile(dependency);
         if (file == null) {
             // If null it means it's already in class path.
             return;

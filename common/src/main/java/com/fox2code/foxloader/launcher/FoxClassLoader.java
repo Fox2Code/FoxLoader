@@ -8,15 +8,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.nio.file.Files;
-import java.security.CodeSigner;
-import java.security.CodeSource;
+import java.security.*;
 import java.util.*;
 
 public final class FoxClassLoader extends URLClassLoader {
     private static final String CLASS_TO_DUMP = System.getProperty("foxloader.dump-class");
     private static final String MIXIN_CONFIG = "org.spongepowered.asm.mixin.transformer.MixinConfig";
-    private static final String MIXIN_PRE_PROCESSOR = "org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard";
+    private static final CodeSigner[] NO_CodeSigners = new CodeSigner[0];
     private static final URL[] NO_URLs = new URL[0];
+    static URL earlyMinecraftURL;
+
+    static {
+        ClassLoader.registerAsParallelCapable();
+    }
+
+    private final HashMap<String, CodeSource> codeSourceCache;
     private final LinkedList<String> exclusions;
     private final LinkedList<ClassTransformer> classTransformers;
     private final LinkedList<ClassGenerator> classGenerators;
@@ -28,10 +34,10 @@ public final class FoxClassLoader extends URLClassLoader {
     private boolean didPrintedTransformFail = false;
     private boolean patchedExclusiveSource = false;
     private URL minecraftURL;
-    static URL earlyMinecraftURL;
 
     FoxClassLoader() {
-        super(new URL[0], FoxClassLoader.class.getClassLoader());
+        super(NO_URLs, FoxClassLoader.class.getClassLoader());
+        this.codeSourceCache = new HashMap<>();
         this.exclusions = new LinkedList<>();
         this.classTransformers = new LinkedList<>();
         this.classGenerators = new LinkedList<>();
@@ -53,7 +59,9 @@ public final class FoxClassLoader extends URLClassLoader {
             }
             c = findLoadedClass(name);
             if (c == null) {
-                c = findClassImpl(name, null);
+                synchronized (getClassLoadingLock(name)) {
+                    c = findClassImpl(name, null);
+                }
             }
         } else if ((name.startsWith("com.fox2code.foxloader.") &&
                     !name.startsWith("com.fox2code.foxloader.launcher.")) ||
@@ -61,14 +69,18 @@ public final class FoxClassLoader extends URLClassLoader {
                 isSpecialClassName(name)) {
             c = findLoadedClass(name);
             if (c == null) {
-                c = findClassImpl(name, null);
+                synchronized (getClassLoadingLock(name)) {
+                    c = findClassImpl(name, null);
+                }
             }
         } else {
             c = findLoadedClass(name);
             if (c == null) {
                 URL resource = findResource(name.replace('.', '/') + ".class");
                 if (resource != null) {
-                    c = findClassImpl(name, resource);
+                    synchronized (getClassLoadingLock(name)) {
+                        c = findClassImpl(name, resource);
+                    }
                 } else try {
                     c = super.loadClass(name, false);
                 } catch (SecurityException securityException) {
@@ -140,6 +152,7 @@ public final class FoxClassLoader extends URLClassLoader {
                 bytes = buffer.toByteArray();
             }
             String tmpName = name.replace('/','.');
+            // We need to apply some patches to mixins to make them actually work.
             if (wrappedExtensions != null && !isTransformExclude(tmpName)) {
                 for (ClassTransformer classTransformer : classTransformers) {
                     if (classTransformer == generator) continue;
@@ -159,18 +172,10 @@ public final class FoxClassLoader extends URLClassLoader {
                     Files.write(new File(FoxLauncher.gameDir, "compute_fail.class").toPath(), bytes);
                     throw new ClassTransformException("Can't compute frames for "+name, e);
                 }
-            } else switch (name) {
-                // We need to apply some patches to mixins to make them actually work.
-                case MIXIN_CONFIG:
-                    if (wrappedExtensions == null)
-                        throw new ClassTransformException("wrappedExtensions not initialized yet");
-                    bytes = wrappedExtensions.patchMixinConfig(bytes);
-                    break;
-                case MIXIN_PRE_PROCESSOR:
-                    if (wrappedExtensions == null)
-                        throw new ClassTransformException("wrappedExtensions not initialized yet");
-                    bytes = wrappedExtensions.patchMixinPreProcessorStandard(bytes);
-                    break;
+            } else if (name.equals(MIXIN_CONFIG)) {
+                if (wrappedExtensions == null)
+                    throw new ClassTransformException("wrappedExtensions not initialized yet");
+                bytes = wrappedExtensions.patchMixinConfig(bytes);
             }
 
             URL url = null;
@@ -186,8 +191,7 @@ public final class FoxClassLoader extends URLClassLoader {
                 new Throwable("Dumped " + CLASS_TO_DUMP + " with source " + url +
                         " from " + loaderType + " loader").printStackTrace();
             }
-            clas = defineClass(name,bytes,0,bytes.length, url == null ?
-                    null : new CodeSource(url, new CodeSigner[]{}));
+            clas = defineClass(name,bytes,0,bytes.length, codeSourceFromURL(url));
             return clas;
         } catch (ClassFormatError ioe) {
             if (bytes != null) try {
@@ -200,6 +204,12 @@ public final class FoxClassLoader extends URLClassLoader {
         } catch (Exception ioe) {
             throw new ClassNotFoundException(name, ioe);
         }
+    }
+
+    private CodeSource codeSourceFromURL(final URL url) {
+        if (url == null) return null;
+        return this.codeSourceCache.computeIfAbsent(url.toString(),
+                k -> new CodeSource(url, NO_CodeSigners));
     }
 
     @Override
@@ -376,10 +386,6 @@ public final class FoxClassLoader extends URLClassLoader {
         return allowLoadingGame;
     }
 
-    static {
-        ClassLoader.registerAsParallelCapable();
-    }
-
     public boolean isTransformExclude(String className) {
         for (String excl:exclusions) {
             if (className.startsWith(excl)) {
@@ -400,7 +406,10 @@ public final class FoxClassLoader extends URLClassLoader {
         return cls.startsWith("com.llamalad7.mixinextras.") ||
                 cls.startsWith("com.bawnorton.mixinsquared.") ||
                 cls.startsWith("org.spongepowered.") ||
-                cls.startsWith("org.objectweb.asm.");
+                cls.startsWith("org.objectweb.asm.") ||
+                // Special case for JFallback
+                cls.startsWith("com.fox2code.jfallback.") ||
+                cls.startsWith("jfallback.");
     }
 
     public static boolean isGameClassName(String cls) {
@@ -439,7 +448,5 @@ public final class FoxClassLoader extends URLClassLoader {
         public abstract byte[] computeFrames(byte[] classData);
 
         public abstract byte[] patchMixinConfig(byte[] classData);
-
-        public abstract byte[] patchMixinPreProcessorStandard(byte[] classData);
     }
 }

@@ -30,6 +30,7 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
     final String FOXLOADER_TRANSFORMER_VERSION =
             project['foxloader.lastReIndevTransformerChanges']
     final String FOXLOADER_VERSION = project['foxloader.version']
+    final String VINEFLOWER_DEPENDENCY = project['vineflower.dependency']
     final String SPARK_DEPENDENCY = project['spark.dependency']
     final String SPARK_VERSION = project['spark.version']
     final String REINDEV_VERSION = project['reindev.version']
@@ -49,6 +50,7 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
                 "    public static final String FOXLOADER_TRANSFORMER_VERSION = \"" +
                         FOXLOADER_TRANSFORMER_VERSION + "\";")
         printStream.println("    public static final String FOXLOADER_VERSION = \"" + FOXLOADER_VERSION + "\";")
+        printStream.println("    public static final String VINEFLOWER_DEPENDENCY = \"" + VINEFLOWER_DEPENDENCY + "\";")
         printStream.println("    public static final String SPARK_DEPENDENCY = \"" + SPARK_DEPENDENCY + "\";")
         printStream.println("    public static final String SPARK_VERSION = \"" + SPARK_VERSION + "\";")
         printStream.println("    public static final String REINDEV_VERSION = \"" + REINDEV_VERSION + "\";")

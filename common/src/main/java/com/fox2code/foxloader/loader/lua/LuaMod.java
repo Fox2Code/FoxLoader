@@ -2,10 +2,7 @@ package com.fox2code.foxloader.loader.lua;
 
 import com.fox2code.foxloader.loader.Mod;
 import com.fox2code.foxloader.network.NetworkPlayer;
-import org.luaj.vm2.LuaFunction;
-import org.luaj.vm2.LuaString;
-import org.luaj.vm2.LuaTable;
-import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.*;
 
 public final class LuaMod extends Mod {
     private static final LuaValue KEY_ON_PRE_INIT = LuaString.valueOf("onPreInit");
@@ -13,6 +10,7 @@ public final class LuaMod extends Mod {
     private static final LuaValue KEY_ON_POST_INIT = LuaString.valueOf("onPostInit");
     private static final LuaValue KEY_ON_TICK = LuaString.valueOf("onTick");
     private static final LuaValue KEY_NETWORK_PLAYER_JOINED = LuaString.valueOf("onNetworkPlayerJoined");
+    private static final LuaValue KEY_NETWORK_PLAYER_DISCONNECTED = LuaString.valueOf("onNetworkPlayerDisconnected");
     private final LuaValue function;
     private final LuaTable mod;
     private LuaFunction onPreInit;
@@ -20,6 +18,7 @@ public final class LuaMod extends Mod {
     private LuaFunction onPostInit;
     private LuaFunction onTick;
     private LuaFunction onNetworkPlayerJoined;
+    private LuaFunction onNetworkPlayerDisconnected;
 
     LuaMod(LuaValue function, LuaTable mod) {
         this.function = function;
@@ -66,11 +65,21 @@ public final class LuaMod extends Mod {
         }
     }
 
+    @Override
+    public boolean onNetworkPlayerDisconnected(NetworkPlayer networkPlayer, String kickMessage, boolean cancelled) {
+        if (this.onNetworkPlayerDisconnected != null) {
+            return this.onNetworkPlayerDisconnected.call(LuaVMHelper.luaDataOf(networkPlayer),
+                    LuaVMHelper.luaDataOf(kickMessage), LuaVMHelper.luaDataOf(cancelled)).toboolean();
+        }
+        return false;
+    }
+
     private void updateHookFunctions() {
         this.onPreInit = this.mod.rawget(KEY_ON_PRE_INIT).optfunction(null);
         this.onInit = this.mod.rawget(KEY_ON_INIT).optfunction(null);
         this.onPostInit = this.mod.rawget(KEY_ON_POST_INIT).optfunction(null);
         this.onTick = this.mod.rawget(KEY_ON_TICK).optfunction(null);
         this.onNetworkPlayerJoined = this.mod.rawget(KEY_NETWORK_PLAYER_JOINED).optfunction(null);
+        this.onNetworkPlayerDisconnected = this.mod.rawget(KEY_NETWORK_PLAYER_DISCONNECTED).optfunction(null);
     }
 }

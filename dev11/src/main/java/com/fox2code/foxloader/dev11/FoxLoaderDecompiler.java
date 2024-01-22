@@ -1,5 +1,6 @@
-package com.fox2code.foxloader.dev;
+package com.fox2code.foxloader.dev11;
 
+import com.fox2code.foxloader.dev.IFoxLoaderDecompiler;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import org.jetbrains.java.decompiler.main.Fernflower;
 import org.jetbrains.java.decompiler.main.decompiler.PrintStreamLogger;
@@ -10,14 +11,14 @@ import org.lwjgl.LWJGLUtil;
 import java.io.File;
 import java.util.HashMap;
 
-public class FoxLoaderDecompiler extends SingleFileSaver implements IResultSaver {
+public class FoxLoaderDecompiler extends SingleFileSaver implements IResultSaver, IFoxLoaderDecompiler {
     private static final HashMap<String, Object> options = new HashMap<>();
 
     static {
         options.put("asc", "1");
         options.put("bsm", "1");
         options.put("sef", "1");
-        options.put("jrt", "1");
+        options.put("jrt", "current");
         options.put("ega", "1");
         options.put("dcc", "1");
         options.put("nls", "0");
@@ -39,6 +40,7 @@ public class FoxLoaderDecompiler extends SingleFileSaver implements IResultSaver
         engine.addSource(source);
     }
 
+    @Override
     public void decompile() {
         engine.decompileContext();
     }

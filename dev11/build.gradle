@@ -1,0 +1,27 @@
+// Dev11 build.gradle
+plugins {
+    id 'groovy'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
+group 'com.fox2code'
+version project['foxloader.version']
+
+dependencies {
+    implementation(project['vineflower.dependency'] as String)
+    compileOnly(project(":common")) {
+        transitive = false
+    }
+    compileOnly('org.lwjgl.lwjgl:lwjgl:2.9.3') {
+        transitive = false
+    }
+}
+
+tasks.withType(Jar) {
+    exclude('com/fox2code/foxloader/dev/*')
+}

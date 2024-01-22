@@ -151,12 +151,12 @@ public final class ModContainer {
 
     void applyModMixins(boolean client) {
         if (client) {
-            if (!ModLoaderMixin.addMixinConfigurationSafe(id, clientMixins)) {
+            if (ModLoaderMixin.addMixinConfigurationSafe(id, clientMixins)) {
                 ModLoaderMixin.addMixinConfigurationSafe(id,
                         id + ".client.mixins.json", false);
             }
         } else {
-            if (!ModLoaderMixin.addMixinConfigurationSafe(id, serverMixins)) {
+            if (ModLoaderMixin.addMixinConfigurationSafe(id, serverMixins)) {
                 ModLoaderMixin.addMixinConfigurationSafe(id,
                         id + ".server.mixins.json", false);
             }

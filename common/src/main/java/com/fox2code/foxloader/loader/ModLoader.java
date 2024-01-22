@@ -11,6 +11,7 @@ import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.RegisteredEntity;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
+import com.fox2code.jfallback.JFallbackClassLoader;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -71,6 +72,7 @@ public class ModLoader extends Mod {
     static final ClassDataProvider classDataProvider;
 
     static {
+        JFallbackClassLoader.setCompliantSuperParent(FoxLauncher.getFoxClassLoader());
         classDataProvider = new ClassDataProvider(FoxLauncher.getFoxClassLoader(), PreLoader::patchInternal);
         FoxLauncher.getFoxClassLoader().installWrappedExtensions(
                 new FoxWrappedExtensions(classDataProvider, foxLoader.logger));
