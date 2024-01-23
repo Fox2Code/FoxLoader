@@ -27,7 +27,7 @@ public class DependencyHelper {
 
     // Extra dependencies not included in ReIndev
     public static final Dependency jFallback =
-            new Dependency("com.fox2code:JFallback:0.0.1", FOX2CODE, "com.fox2code.jfallback.JFallbackClassVisitor");
+            new Dependency("com.fox2code:JFallback:0.0.2", FOX2CODE, "com.fox2code.jfallback.JFallbackClassVisitor");
 
     public static final Dependency[] commonDependencies = new Dependency[]{
             new Dependency("org.ow2.asm:asm:9.6", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),

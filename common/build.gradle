@@ -32,7 +32,7 @@ dependencies {
     }
 
     // Do not expose JFallback API to mods
-    implementation("com.fox2code:JFallback:0.0.1")
+    implementation("com.fox2code:JFallback:0.0.2")
 
     // Do no expose spark APIs to mods
     implementation(project['spark.dependency'] as String)
