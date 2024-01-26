@@ -14,8 +14,8 @@ public abstract class GameRegistry {
     public static final int PARAM_ITEM_ID_DIFF = 256;
     public static final int INITIAL_BLOCK_ID = 360;
     public static final int MAXIMUM_BLOCK_ID = 1024; // Hard max: 1258
-    public static final int INITIAL_ITEM_ID = 2048;
-    public static final int MAXIMUM_ITEM_ID = 4096; // Hard max: 31999
+    public static final int INITIAL_ITEM_ID = 4096;
+    public static final int MAXIMUM_ITEM_ID = 8192; // Hard max: 31999
     // Block ids but translated to item ids
     public static final int INITIAL_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(INITIAL_BLOCK_ID);
     public static final int MAXIMUM_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(MAXIMUM_BLOCK_ID);
