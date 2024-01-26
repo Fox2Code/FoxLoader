@@ -33,8 +33,8 @@ public class MixinMinecraft {
     @Unique private boolean closeGameDelayed;
     @Unique private boolean showDebugInfoPrevious;
 
-    @Inject(method = "run", at = @At("HEAD"))
-    public void onRun(CallbackInfo ci) {
+    @Inject(method = "startGame", at = @At("HEAD"))
+    public void onStartGame(CallbackInfo ci) {
         ClientModLoader.Internal.notifyRun();
     }
 

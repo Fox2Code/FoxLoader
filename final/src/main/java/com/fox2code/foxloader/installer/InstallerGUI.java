@@ -357,7 +357,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 printStream.println("addons:");
             }
             IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
-                    "/betacraft-" + BuildConfig.FOXLOADER_VERSION + ".jar"),
+                            "/betacraft-" + BuildConfig.FOXLOADER_VERSION + ".jar"),
                     Files.newOutputStream(foxLoaderBetaCraft.toPath()));
         } catch (IOException e) {
             showError(e);
@@ -499,7 +499,7 @@ public class InstallerGUI implements FileDropHelper.FileDropHandler {
                 for (String entry : new String[]{ // Fix in place replace!
                         "patches/net.minecraft.json", "patches/net.minecraftforge.json"}) {
                     IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
-                            "/mmc/patches/com.fox2code.foxloader.json"),
+                                    "/mmc/patches/com.fox2code.foxloader.json"),
                             Files.newOutputStream(new File(entry).toPath()));
                 }
             }

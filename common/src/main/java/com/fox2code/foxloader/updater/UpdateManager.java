@@ -6,7 +6,9 @@ import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.network.ChatColors;
 
+import javax.swing.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -23,9 +25,11 @@ public final class UpdateManager {
 
     private final HashMap<String, AbstractUpdater> modsToUpdater = new HashMap<>();
     private final LinkedList<Function<ModContainer, AbstractUpdater>> providers = new LinkedList<>();
+    private WeakReference<JButton> foxLoaderUpdateButton;
     private boolean initialized = false;
     private boolean hasUpdates = false;
     private boolean checkingUpdates = false;
+    private boolean hasCheckedUpdates = false;
 
     private UpdateManager() {}
 
@@ -63,8 +67,21 @@ public final class UpdateManager {
         this.providers.add(provider);
     }
 
+    public void bindButtonToFoxLoaderUpdate(JButton button) {
+        button.setEnabled(this.hasUpdate("foxloader"));
+        this.foxLoaderUpdateButton = new WeakReference<>(button);
+        // This is used in error screen, which means we may need to initialize stuff here
+        if (!this.initialized) {
+            this.initialize();
+        }
+        if (!this.hasCheckedUpdates) {
+            this.checkUpdates();
+        }
+    }
+
     public void checkUpdates() {
         if (this.checkingUpdates) return;
+        this.hasCheckedUpdates = true;
         new Thread(this::checkUpdates0, "FoxLoader - Update Checker Thread").start();
     }
 
@@ -97,17 +114,34 @@ public final class UpdateManager {
         }
         this.hasUpdates = hasUpdates;
         this.checkingUpdates = false;
+        AbstractUpdater abstractUpdater = modsToUpdater.get("foxloader");
         // If FoxLoader is wrongly installed, try to fix it
         if (FoxLauncher.isWronglyInstalled() &&
                 FoxLauncher.getLauncherType().hasAutoFix) {
             System.out.println("It look like you were too incompetent to install FoxLoader properly");
             System.out.println("But don't worry, FoxLoader will install itself properly on the current instance");
-            AbstractUpdater abstractUpdater = modsToUpdater.get("foxloader");
             if (abstractUpdater != null) {
                 try {
                     abstractUpdater.doUpdate();
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+            }
+        } else {
+            final JButton button = this.foxLoaderUpdateButton == null ?
+                    null : this.foxLoaderUpdateButton.get();
+            if (button != null) {
+                boolean hasUpdate = this.hasUpdate("foxloader");
+                button.setEnabled(hasUpdate);
+                if (hasUpdate) {
+                    button.addActionListener(event -> {
+                        button.setEnabled(false);
+                        try {
+                            abstractUpdater.doUpdate();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
             }
         }

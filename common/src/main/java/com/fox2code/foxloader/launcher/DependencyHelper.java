@@ -11,7 +11,6 @@ import java.math.BigInteger;
 import java.net.*;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
-import java.util.function.Consumer;
 import java.util.jar.JarFile;
 
 public class DependencyHelper {
@@ -156,6 +155,7 @@ public class DependencyHelper {
         if (!dev && hasClass(dependency.classCheck)) return null;
         String postURL = resolvePostURL(dependency.name);
         File file = new File(mcLibraries, fixUpPath(postURL));
+        if (!file.isAbsolute()) file = file.getAbsoluteFile();
         boolean justDownloaded = false;
         checkHashOrDelete(file, dependency, false);
         if (!file.exists()) {
@@ -266,6 +266,13 @@ public class DependencyHelper {
     }
 
     public static File loadDependencyAsFile(Dependency dependency) {
+        if (mcLibraries == null) {
+            if (FoxLauncher.foxClassLoader != null) {
+                // We should never reach here...
+                throw new IllegalStateException("FoxLoader DependencyHelper didn't initialized properly");
+            }
+            setMCLibraryRoot();
+        }
         return loadDependencyImpl(dependency, false, true);
     }
 
@@ -276,7 +283,6 @@ public class DependencyHelper {
                 dependency.classCheck.replace('.', '/') + ".class") != null) {
             return; // Great news, we already have the library loaded!
         }
-        if (mcLibraries == null) setMCLibraryRoot();
         File file = loadDependencyAsFile(dependency);
         if (file == null) {
             // If null it means it's already in class path.

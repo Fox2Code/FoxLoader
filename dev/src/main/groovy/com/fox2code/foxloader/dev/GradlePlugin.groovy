@@ -31,6 +31,7 @@ import java.util.jar.JarFile
 class GradlePlugin implements Plugin<Project> {
     private static FoxLoaderDecompilerHelper decompilerHelper
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create()
+    private static final Object decompileLock = new Object()
     private File foxLoaderCache
     private File foxLoaderData
 
@@ -383,13 +384,31 @@ class GradlePlugin implements Plugin<Project> {
             PreLoader.patchReIndevForDev(jar, jarFox, client)
         }
         if (config.decompileSources && decompilerHelper != null) {
-            File unpickedJarFox = new File(foxLoaderCache,
-                    "net/silveros/" + sideName + "/" + versionFox + "/" +
-                            sideName + "-" + versionFox + "-unpicked.jar")
-            File sourcesJarFox = new File(foxLoaderCache,
-                    "net/silveros/" + sideName + "/" + versionFox + "/" +
-                            sideName + "-" + versionFox + "-sources.jar")
-            if (config.forceReload && sourcesJarFox.exists()) sourcesJarFox.delete()
+            decompileSide(foxLoaderCache, config, client, versionFox, jarFox)
+        }
+        if (client) {
+            project.dependencies {
+                clientImplementation("net.silveros:" + sideName + ":${versionFox}")
+            }
+        } else {
+            project.dependencies {
+                serverImplementation("net.silveros:" + sideName + ":${versionFox}")
+            }
+        }
+    }
+
+    private static void decompileSide(File foxLoaderCache, FoxLoaderConfig config, boolean client,
+                                      String versionFox, File jarFox) {
+        final String sideName = client ? "reindev" : "reindev-server"
+        final String logSideName = client ? "client" : "server"
+        File unpickedJarFox = new File(foxLoaderCache,
+                "net/silveros/" + sideName + "/" + versionFox + "/" +
+                        sideName + "-" + versionFox + "-unpicked.jar")
+        File sourcesJarFox = new File(foxLoaderCache,
+                "net/silveros/" + sideName + "/" + versionFox + "/" +
+                        sideName + "-" + versionFox + "-sources.jar")
+        if (config.forceReload && sourcesJarFox.exists()) sourcesJarFox.delete()
+        synchronized (decompileLock) {
             if (!jarFileExists(sourcesJarFox)) {
                 closeJarFileSystem(unpickedJarFox)
                 if (unpickedJarFox.exists()) unpickedJarFox.delete()
@@ -446,20 +465,18 @@ class GradlePlugin implements Plugin<Project> {
                     }
                     throw throwable
                 }
-            }
-        }
-        if (client) {
-            project.dependencies {
-                clientImplementation("net.silveros:" + sideName + ":${versionFox}")
-            }
-        } else {
-            project.dependencies {
-                serverImplementation("net.silveros:" + sideName + ":${versionFox}")
+                // Close not critical there, as if close fails, it's still not a big issue
+                closeJarFileSystem(unpickedJarFox, false)
+                closeJarFileSystem(sourcesJarFox, false)
             }
         }
     }
 
     static void closeJarFileSystem(File file) {
+        closeJarFileSystem(file, true)
+    }
+
+    static void closeJarFileSystem(File file, boolean critical) {
         URI uri = new URI("jar:file", null, file.toURI().getPath(), null)
         FileSystem fileSystem = null
         try {
@@ -470,11 +487,13 @@ class GradlePlugin implements Plugin<Project> {
             try {
                 Files.exists(fileSystem.getPath("META-INF/MANIFEST.MF"))
             } catch (ClosedFileSystemException e) {
-                terminateProcess()
-                Throwable root = e
-                while (root.getCause() != null) root = root.getCause()
-                if (!(root instanceof UserMessage)) {
-                    root.initCause(UserMessage.UNRECOVERABLE_STATE_DECOMPILE)
+                if (critical) {
+                    terminateProcess()
+                    Throwable root = e
+                    while (root.getCause() != null) root = root.getCause()
+                    if (!(root instanceof UserMessage)) {
+                        root.initCause(UserMessage.UNRECOVERABLE_STATE_DECOMPILE)
+                    }
                 }
                 throw e
             }
