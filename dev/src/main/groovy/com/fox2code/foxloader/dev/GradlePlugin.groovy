@@ -141,7 +141,7 @@ class GradlePlugin implements Plugin<Project> {
             }
         }
         project.afterEvaluate {
-            tasks.withType(JavaCompile.class).configureEach {
+            project.tasks.withType(JavaCompile.class).configureEach {
                 options.compilerArgs += '-g'
                 options.encoding = 'UTF-8'
             }

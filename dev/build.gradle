@@ -39,6 +39,13 @@ dependencies {
     includeOnly(project(":dev11")) {
         transitive = false
     }
+    // For testes only
+    testImplementation(gradleTestKit())
+    testImplementation(gradleFixtures()) { transitive = false }
+    testRuntimeOnly(project(":common"))
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 gradlePlugin {
@@ -46,6 +53,10 @@ gradlePlugin {
         minimumGradleVersion = '8.2'
         gradleApiVersion = '8.6'
     }
+}
+
+test {
+    useJUnitPlatform()
 }
 
 jar.dependsOn(":common:jar")
