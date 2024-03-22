@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.config.ConfigStructure;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.utils.FastThreadLocal;
 import com.fox2code.foxloader.loader.lua.LuaVMHelper;
@@ -8,13 +9,12 @@ import com.fox2code.foxloader.loader.transformer.PreClassTransformer;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.RegisteredEntity;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
+import com.google.gson.JsonObject;
 import org.semver4j.Semver;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
@@ -129,8 +129,49 @@ public final class ModContainer {
         return this.file == null ? "built-in" : this.file.getName();
     }
 
+    void setConfigObject(Object configObject) {
+        this.configObject = configObject;
+        if (configObject != null) {
+            ConfigStructure configStructure = ConfigStructure.parseFromClass(configObject.getClass(), this);
+            File configFileDestination = new File(ModLoader.config, this.id + ".json");
+            if (configFileDestination.exists()) {
+                try {
+                    configStructure.loadJsonConfig(ModLoader.gson.fromJson(new InputStreamReader(
+                            Files.newInputStream(configFileDestination.toPath()),
+                            StandardCharsets.UTF_8), JsonObject.class), configObject);
+                } catch (Throwable t) {
+                    ModLoader.getModLoaderLogger().log(Level.WARNING,
+                            "Failed to read config file of " + this.id, t);
+                }
+            } else {
+                try {
+                    ModLoader.gson.toJson(configStructure.saveJsonConfig(configObject),
+                            new OutputStreamWriter(Files.newOutputStream(configFileDestination.toPath()),
+                                    StandardCharsets.UTF_8));
+                } catch (Throwable t) {
+                    ModLoader.getModLoaderLogger().log(Level.WARNING,
+                            "Failed to save default config file of " + this.id, t);
+                }
+            }
+        }
+    }
+
     public Object getConfigObject() {
-        return configObject;
+        return this.configObject;
+    }
+
+    public void saveModConfig() {
+        if (this.configObject == null) return;
+        ConfigStructure configStructure = ConfigStructure.parseFromClass(this.configObject.getClass(), this);
+        File configFileDestination = new File(ModLoader.config, this.id + ".json");
+        try {
+            ModLoader.gson.toJson(configStructure.saveJsonConfig(this.configObject),
+                    new OutputStreamWriter(Files.newOutputStream(configFileDestination.toPath()),
+                            StandardCharsets.UTF_8));
+        } catch (Throwable t) {
+            ModLoader.getModLoaderLogger().log(Level.WARNING,
+                    "Failed to save config file of " + this.id, t);
+        }
     }
 
     void applyPrePatch() throws ReflectiveOperationException {

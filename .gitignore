@@ -9,6 +9,7 @@
 /run
 /run2
 /crash-reports
+hs_err_pid*.log
 
 /.project
 /.classpath

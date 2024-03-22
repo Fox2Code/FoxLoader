@@ -79,7 +79,7 @@ compileJava.dependsOn('generateBuildConfig')
 // GeneratedConstantUnpick stuff
 final File generatedConstantUnpicksSrc = new File(buildDir,
         "generated/sources/foxloader/com/fox2code/foxloader/loader/transformer/GeneratedConstantUnpicks.java")
-final String[] openGLSources = new String[]{"GL11", "GL12", "GL13", "GL14", "GL15", "GL20", "GL21"}
+final String[] openGLSources = new String[]{"GL11", "GL12", "GL13", "GL14", "GL15", "GL20", "GL21", "NVFogDistance"}
 final HashSet<String> explicitlyExcludedEntries = new HashSet<>(Arrays.asList(
         // Skip Generic entries
         "GL11#GL_ZERO", "GL11#GL_ONE", "GL11#GL_TRUE", "GL11#GL_FALSE", "GL11#GL_NONE", "GL11#GL_NO_ERROR",

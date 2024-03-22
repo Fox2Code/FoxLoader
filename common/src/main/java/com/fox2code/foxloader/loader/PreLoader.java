@@ -9,7 +9,10 @@ import com.fox2code.foxloader.loader.transformer.*;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.commons.ClassRemapper;
+import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
+import org.semver4j.Semver;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -65,7 +68,7 @@ public class PreLoader {
                 }
                 ClassReader classReader = new ClassReader(bytes);
                 ClassNode classNode = new ClassNode();
-                classReader.accept(classNode, 0);
+                classReader.accept(new ClassRemapper(classNode, SubstrateRemapper.INSTANCE), 0);
                 for (PreClassTransformer preClassTransformer : preTransformers) {
                     try {
                         preClassTransformer.transform(classNode, className);
@@ -421,6 +424,51 @@ public class PreLoader {
 
         public void freeze() {
             this.cache = this.makeHash();
+        }
+    }
+
+    private static final class SubstrateRemapper extends Remapper {
+        public static final SubstrateRemapper INSTANCE = new SubstrateRemapper();
+        private static final String ASM_PREFIX = "META-INF/substrate/";
+        private static final int ASM_PREFIX_LENGTH = ASM_PREFIX.length();
+        private static final Semver FOX_LOADER_SEMVER = Semver.coerce(BuildConfig.FOXLOADER_VERSION);
+
+        private final HashMap<String, Boolean> redirectPrefixCache = new HashMap<>();
+
+        private SubstrateRemapper() {
+            this.redirectPrefixCache.put("shims", Boolean.FALSE);
+        }
+
+        @Override
+        public String map(String internalName) {
+            if (!internalName.startsWith(ASM_PREFIX))
+                return internalName;
+            int sub;
+            String type = internalName.substring(ASM_PREFIX_LENGTH,
+                    sub = internalName.indexOf('/', ASM_PREFIX_LENGTH));
+            Boolean b = redirectPrefixCache.get(type);
+            if (b == null) {
+                b = Boolean.FALSE;
+                try {
+                    if (type.startsWith("foxloader-")) {
+                        b = FOX_LOADER_SEMVER.isGreaterThanOrEqualTo(type.substring(10));
+                    } else {
+                        int i = type.indexOf('-');
+                        if (i != -1) {
+                            ModContainer modContainer = ModLoader.getModContainer(type.substring(0, i));
+                            if (modContainer != null && modContainer.semver
+                                    .isGreaterThanOrEqualTo(type.substring(i + 1))) {
+                                b = Boolean.TRUE;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    ModLoader.getModLoaderLogger().log(Level.WARNING,
+                            "Failed to compute substrate statement " + type, e);
+                }
+                redirectPrefixCache.put(type, b);
+            }
+            return b ? this.map(internalName.substring(sub + 1)) : internalName;
         }
     }
 }

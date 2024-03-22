@@ -188,7 +188,9 @@ public final class ClientModLoader extends ModLoader {
             // StatList.initBreakableStats();
             // StatList.initStats();
             PlayerCommandHandler.instance.reloadCommands();
-            UpdateManager.getInstance().checkUpdates();
+            if (ModLoaderOptions.INSTANCE.checkForUpdates) {
+                UpdateManager.getInstance().checkUpdates();
+            }
         }
 
         public static void notifyCameraAndRenderUpdated(float partialTick) {

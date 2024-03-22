@@ -152,15 +152,25 @@ public class DevelopmentSourceTransformer implements PreClassTransformer {
                 new ParamsConstantUnpick(glParamNum, null));
         staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glNewList(II)I",
                 new ParamsConstantUnpick(null, glParam));
+        staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glColorPointer(IIIJ)V",
+                new ParamsConstantUnpick(null, glParam, null, null));
         staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glNormalPointer(IIJ)V",
                 new ParamsConstantUnpick(glParam, null, null));
         staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glVertexPointer(IIIJ)V",
                 new ParamsConstantUnpick(null, glParam, null, null));
+        staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glTexCoordPointer(IIIJ)V",
+                new ParamsConstantUnpick(null, glParam, null, null));
+        staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glLightModel(ILjava/nio/FloatBuffer;)V",
+                new ParamsConstantUnpick(glParam, null));
         staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glLight(IILjava/nio/FloatBuffer;)V",
                 new ParamsConstantUnpick(glParam, glParam, null));
         staticConstantUnpicks.put("org/lwjgl/opengl/GL11.glFog(ILjava/nio/FloatBuffer;)V",
                 new ParamsConstantUnpick(glParam, null));
+        staticConstantUnpicks.put("org/lwjgl/opengl/GL14.glBlendFuncSeparate(IIII)V",
+                new ParamsConstantUnpick(glParamNum, glParamNum, glParamNum, glParamNum));
         // Minecraft specific LWJGL/OpenGL Unpicks
+        staticConstantUnpicks.put("net/minecraft/src/client/renderer/OpenGlHelper2.glBlendFunc(IIII)V",
+                new ParamsConstantUnpick(glParamNum, glParamNum, glParamNum, glParamNum));
         virtualConstantUnpicks.put("net/minecraft/src/client/renderer/Tessellator.startDrawing(I)V", glParam);
         putStaticConstantUnpicks.put("net/minecraft/src/client/renderer/OpenGlHelper2#lightmapDisabled", glParam);
         putStaticConstantUnpicks.put("net/minecraft/src/client/renderer/OpenGlHelper2#lightmapEnabled", glParam);

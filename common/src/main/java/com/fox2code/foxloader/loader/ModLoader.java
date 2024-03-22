@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -51,6 +52,8 @@ public class ModLoader extends Mod {
     static final LinkedList<File> coreMods = new LinkedList<>();
     // Use LinkedHashMap to keep track in which order mods were loaded.
     static final LinkedHashMap<String, ModContainer> modContainers = new LinkedHashMap<>();
+    static final HashMap<String, ModContainer> source2modContainer = new HashMap<>();
+    static final ConcurrentLinkedDeque<Runnable> runOnPostInit = new ConcurrentLinkedDeque<>();
     static Thread gameThread;
     public static final String FOX_LOADER_HEADER = "\0RFL";
     public static final int MAX_MOD_ID_LENGTH = 32;
@@ -94,6 +97,7 @@ public class ModLoader extends Mod {
         modContainers.put(foxLoader.id, foxLoader);
         foxLoader.logger.info("Running FoxLoader " + BuildConfig.FOXLOADER_VERSION);
         foxLoader.logger.info("Game directory: " + FoxLauncher.getGameDir().getAbsolutePath());
+        foxLoader.setConfigObject(ModLoaderOptions.INSTANCE);
         if (TEST_MODE) {
             foxLoader.logger.info("Skipping mod loading because we are in test mode.");
         } else {
@@ -133,6 +137,9 @@ public class ModLoader extends Mod {
             spark.clientModCls = "com.fox2code.foxloader.spark.FoxLoaderClientSparkPlugin";
             spark.serverModCls = "com.fox2code.foxloader.spark.FoxLoaderServerSparkPlugin";
             modContainers.put(spark.id, spark);
+        }
+        for (ModContainer modContainer : modContainers.values()) {
+            source2modContainer.put(modContainer.file.getAbsolutePath(), modContainer);
         }
         for (ModContainer modContainer : modContainers.values()) {
             try {
@@ -177,6 +184,10 @@ public class ModLoader extends Mod {
             modContainer.notifyOnPostInit();
         }
         ModContainer.setActiveModContainer(null);
+        for (Runnable runnable : runOnPostInit) {
+            runnable.run();
+        }
+        runOnPostInit.clear();
     }
 
     @Override
@@ -364,6 +375,11 @@ public class ModLoader extends Mod {
         return modContainers.get(id);
     }
 
+    public static ModContainer getModContainer(Class<?> cls) {
+        return source2modContainer.get(SourceUtil
+                .getSourceFile(cls).getAbsolutePath());
+    }
+
     @NotNull
     public static Collection<ModContainer> getModContainers() {
         return Collections.unmodifiableCollection(modContainers.values());
@@ -383,6 +399,14 @@ public class ModLoader extends Mod {
 
     public static Logger getModLoaderLogger() {
         return foxLoader.logger;
+    }
+
+    public static void runOnPostInit(Runnable runnable) {
+        if (allModsLoaded) {
+            runnable.run();
+        } else {
+            runOnPostInit.add(runnable);
+        }
     }
 
     static final AsyncItrLinkedList<LifecycleListener> listeners = new AsyncItrLinkedList<>();

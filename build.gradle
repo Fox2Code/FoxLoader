@@ -67,6 +67,11 @@ subprojects {
     }
 
     afterEvaluate {
+        tasks.withType(JavaCompile.class).configureEach {
+            options.compilerArgs += '-g'
+            options.encoding = 'UTF-8'
+        }
+
         final String reindevVersion = project['reindev.version'] as String
         final String reindevVersionAllowFrom = project['reindev.version.allowFrom'] as String
 

@@ -16,6 +16,7 @@ import org.gradle.api.component.SoftwareComponent
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.JavaExec
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.tasks.Jar
 import org.gradle.internal.os.OperatingSystem
 
@@ -44,7 +45,6 @@ class GradlePlugin implements Plugin<Project> {
         project.apply([plugin: 'maven-publish'])
         project.apply([plugin: 'eclipse'])
         project.apply([plugin: 'idea'])
-        project.compileJava.options.encoding = 'UTF-8'
         project.eclipse.classpath.downloadSources = true
         project.idea.module.downloadSources = true
         project.repositories {
@@ -102,11 +102,11 @@ class GradlePlugin implements Plugin<Project> {
         project.tasks.register("runClient", JavaExec) {
             group = "FoxLoader"
             description = "Run ReIndev client from gradle"
-        }.get().dependsOn(project.getTasks().getByName("jar"))
+        }.get().dependsOn(project.getTasks().getByName("assemble"))
         project.tasks.register("runServer", JavaExec) {
             group = "FoxLoader"
             description = "Run ReIndev server from gradle"
-        }.get().dependsOn(project.getTasks().getByName("jar"))
+        }.get().dependsOn(project.getTasks().getByName("assemble"))
         JsonObject foxLoaderJsonData = readData()
         project.tasks.register("changeDefaultUsername", Task) {
             group = "FoxLoader"
@@ -141,6 +141,10 @@ class GradlePlugin implements Plugin<Project> {
             }
         }
         project.afterEvaluate {
+            tasks.withType(JavaCompile.class).configureEach {
+                options.compilerArgs += '-g'
+                options.encoding = 'UTF-8'
+            }
             FoxLoaderConfig config = ((FoxLoaderConfig) project.extensions.getByName("foxloader"))
             if (config.decompileSources && decompilerHelper == null) {
                 decompilerHelper = new FoxLoaderDecompilerHelper()
@@ -253,7 +257,8 @@ class GradlePlugin implements Plugin<Project> {
                     attributes 'Unofficial': 'true'
                 }
             }
-            File mod = ((Jar) project.getTasks().getByName("jar")).getArchiveFile().get().getAsFile()
+            Jar jarTask = ((Jar) project.getTasks().getByName("jar"))
+            File mod = jarTask.getArchiveFile().get().getAsFile()
             JsonElement savedUsername = foxLoaderJsonData.get("username")
             String username = config.username
             if (savedUsername != null) {
@@ -494,8 +499,8 @@ class GradlePlugin implements Plugin<Project> {
                     if (!(root instanceof UserMessage)) {
                         root.initCause(UserMessage.UNRECOVERABLE_STATE_DECOMPILE)
                     }
+                    throw e
                 }
-                throw e
             }
         }
     }
@@ -572,7 +577,7 @@ class GradlePlugin implements Plugin<Project> {
         public String modDesc
         public String modWebsite
         public String preClassTransformer
-        // Fox testing only
+        // For testing only
         public String foxLoaderLibVersionOverride
         public boolean localTesting = false
         public boolean forceReload = false

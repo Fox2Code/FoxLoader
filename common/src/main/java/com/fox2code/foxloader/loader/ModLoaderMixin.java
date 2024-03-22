@@ -9,6 +9,7 @@ import com.fox2code.foxloader.loader.mixin.MixinService;
 import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.FabricUtil;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 import org.spongepowered.asm.mixin.transformer.IMixinTransformer;
@@ -98,8 +99,10 @@ final class ModLoaderMixin {
                 System.out.println("Loaded mixin: " + mixin);
                 // Used for spark compatibility
                 Mixins.getConfigs().stream().filter(config1 ->
-                        config1.getName().equals(mixin)).findFirst().ifPresent(config ->
-                        config.getConfig().decorate("foxLoader.modId", modId));
+                        config1.getName().equals(mixin)).findFirst().ifPresent(config -> {
+                    config.getConfig().decorate(FabricUtil.KEY_MOD_ID, modId);
+                    config.getConfig().decorate("foxLoader.modId", modId);
+                });
                 return false;
             } else if (explicit) {
                 ModLoader.getModLoaderLogger().log(Level.WARNING,
