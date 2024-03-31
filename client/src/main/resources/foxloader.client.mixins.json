@@ -39,6 +39,7 @@
     "MixinPlayerControllerSP",
     "MixinPlayerControllerTest",
     "MixinRenderEngine",
+    "MixinRenderItem",
     "MixinStringTranslate",
     "MixinTextureMap",
     "MixinTexturePackCustom",
