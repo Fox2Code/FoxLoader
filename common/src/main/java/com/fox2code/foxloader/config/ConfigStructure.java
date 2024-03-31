@@ -61,8 +61,13 @@ public class ConfigStructure {
                     Collections.unmodifiableList(configKeys));
         }
 
+        if (cls.isAssignableFrom(NoConfigObject.class)) {
+            return configMenu;
+        }
+
         menuCache.put(cls, configMenu);
         for (Field field : cls.getFields()) {
+            Class<?> fieldType = field.getType();
             ConfigEntry configEntry = field.getAnnotation(ConfigEntry.class);
             if (configEntry == null) continue;
             if ((field.getModifiers() & (Modifier.PUBLIC | Modifier.PRIVATE |
@@ -130,7 +135,7 @@ public class ConfigStructure {
                     configKey = new ConfigKey(configEntry, ConfigKey.ConfigElement.BUTTON,
                             subConfigMenu, declaringConfigKey, configTranslation, configPath, field, handler);
                     ConfigMenu subConfigMenuResult =
-                            parseMenuImpl(field.getType(), modContainer, subMenuPrefix,
+                            parseMenuImpl(fieldType, modContainer, subMenuPrefix,
                                     configKey, subMenuConfigKeys, configKeyHashMap, menuCache);
                     if (subConfigMenuResult != subConfigMenu) {
                         // This can happen if the menu was already cached, to avoid infinite loops
@@ -166,7 +171,12 @@ public class ConfigStructure {
 
     public void loadJsonConfig(JsonObject jsonObject, Object config) {
         this.cls.cast(config); // Verify input type
-
+        for (ConfigKey configKey : this.configKeyMap.values()) {
+            JsonElement element = getElementJsonObject(jsonObject, configKey.path);
+            if (element != null) {
+                setElementConfigKey(config, configKey, element);
+            }
+        }
     }
 
     public JsonObject saveJsonConfig(Object config) {

@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.config.ConfigStructure;
+import com.fox2code.foxloader.config.NoConfigObject;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.utils.FastThreadLocal;
 import com.fox2code.foxloader.loader.lua.LuaVMHelper;
@@ -36,6 +37,7 @@ public final class ModContainer {
     public final Logger logger;
     public final boolean unofficial;
     private final boolean injected;
+    private Object configObject;
     String prePatch;
     Mod commonMod;
     String commonModCls;
@@ -46,7 +48,6 @@ public final class ModContainer {
     Mod clientMod;
     String clientModCls;
     String clientMixins;
-    Object configObject;
 
     ModContainer(File file, String id, String name, String version,
                  String description, String jitpack, boolean unofficial) {
@@ -131,7 +132,7 @@ public final class ModContainer {
 
     void setConfigObject(Object configObject) {
         this.configObject = configObject;
-        if (configObject != null) {
+        if (configObject != null && !(configObject instanceof NoConfigObject)) {
             ConfigStructure configStructure = ConfigStructure.parseFromClass(configObject.getClass(), this);
             File configFileDestination = new File(ModLoader.config, this.id + ".json");
             if (configFileDestination.exists()) {
@@ -161,7 +162,7 @@ public final class ModContainer {
     }
 
     public void saveModConfig() {
-        if (this.configObject == null) return;
+        if (this.configObject == null || this.configObject instanceof NoConfigObject) return;
         ConfigStructure configStructure = ConfigStructure.parseFromClass(this.configObject.getClass(), this);
         File configFileDestination = new File(ModLoader.config, this.id + ".json");
         try {

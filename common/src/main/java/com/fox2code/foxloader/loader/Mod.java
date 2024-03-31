@@ -22,14 +22,14 @@ public abstract class Mod implements LifecycleListener {
      * @param configObject to use for the config screen.
      */
     protected final void setConfigObject(Object configObject) {
-        this.getModContainer().configObject = configObject;
+        this.getModContainer().setConfigObject(configObject);
     }
 
     /**
      * @return Object to use for the config screen.
      */
     public final Object getConfigObject() {
-        return this.getModContainer().configObject;
+        return this.getModContainer().getConfigObject();
     }
 
     /**

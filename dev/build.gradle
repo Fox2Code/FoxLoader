@@ -24,7 +24,7 @@ configurations {
 dependencies {
     //compileOnly gradleApi()
     //compileOnly localGroovy()
-    api 'com.fox2code:JFallback:0.0.1'
+    api 'com.fox2code:JFallback:0.0.2'
     api 'com.google.code.gson:gson:2.10.1'
     api 'org.semver4j:semver4j:5.2.2'
     api 'org.ow2.asm:asm-commons:9.6'

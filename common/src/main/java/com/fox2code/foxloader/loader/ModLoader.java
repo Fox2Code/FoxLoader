@@ -115,13 +115,15 @@ public class ModLoader extends Mod {
                     (dir, name) -> name.endsWith(".lua")))) {
                 loadModContainerFromLua(mod);
             }
-            for (File mod : Objects.requireNonNull(modsVersioned.listFiles(
-                    (dir, name) -> name.endsWith(".jar")))) {
-                loadModContainerFromJar(mod, false);
-            }
-            for (File mod : Objects.requireNonNull(modsVersioned.listFiles(
-                    (dir, name) -> name.endsWith(".lua")))) {
-                loadModContainerFromLua(mod);
+            if (modsVersioned.isDirectory()) {
+                for (File mod : Objects.requireNonNull(modsVersioned.listFiles(
+                        (dir, name) -> name.endsWith(".jar")))) {
+                    loadModContainerFromJar(mod, false);
+                }
+                for (File mod : Objects.requireNonNull(modsVersioned.listFiles(
+                        (dir, name) -> name.endsWith(".lua")))) {
+                    loadModContainerFromLua(mod);
+                }
             }
         }
         // Inject mod that the gradle dev plugin asked us to load
@@ -515,6 +517,7 @@ public class ModLoader extends Mod {
             addContributor("a5adabf9-0c1f-4d03-855b-61e334cd96d7", "Fox2Code");
             addContributor("76982056-c381-46f6-ab25-2415e1e4d554", "kivattt");
             addContributor("898febf0-4bd0-4a77-892c-2b1cbf534830", "_Dereku");
+            addContributor("66580d8e-19ad-4564-a8f1-448d021be321", "Chocohead");
         }
 
         private static void addContributor(String uuid, String name) {
