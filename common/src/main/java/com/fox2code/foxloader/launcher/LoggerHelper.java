@@ -209,9 +209,13 @@ final class LoggerHelper {
 
     private static class SystemOutConsoleHandler extends ConsoleHandler {
         SystemOutConsoleHandler() {
-            setOutputStream(System.out);
             setFormatter(new FoxLoaderConsoleLogFormatter());
             setLevel(Level.ALL);
+        }
+
+        @Override
+        protected synchronized void setOutputStream(OutputStream out) throws SecurityException {
+        	super.setOutputStream(System.out);
         }
     }
 
