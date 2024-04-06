@@ -32,6 +32,7 @@ public class Main {
             boolean test = false;
             boolean with = false;
             boolean server = false;
+            boolean nogui = false;
             switch (args[0]) {
                 default:
                     System.out.println("Unknown argument: " + args[0]);
@@ -42,6 +43,11 @@ public class Main {
                     System.out.println("--with-server -> Start server with specified server jar");
                     System.out.println("--test-server -> Like --with-server but only load the strict necessary for ");
                     return;
+                case "nogui":
+                case "--nogui":
+                    server = true;
+                    nogui = true;
+                    break;
                 case "--platform":
                     platform = true;
                     break;
@@ -68,9 +74,13 @@ public class Main {
                 FoxLauncher.setEarlyMinecraftURL(file.toURI().toURL());
             }
             if (server) {
-                int move = test ? 2 : 1;
-                System.arraycopy(args, move, args, 0, args.length - move);
-                ServerMain.main(Arrays.copyOf(args, args.length - move));
+                if (nogui) {
+                    ServerMain.main(new String[]{"nogui"});
+                } else {
+                    int move = test ? 2 : 1;
+                    System.arraycopy(args, move, args, 0, args.length - move);
+                    ServerMain.main(Arrays.copyOf(args, args.length - move));
+                }
                 return;
             }
         }
