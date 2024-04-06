@@ -6,6 +6,7 @@ import com.fox2code.foxloader.client.CreativeItems;
 import com.fox2code.foxloader.client.registry.RegisteredBlockImpl;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
+import com.fox2code.foxloader.network.SidedMetadataAPI;
 import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.game.block.*;
 import net.minecraft.src.game.item.*;
@@ -13,6 +14,7 @@ import net.minecraft.src.game.recipe.*;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -142,10 +144,10 @@ public class GameRegistryClient extends GameRegistry {
         name = validateAndFixRegistryName(name);
         if (blockBuilder == null) blockBuilder = DEFAULT_BLOCK_BUILDER;
         String secondaryExt = blockBuilder.builtInBlockType.secRegistryExt;
-        Block mainBlock = this.registerNewBlock0(name, blockBuilder, fallbackId, true);
+        Block mainBlock = this.registerNewBlock0(name, "", blockBuilder, fallbackId, true);
         Block secondaryBlock = null;
         if (secondaryExt != null) {
-            secondaryBlock = this.registerNewBlock0(name + secondaryExt, blockBuilder, fallbackId, false);
+            secondaryBlock = this.registerNewBlock0(name + secondaryExt, secondaryExt, blockBuilder, fallbackId, false);
         }
         this.registerNewItem0(name, blockBuilder.itemBuilder, mainBlock, secondaryBlock, -1, true);
         if (secondaryExt != null) {
@@ -154,7 +156,7 @@ public class GameRegistryClient extends GameRegistry {
         return (RegisteredBlock) mainBlock;
     }
 
-    public Block registerNewBlock0(String name, BlockBuilder blockBuilder, int fallbackId, boolean primary) {
+    public Block registerNewBlock0(String name, String ext, BlockBuilder blockBuilder, int fallbackId, boolean primary) {
         int blockId = generateNewBlockId(name, fallbackId);
         Block block;
         Material material = MATERIAL.translate(blockBuilder.builtInMaterial);
@@ -163,20 +165,18 @@ public class GameRegistryClient extends GameRegistry {
         String blockType = blockBuilder.blockType == null ?
                 (blockSource != null ? blockSource.getBlockName() : blockName) : blockBuilder.blockType;
         boolean selfNotify = false;
-        switch (blockBuilder.builtInBlockType) {
+        switch (blockBuilder.getBuiltInBlockTypeForConstructor()) {
             default:
                 throw new IllegalArgumentException("Invalid block type " + blockBuilder.builtInBlockType);
             case CUSTOM:
                 try {
-                    Constructor<? extends Block> constructor = blockBuilder.
-                            gameBlockSource.asSubclass(Block.class).getConstructor(int.class);
-                    block = constructor.newInstance(blockId);
+                    block = (Block) blockBuilder.gameBlockProvider.provide(blockId, blockBuilder, ext);
                     if (block.blockID != blockId) {
                         throw new RuntimeException("Block didn't ended up with id it was given to " +
                                 "(given " + blockId + " got " + block.blockID + ")");
                     }
                 } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException("Custom block must accept an id as a parameter", e);
+                    throw new RuntimeException("Failed to instantiate Custom block", e);
                 }
                 break;
             case BLOCK:
@@ -258,26 +258,11 @@ public class GameRegistryClient extends GameRegistry {
             itemId = convertBlockIdToItemId(block.blockID);
         }
         final int pItemId = itemId - PARAM_ITEM_ID_DIFF;
-        if (itemBuilder.gameItemSource != null) {
-            Class<? extends Item> itemCls = itemBuilder.gameItemSource.asSubclass(Item.class);
-            if (block != null) {
-                try {
-                    item = itemCls.getConstructor(Block.class, int.class).newInstance(block, itemId);
-                } catch (NoSuchMethodException runtimeException) {
-                    try {
-                        item = itemCls.getConstructor(int.class).newInstance(itemId);
-                    } catch (ReflectiveOperationException e) {
-                        throw new RuntimeException("Unable t initialize item", e);
-                    }
-                } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException("Unable t initialize item", e);
-                }
-            } else {
-                try {
-                    item = itemCls.getConstructor(int.class).newInstance(itemId);
-                } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException("Unable t initialize item", e);
-                }
+        if (itemBuilder.gameItemProvider != null) {
+            try {
+                item = (Item) itemBuilder.gameItemProvider.provide(itemId, itemBuilder, (RegisteredBlock) block);
+            } catch (ReflectiveOperationException e) {
+                throw new RuntimeException("Failed to instantiate Item", e);
             }
             if (item.itemID != itemId) {
                 throw new RuntimeException("Item didn't ended up with id it was given to " +
@@ -305,6 +290,9 @@ public class GameRegistryClient extends GameRegistry {
         }
         if (itemBuilder.tooltipColor != 0) {
             item.setTooltipColor(itemBuilder.tooltipColor);
+        }
+        if (itemBuilder.worldItemScale != 0F) {
+            ((RegisteredItem) item).setWorldItemScale(itemBuilder.worldItemScale);
         }
         if (!itemBuilder.hideFromCreativeInventory) {
             CreativeItems.addToCreativeInventory(new ItemStack(item));
@@ -404,6 +392,10 @@ public class GameRegistryClient extends GameRegistry {
     public static void initializeMappings(ServerHello serverHello) {
         if (idMappingState != MappingState.SERVER) {
             resetMappings(false);
+        }
+        if (serverHello.metadata != null && !serverHello.metadata.isEmpty()) {
+            SidedMetadataAPI.Internal.setActiveMetaData(
+                    Collections.unmodifiableMap(serverHello.metadata));
         }
         if (serverHello.registryEntries.isEmpty()) {
             return;

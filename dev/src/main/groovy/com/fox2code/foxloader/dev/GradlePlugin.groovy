@@ -253,6 +253,9 @@ class GradlePlugin implements Plugin<Project> {
                 if (config.preClassTransformer != null) {
                     attributes 'PreClassTransformer': config.preClassTransformer
                 }
+                if (config.loadingPlugin != null) {
+                    attributes 'LoadingPlugin': config.loadingPlugin
+                }
                 if (config.unofficial) {
                     attributes 'Unofficial': 'true'
                 }
@@ -577,6 +580,7 @@ class GradlePlugin implements Plugin<Project> {
         public String modDesc
         public String modWebsite
         public String preClassTransformer
+        public String loadingPlugin
         // For testing only
         public String foxLoaderLibVersionOverride
         public boolean localTesting = false

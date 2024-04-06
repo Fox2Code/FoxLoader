@@ -8,15 +8,14 @@ version project['foxloader.version']
 
 dependencies {
     // TODO: Don't forget to update DependencyHelper and ":dev" project
-    api 'org.ow2.asm:asm-util:9.6'
-    api 'org.ow2.asm:asm-commons:9.6'
+    api 'org.ow2.asm:asm-util:9.7'
+    api 'org.ow2.asm:asm-commons:9.7'
     api 'org.semver4j:semver4j:5.2.2'
     // api 'org.spongepowered:mixin:0.8.5'
-    api 'net.fabricmc:sponge-mixin:0.13.1+mixin.0.8.5'
-    api 'io.github.llamalad7:mixinextras-common:0.3.5'
-    api 'com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.1'
-    api 'it.unimi.dsi:fastutil-core:8.5.12'
-    api 'org.luaj:luaj-jse:3.0.1'
+    api 'net.fabricmc:sponge-mixin:0.13.2+mixin.0.8.5' // <- https://maven.fabricmc.net/net/fabricmc/sponge-mixin/
+    api 'io.github.llamalad7:mixinextras-common:0.3.5' // <- https://github.com/LlamaLad7/MixinExtras/releases
+    api 'com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.2-beta.5' // <- https://github.com/Bawnorton/MixinSquared/releases
+    api 'it.unimi.dsi:fastutil-core:8.5.13'
 
     // Mixin dependencies
     api 'com.google.code.gson:gson:2.10.1'
@@ -31,8 +30,11 @@ dependencies {
         transitive = false
     }
 
+    // Do not expose LuaJ APIs to mods
+    implementation('org.luaj:luaj-jse:3.0.1')
+
     // Do not expose JFallback API to mods
-    implementation("com.fox2code:JFallback:0.0.2")
+    implementation("com.fox2code:JFallback:0.1.1")
 
     // Do no expose spark APIs to mods
     implementation(project['spark.dependency'] as String)

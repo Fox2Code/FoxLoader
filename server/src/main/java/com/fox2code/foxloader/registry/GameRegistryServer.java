@@ -3,6 +3,7 @@ package com.fox2code.foxloader.registry;
 import static com.fox2code.foxloader.loader.ServerMod.*;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
+import com.fox2code.foxloader.network.SidedMetadataAPI;
 import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import com.fox2code.foxloader.server.registry.RegisteredBlockImpl;
 import net.minecraft.src.game.block.*;
@@ -16,6 +17,7 @@ import net.minecraft.src.server.playergui.StringTranslate;
 
 import java.lang.reflect.Constructor;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class GameRegistryServer extends GameRegistry {
@@ -42,7 +44,8 @@ public class GameRegistryServer extends GameRegistry {
             throw new IllegalArgumentException("Mods didn't finished to load!");
         // Compile server hello into a byte array for memory and performance efficiency.
         serverHello = ModLoader.Internal.compileServerHello(
-                new ServerHello(GameRegistry.registryEntries));
+                new ServerHello(GameRegistry.registryEntries,
+                        new HashMap<>(SidedMetadataAPI.getSelfMetadata())));
         final Block stoneBlock = Block.blocksList[0];
         for (int i = 0; i < Block.blocksList.length; i++) {
             if (Block.blocksList[i] == null) {
@@ -128,10 +131,10 @@ public class GameRegistryServer extends GameRegistry {
         name = validateAndFixRegistryName(name);
         if (blockBuilder == null) blockBuilder = DEFAULT_BLOCK_BUILDER;
         String secondaryExt = blockBuilder.builtInBlockType.secRegistryExt;
-        Block mainBlock = this.registerNewBlock0(name, blockBuilder, fallbackId, true);
+        Block mainBlock = this.registerNewBlock0(name, "", blockBuilder, fallbackId, true);
         Block secondaryBlock = null;
         if (secondaryExt != null) {
-            secondaryBlock = this.registerNewBlock0(name + secondaryExt, blockBuilder, fallbackId, false);
+            secondaryBlock = this.registerNewBlock0(name + secondaryExt, secondaryExt, blockBuilder, fallbackId, false);
         }
         this.registerNewItem0(name, blockBuilder.itemBuilder, mainBlock, secondaryBlock, -1, true);
         if (secondaryExt != null) {
@@ -140,7 +143,7 @@ public class GameRegistryServer extends GameRegistry {
         return (RegisteredBlock) mainBlock;
     }
 
-    public Block registerNewBlock0(String name, BlockBuilder blockBuilder, int fallbackId, boolean primary) {
+    public Block registerNewBlock0(String name, String ext, BlockBuilder blockBuilder, int fallbackId, boolean primary) {
         int blockId = generateNewBlockId(name, fallbackId);
         Block block;
         Material material = MATERIAL.translate(blockBuilder.builtInMaterial);
@@ -149,20 +152,18 @@ public class GameRegistryServer extends GameRegistry {
         String blockType = blockBuilder.blockType == null ?
                 (blockSource != null ? blockSource.getBlockName() : blockName) : blockBuilder.blockType;
         boolean selfNotify = false;
-        switch (blockBuilder.builtInBlockType) {
+        switch (blockBuilder.getBuiltInBlockTypeForConstructor()) {
             default:
                 throw new IllegalArgumentException("Invalid block type " + blockBuilder.builtInBlockType);
             case CUSTOM:
                 try {
-                    Constructor<? extends Block> constructor = blockBuilder.
-                            gameBlockSource.asSubclass(Block.class).getConstructor(int.class);
-                    block = constructor.newInstance(blockId);
+                    block = (Block) blockBuilder.gameBlockProvider.provide(blockId, blockBuilder, ext);
                     if (block.blockID != blockId) {
                         throw new RuntimeException("Block didn't ended up with id it was given to " +
                                 "(given " + blockId + " got " + block.blockID + ")");
                     }
                 } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException("Custom block must accept an id as a parameter", e);
+                    throw new RuntimeException("Failed to instantiate Custom block", e);
                 }
                 break;
             case BLOCK:
@@ -242,26 +243,11 @@ public class GameRegistryServer extends GameRegistry {
             itemId = convertBlockIdToItemId(block.blockID);
         }
         final int pItemId = itemId - PARAM_ITEM_ID_DIFF;
-        if (itemBuilder.gameItemSource != null) {
-            Class<? extends Item> itemCls = itemBuilder.gameItemSource.asSubclass(Item.class);
-            if (block != null) {
-                try {
-                    item = itemCls.getConstructor(Block.class, int.class).newInstance(block, itemId);
-                } catch (NoSuchMethodException runtimeException) {
-                    try {
-                        item = itemCls.getConstructor(int.class).newInstance(itemId);
-                    } catch (ReflectiveOperationException e) {
-                        throw new RuntimeException("Unable t initialize item", e);
-                    }
-                } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException("Unable t initialize item", e);
-                }
-            } else {
-                try {
-                    item = itemCls.getConstructor(int.class).newInstance(itemId);
-                } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException("Unable t initialize item", e);
-                }
+        if (itemBuilder.gameItemProvider != null) {
+            try {
+                item = (Item) itemBuilder.gameItemProvider.provide(itemId, itemBuilder, (RegisteredBlock) block);
+            } catch (ReflectiveOperationException e) {
+                throw new RuntimeException("Failed to instantiate Item", e);
             }
             if (item.itemID != itemId) {
                 throw new RuntimeException("Item didn't ended up with id it was given to " +
@@ -286,6 +272,9 @@ public class GameRegistryServer extends GameRegistry {
         }
         if (itemBuilder.itemBurnType != 0 && itemBuilder.itemBurnTime != 0) {
             item.setBurnTime(itemBuilder.itemBurnTime, itemBuilder.itemBurnType);
+        }
+        if (itemBuilder.worldItemScale != 0F) {
+            ((RegisteredItem) item).setWorldItemScale(itemBuilder.worldItemScale);
         }
         return (RegisteredItem) item;
     }
@@ -348,5 +337,9 @@ public class GameRegistryServer extends GameRegistry {
         ModLoader.getModLoaderLogger().info("Player " + networkPlayer.username + " has FoxLoader");
         ((NetworkPlayerImpl) networkPlayer).sendNetworkDataRaw(
                 ModLoader.FOX_LOADER_MOD_ID, serverHello);
+    }
+
+    public final byte[] getServerHello() {
+        return serverHello;
     }
 }

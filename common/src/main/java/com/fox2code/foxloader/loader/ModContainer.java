@@ -48,6 +48,7 @@ public final class ModContainer {
     Mod clientMod;
     String clientModCls;
     String clientMixins;
+    String loadingPlugin;
 
     ModContainer(File file, String id, String name, String version,
                  String description, String jitpack, boolean unofficial) {
@@ -188,6 +189,16 @@ public final class ModContainer {
                 }
             }
             PreLoader.registerPrePatch(preClassTransformer);
+        }
+    }
+
+    LoadingPlugin aquireLoadingPlugin() {
+        if (loadingPlugin == null) return null;
+        try {
+            return Class.forName(loadingPlugin, false, FoxLauncher.getFoxClassLoader())
+                            .asSubclass(LoadingPlugin.class).newInstance();
+        } catch (ClassCastException | ReflectiveOperationException e) {
+            return null;
         }
     }
 

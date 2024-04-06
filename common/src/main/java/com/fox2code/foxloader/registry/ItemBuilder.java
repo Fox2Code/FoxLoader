@@ -1,11 +1,12 @@
 package com.fox2code.foxloader.registry;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 
 public final class ItemBuilder {
-    public Class<? extends RegisteredItem> gameItemSource;
+    public ItemProvider gameItemProvider;
     public int maxStackSize = 64;
     @Nullable
     public String itemName;
@@ -14,12 +15,50 @@ public final class ItemBuilder {
     public int itemBurnTime;
     public byte itemBurnType;
     public int tooltipColor;
+    public float worldItemScale;
     public boolean hideFromCreativeInventory;
 
     public ItemBuilder() {}
 
-    public ItemBuilder setGameItemSource(Class<? extends RegisteredItem> gameItemSource) {
-        this.gameItemSource = gameItemSource;
+    @FunctionalInterface
+    public interface ItemProvider {
+        /**
+         * @param id item id of the item
+         * @param itemBuilder item builder used to register this item
+         * @param block if the item is an item block, this would be the block associated with the item
+         * @return the new block to be registered
+         */
+        RegisteredItem provide(int id, @NotNull ItemBuilder itemBuilder,@Nullable RegisteredBlock block) throws ReflectiveOperationException;
+    }
+
+    public ItemBuilder setGameItemProvider(ItemProvider gameItemProvider) {
+        this.gameItemProvider = gameItemProvider;
+        return this;
+    }
+
+    @Deprecated // Use setGameItemProvider instead
+    public ItemBuilder setGameItemSource(final Class<? extends RegisteredItem> gameItemSource) {
+        // Note: This code mimic old code, with all it's bugs and glory
+        this.gameItemProvider = (id, builder, block) -> {
+            if (block != null) {
+                try {
+                    //noinspection JavaReflectionInvocation
+                    return gameItemSource.getDeclaredConstructor(
+                            // Should work for both client and server side
+                            Class.forName("net.minecraft.src.game.block.Block"), int.class)
+                            .newInstance(block, id /* - GameRegistry.PARAM_ITEM_ID_DIFF */);
+                } catch (NoSuchMethodException e) {
+                    try {
+                        return gameItemSource.getDeclaredConstructor(int.class)
+                                .newInstance(id /* - GameRegistry.PARAM_ITEM_ID_DIFF */);
+                    } catch (NoSuchMethodException ignored) {
+                        throw e;
+                    }
+                }
+            }
+            return gameItemSource.getDeclaredConstructor(int.class)
+                    .newInstance(id /* - GameRegistry.PARAM_ITEM_ID_DIFF */);
+        };
         return this;
     }
 
@@ -61,6 +100,11 @@ public final class ItemBuilder {
 
     public ItemBuilder setTooltipColor(Color color) {
         return this.setTooltipColor(color.getRGB());
+    }
+
+    public ItemBuilder setWorldItemScale(float worldItemScale) {
+        this.worldItemScale = worldItemScale;
+        return this;
     }
 
     public ItemBuilder hideFromCreativeInventory() {

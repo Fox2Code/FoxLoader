@@ -136,7 +136,10 @@ final class GuiModConfig extends GuiScreen {
                         configKey.callHandler(this.curInstance);
                         Object instance = configKey.getField(this.curInstance);
                         if (this.mc.currentScreen == this && instance != null) {
-                            if (instance instanceof GuiScreen) {
+                            if (instance instanceof GuiConfigProvider) {
+                                this.mc.displayGuiScreen(((GuiConfigProvider) instance)
+                                        .provideConfigScreen(this));
+                            } else if (instance instanceof GuiScreen) {
                                 this.mc.displayGuiScreen((GuiScreen) instance);
                             } else {
                                 this.mc.displayGuiScreen(new GuiModConfig(this, this.modContainer,

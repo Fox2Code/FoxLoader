@@ -8,8 +8,9 @@ import org.spongepowered.asm.mixin.Overwrite;
 @Mixin(ChunkBlockMap.class)
 public class MixinChunkBlockMap {
     /**
-     * @author Fox2Cdoe
+     * @author Fox2Code
      * @reason Need full replace
+     * @param bmap bmap
      */
     @Overwrite
     public static void cleanupInvalidBlocks(short[] bmap) {

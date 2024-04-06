@@ -10,11 +10,13 @@ import net.minecraft.src.game.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(Item.class)
 public class MixinItem implements RegisteredItem {
     @Shadow @Final public int itemID;
     @Shadow protected int maxStackSize;
+    @Unique float worldItemScale = 1.0F;
 
     @Override
     public RegisteredBlock asRegisteredBlock() {
@@ -36,5 +38,15 @@ public class MixinItem implements RegisteredItem {
     @Override
     public int getRegisteredItemMaxStackSize() {
         return this.maxStackSize;
+    }
+
+    @Override
+    public float getWorldItemScale() {
+        return this.worldItemScale;
+    }
+
+    @Override
+    public void setWorldItemScale(float worldItemScale) {
+        this.worldItemScale = worldItemScale;
     }
 }

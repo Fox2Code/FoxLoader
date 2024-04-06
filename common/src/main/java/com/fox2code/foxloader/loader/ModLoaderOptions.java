@@ -9,4 +9,7 @@ public class ModLoaderOptions {
 
     @ConfigEntry(configName = "Check for updates")
     public boolean checkForUpdates = true;
+
+    @ConfigEntry(configName = "Preemptive networking")
+    public boolean preemptiveNetworking = true;
 }

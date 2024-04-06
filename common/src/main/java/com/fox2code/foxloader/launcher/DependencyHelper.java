@@ -26,26 +26,26 @@ public class DependencyHelper {
 
     // Extra dependencies not included in ReIndev
     public static final Dependency jFallback =
-            new Dependency("com.fox2code:JFallback:0.0.2", FOX2CODE, "com.fox2code.jfallback.JFallbackClassVisitor");
+            new Dependency("com.fox2code:JFallback:0.1.1", FOX2CODE, "com.fox2code.jfallback.JFallbackClassVisitor");
 
     public static final Dependency[] commonDependencies = new Dependency[]{
-            new Dependency("org.ow2.asm:asm:9.6", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),
-            new Dependency("org.ow2.asm:asm-tree:9.6", MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode"),
-            new Dependency("org.ow2.asm:asm-analysis:9.6", MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer"),
-            new Dependency("org.ow2.asm:asm-commons:9.6", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
-            new Dependency("org.ow2.asm:asm-util:9.6", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
+            new Dependency("org.ow2.asm:asm:9.7", MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor"),
+            new Dependency("org.ow2.asm:asm-tree:9.7", MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode"),
+            new Dependency("org.ow2.asm:asm-analysis:9.7", MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer"),
+            new Dependency("org.ow2.asm:asm-commons:9.7", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
+            new Dependency("org.ow2.asm:asm-util:9.7", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
             GSON_DEPENDENCY, new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files"),
             new Dependency("org.semver4j:semver4j:5.2.2", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
             new Dependency("it.unimi.dsi:fastutil-core:8.5.12", MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair"),
             // new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("net.fabricmc:sponge-mixin:0.13.1+mixin.0.8.5", FABRIC_MC, "org.spongepowered.asm.mixin.Mixins"),
+            new Dependency("net.fabricmc:sponge-mixin:0.13.2+mixin.0.8.5", FABRIC_MC, "org.spongepowered.asm.mixin.Mixins"),
             new Dependency("io.github.llamalad7:mixinextras-common:0.3.5",
                     MAVEN_CENTRAL, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
-            new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.1",
+            new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.2-beta.5",
                     JITPACK, "com.bawnorton.mixinsquared.MixinSquaredBootstrap",
-                    "https://github.com/Bawnorton/MixinSquared/releases/download/0.1.1/mixinsquared-common-0.1.1.jar"),
+                    "https://github.com/Bawnorton/MixinSquared/releases/download/0.1.2-beta.5/mixinsquared-common-0.1.2-beta.5.jar"),
             jFallback, // jFallback have special handling in dev plugin
     };
 

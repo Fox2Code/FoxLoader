@@ -196,6 +196,15 @@ public abstract class GameRegistry {
                 (itemId >= INITIAL_ITEM_ID && itemId < MAXIMUM_ITEM_ID);
     }
 
+    /**
+     * @param itemId the item id
+     * @return if the id is reserved for mod loader and a block
+     */
+    public static boolean isLoaderReservedBlockItemId(int itemId) {
+        return (itemId >= INITIAL_TRANSLATED_BLOCK_ID &&
+                itemId < MAXIMUM_TRANSLATED_BLOCK_ID);
+    }
+
     public interface Ingredient {}
 
     public enum BuiltInMaterial implements EnumReflectTranslator.ReflectEnum {

@@ -5,6 +5,7 @@ import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.Session;
+import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.client.packets.NetClientHandler;
 import net.minecraft.src.client.packets.Packet250PluginMessage;
 import net.minecraft.src.client.player.EntityClientPlayerMP;
@@ -42,12 +43,13 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
 
     @Override
     public void displayChatMessage(String chatMessage) {
+        StringTranslate st = StringTranslate.getInstance();
         if (chatMessage.indexOf('\n') == -1) {
-            Minecraft.getInstance().ingameGUI.addChatMessage(chatMessage);
+            Minecraft.getInstance().ingameGUI.addChatMessage(st.translateKey(chatMessage));
         } else {
             String[] splits = chatMessage.split("\\n");
             for (String split : splits) {
-                Minecraft.getInstance().ingameGUI.addChatMessage(split);
+                Minecraft.getInstance().ingameGUI.addChatMessage(st.translateKey(split));
             }
         }
     }

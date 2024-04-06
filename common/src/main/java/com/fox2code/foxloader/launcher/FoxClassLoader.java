@@ -14,6 +14,7 @@ import java.util.*;
 public final class FoxClassLoader extends URLClassLoader {
     private static final String CLASS_TO_DUMP = System.getProperty("foxloader.dump-class");
     private static final String MIXIN_CONFIG = "org.spongepowered.asm.mixin.transformer.MixinConfig";
+    private static final String MIXIN = "org.spongepowered.asm.mixin.Mixin";
     private static final CodeSigner[] NO_CodeSigners = new CodeSigner[0];
     private static final URL[] NO_URLs = new URL[0];
     static URL earlyMinecraftURL;
@@ -27,6 +28,7 @@ public final class FoxClassLoader extends URLClassLoader {
     private final LinkedList<ClassTransformer> classTransformers;
     private final LinkedList<ClassGenerator> classGenerators;
     private final HashMap<String, byte[]> injectedClasses;
+    private final HashMap<String, URL> injectedResources;
     private URLClassLoader gameExclusiveSource;
     private boolean allowLoadingGame;
     private WrappedExtensions wrappedExtensions;
@@ -42,6 +44,7 @@ public final class FoxClassLoader extends URLClassLoader {
         this.classTransformers = new LinkedList<>();
         this.classGenerators = new LinkedList<>();
         this.injectedClasses = new HashMap<>();
+        this.injectedResources = new HashMap<>();
         this.classGenerators.add(this.injectedClasses::remove);
         // Allow to set a Minecraft URL before loader is initialized.
         if (earlyMinecraftURL != null) {
@@ -176,6 +179,10 @@ public final class FoxClassLoader extends URLClassLoader {
                 if (wrappedExtensions == null)
                     throw new ClassTransformException("wrappedExtensions not initialized yet");
                 bytes = wrappedExtensions.patchMixinConfig(bytes);
+            } else if (name.equals(MIXIN)) {
+                if (wrappedExtensions == null)
+                    throw new ClassTransformException("wrappedExtensions not initialized yet");
+                bytes = wrappedExtensions.patchMixin(bytes);
             }
 
             URL url = null;
@@ -243,7 +250,9 @@ public final class FoxClassLoader extends URLClassLoader {
                 return this.getParent().getResource(name);
             }
         }
-        return super.findResource(name);
+        URL resource = super.findResource(name);
+        if (resource != null) return resource;
+        return this.injectedResources.get(name);
     }
 
     @Override
@@ -296,6 +305,12 @@ public final class FoxClassLoader extends URLClassLoader {
         if (isClassLoaded(className))
             throw new IllegalStateException("Cannot redefine already loaded classes");
         this.injectedClasses.put(className, classData);
+    }
+
+    public void injectResource(String resourceName, URL resource) {
+        if (isGamePath(resourceName))
+            throw new IllegalArgumentException("Cannot redefine core game resource file");
+        this.injectedResources.put(resourceName, resource);
     }
 
     public int getClassTransformersCount() {
@@ -448,5 +463,7 @@ public final class FoxClassLoader extends URLClassLoader {
         public abstract byte[] computeFrames(byte[] classData);
 
         public abstract byte[] patchMixinConfig(byte[] classData);
+
+        public abstract byte[] patchMixin(byte[] classData);
     }
 }

@@ -21,6 +21,9 @@ dependencies {
     //noinspection GradlePackageUpdate
     compileOnly("org.lwjgl.lwjgl:lwjgl-platform:2.9.3")
 
+    // Do not expose LuaJ APIs to mods
+    compileOnly('org.luaj:luaj-jse:3.0.1')
+
     // Do no expose spark APIs to mods
     compileOnly(project['spark.dependency'] as String)
 }

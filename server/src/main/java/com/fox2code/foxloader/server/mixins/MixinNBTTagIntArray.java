@@ -18,6 +18,7 @@ public class MixinNBTTagIntArray {
      *
      * @author Fox2Code
      * @reason Just a hotfix
+     * @return 11
      */
     @Overwrite
     public byte getType() {

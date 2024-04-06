@@ -66,4 +66,32 @@ final class FoxWrappedExtensions extends FoxClassLoader.WrappedExtensions {
         logger.info("Patched MixinConfig!");
         return classWriter.toByteArray();
     }
+
+    @Override
+    public byte[] patchMixin(byte[] classData) {
+        ClassReader classReader = new ClassReader(classData);
+        ClassWriter classWriter = new ClassWriter(classReader, 0);
+        classReader.accept(new ClassVisitor(ClassTransformer.ASM_BUILD, classWriter) {
+            @Override
+            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                MethodVisitor methodVisitor = super.visitMethod(access, name, descriptor, signature, exceptions);
+                if (name.equals("remap")) {
+                    methodVisitor = new MethodVisitor(ClassTransformer.ASM_BUILD, methodVisitor) {
+                        @Override
+                        public AnnotationVisitor visitAnnotationDefault() {
+                            return new AnnotationVisitor(ClassTransformer.ASM_BUILD, super.visitAnnotationDefault()) {
+                                @Override
+                                public void visit(String name, Object value) {
+                                    super.visit(name, value == Boolean.TRUE ? Boolean.FALSE : value);
+                                }
+                            };
+                        }
+                    };
+                }
+                return methodVisitor;
+            }
+        }, 0);
+        logger.info("Patched Mixin!");
+        return classWriter.toByteArray();
+    }
 }

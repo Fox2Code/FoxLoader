@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.commands.SetWorldItemScale;
 import com.fox2code.foxloader.commands.WorldReplace;
 import com.fox2code.foxloader.commands.WorldSet;
 import com.fox2code.foxloader.launcher.*;
@@ -26,6 +27,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ModLoader extends Mod {
@@ -70,6 +72,7 @@ public class ModLoader extends Mod {
     private static final Attributes.Name SERVER_MIXIN = new Attributes.Name("ServerMixin");
     private static final Attributes.Name COMMON_MIXIN = new Attributes.Name("CommonMixin");
     private static final Attributes.Name MOD_JITPACK = new Attributes.Name("ModJitPack");
+    private static final Attributes.Name LOADING_PLUGIN = new Attributes.Name("LoadingPlugin");
     private static final Attributes.Name UNOFFICIAL = new Attributes.Name("Unofficial");
     private static final Semver INITIAL_SEMVER = new Semver("1.0.0");
     static final ClassDataProvider classDataProvider;
@@ -94,6 +97,8 @@ public class ModLoader extends Mod {
             throw new RuntimeException("Cannot create versioned mods folder");
         if (!coremods.exists() && !coremods.mkdirs())
             throw new RuntimeException("Cannot create coremods folder");
+        if (!config.exists() && !config.mkdirs())
+            throw new RuntimeException("Cannot create config folder");
         modContainers.put(foxLoader.id, foxLoader);
         foxLoader.logger.info("Running FoxLoader " + BuildConfig.FOXLOADER_VERSION);
         foxLoader.logger.info("Game directory: " + FoxLauncher.getGameDir().getAbsolutePath());
@@ -143,10 +148,11 @@ public class ModLoader extends Mod {
         for (ModContainer modContainer : modContainers.values()) {
             source2modContainer.put(modContainer.file.getAbsolutePath(), modContainer);
         }
+        initLoadingPluginsAndLoadExtraMods();
         for (ModContainer modContainer : modContainers.values()) {
             try {
                 modContainer.applyPrePatch();
-            } catch (ReflectiveOperationException e) {
+            } catch (ClassCastException | ReflectiveOperationException e) {
                 throw new RuntimeException("Caused by the mod: " + modContainer.id, e);
             }
         }
@@ -156,6 +162,94 @@ public class ModLoader extends Mod {
             modContainer.applyModMixins(client);
         }
         FoxLauncher.getFoxClassLoader().allowLoadingGame();
+    }
+
+    private static void initLoadingPluginsAndLoadExtraMods() {
+        ArrayList<LoadingPlugin> loadingPlugins = new ArrayList<>();
+        boolean mayLoadNewMods = false;
+        for (ModContainer modContainer : modContainers.values()) {
+            LoadingPlugin loadingPlugin = modContainer.aquireLoadingPlugin();
+            if (loadingPlugin != null) {
+                loadingPlugin.mayLoadNewMods =
+                        loadingPlugin.mayLoadNewMods();
+                mayLoadNewMods |= loadingPlugin.mayLoadNewMods;
+                loadingPlugin.privileged = true;
+                loadingPlugins.add(loadingPlugin);
+            }
+        }
+        if (mayLoadNewMods) {
+            // Get extra mods from loading plugins
+            ArrayList<LoadingPlugin.ModContainerProperties> newMods = new ArrayList<>();
+            for (File mod : Objects.requireNonNull(mods.listFiles(
+                    (dir, name) -> name.endsWith(".jar")))) {
+                if (!source2modContainer.containsKey(mod.getAbsolutePath())) {
+                    for (LoadingPlugin loadingPlugin : loadingPlugins) {
+                        Collection<LoadingPlugin.ModContainerProperties> collection;
+                        if (loadingPlugin.mayLoadNewMods && (collection =
+                                loadingPlugin.tryInitJavaModProperties(mod)) != null &&
+                                !collection.isEmpty()) {
+                            newMods.addAll(collection);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (modsVersioned.isDirectory()) {
+                for (File mod : Objects.requireNonNull(modsVersioned.listFiles(
+                        (dir, name) -> name.endsWith(".jar")))) {
+                    if (!source2modContainer.containsKey(mod.getAbsolutePath())) {
+                        for (LoadingPlugin loadingPlugin : loadingPlugins) {
+                            Collection<LoadingPlugin.ModContainerProperties> collection;
+                            if (loadingPlugin.mayLoadNewMods && (collection =
+                                    loadingPlugin.tryInitJavaModProperties(mod)) != null &&
+                                    !collection.isEmpty()) {
+                                newMods.addAll(collection);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            // Parse and load mods from ModContainerProperties
+            Iterator<LoadingPlugin.ModContainerProperties> itr = newMods.iterator();
+            HashSet<String> paths = new HashSet<>(source2modContainer.keySet());
+            HashSet<String> ids = new HashSet<>(modContainers.keySet());
+            while (itr.hasNext()) {
+                LoadingPlugin.ModContainerProperties modContainerProperties = itr.next();
+                boolean pathIsReason;
+                if ((pathIsReason = paths.contains(modContainerProperties.absPath)) ||
+                        ids.contains(modContainerProperties.getId())) {
+                    getModLoaderLogger().log(Level.WARNING, "Skipping loading " +
+                            modContainerProperties.absPath + " (Id: " + modContainerProperties.getId() + ") " +
+                            "due to already having a mod with the same " + (pathIsReason ? "path" : "id"));
+                    itr.remove();
+                    continue;
+                }
+                paths.add(modContainerProperties.absPath);
+                ids.add(modContainerProperties.getId());
+            }
+            for (LoadingPlugin.ModContainerProperties modContainerProperties : newMods) {
+                if (modContainerProperties.isAddToClassLoader()) {
+                    FoxLauncher.getFoxClassLoader().addURL(modContainerProperties.urlPath);
+                }
+            }
+            for (LoadingPlugin.ModContainerProperties modContainerProperties : newMods) {
+                ModContainer modContainer = modContainerProperties.makeModContainer();
+                if (modContainerProperties.isAddToClassLoader()) {
+                    source2modContainer.put(modContainerProperties.absPath, modContainer);
+                }
+                modContainers.put(modContainer.id, modContainer);
+            }
+        }
+        for (LoadingPlugin loadingPlugin : loadingPlugins) {
+            try {
+                loadingPlugin.beforePreLoading();
+            } catch (Throwable t) {
+                ModLoader.getModLoaderLogger().log(Level.WARNING, "Failed to call " +
+                        loadingPlugin.getClass().getName() + ".beforePreLoading()", t);
+            }
+            loadingPlugin.privileged = false;
+        }
     }
 
     static void initializeMods(boolean client) {
@@ -196,6 +290,13 @@ public class ModLoader extends Mod {
     public void onPostInit() {
         CommandCompat.registerCommand(new WorldSet());
         CommandCompat.registerCommand(new WorldReplace());
+        CommandCompat.registerCommand(new SetWorldItemScale());
+    }
+
+    static boolean isReservedModId(String id) {
+        return FOX_LOADER_MOD_ID.equals(id) || "lwjgl".equals(id) ||
+                "minecraft".equals(id) || "reindev".equals(id) ||
+                "java".equals(id) || "null".equals(id) || "".equals(id);
     }
 
     private static void loadModContainerFromJar(File file, boolean injected) {
@@ -219,7 +320,7 @@ public class ModLoader extends Mod {
                     " because it doesn't have a mod-id (Is it a core mod?)");
             return;
         }
-        if (FOX_LOADER_MOD_ID.equals(id) || "minecraft".equals(id) || "reindev".equals(id) || "null".equals(id)) {
+        if (isReservedModId(id)) {
             if (injected && "null".equals(id)) { // Crash directly if we
                 throw new RuntimeException("Please define a modId in gradle");
             }
@@ -233,7 +334,7 @@ public class ModLoader extends Mod {
             return;
         }
         if (name == null || name.isEmpty()) {
-            name = id.substring(0, 1).toLowerCase(Locale.ROOT) + id.substring(1);
+            name = id.substring(0, 1).toUpperCase(Locale.ROOT) + id.substring(1);
         }
         if (version == null || (version = version.trim()).isEmpty()) {
             version = "1.0";
@@ -271,6 +372,7 @@ public class ModLoader extends Mod {
         modContainer.clientMixins = attributes.getValue(CLIENT_MIXIN);
         modContainer.serverMixins = attributes.getValue(SERVER_MIXIN);
         modContainer.commonMixins = attributes.getValue(COMMON_MIXIN);
+        modContainer.loadingPlugin = attributes.getValue(LOADING_PLUGIN);
         modContainers.put(id, modContainer);
         try {
             FoxLauncher.getFoxClassLoader().addURL(file.toURI().toURL());
@@ -319,7 +421,7 @@ public class ModLoader extends Mod {
                     " because it doesn't have a mod-id (Is it a core mod?)");
             return;
         }
-        if (FOX_LOADER_MOD_ID.equals(id) || "minecraft".equals(id) || "reindev".equals(id) || "null".equals(id)) {
+        if (isReservedModId(id)) {
             foxLoader.logger.warning("Unable to load " + file.getName() +
                     " because it used the reserved mod id: " + id);
             return;
@@ -330,7 +432,7 @@ public class ModLoader extends Mod {
             return;
         }
         if (name == null || name.isEmpty()) {
-            name = id.substring(0, 1).toLowerCase(Locale.ROOT) + id.substring(1);
+            name = id.substring(0, 1).toUpperCase(Locale.ROOT) + id.substring(1);
         }
         if (version == null || (version = version.trim()).isEmpty()) {
             version = "1.0";

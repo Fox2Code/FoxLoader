@@ -18,7 +18,11 @@ public class FoxLoaderDecompiler extends SingleFileSaver implements IResultSaver
         options.put("asc", "1");
         options.put("bsm", "1");
         options.put("sef", "1");
-        options.put("jrt", "current");
+        if (System.getProperty("java.version").startsWith("1.8.")) {
+            options.put("jrt", System.getProperty("java.home"));
+        } else {
+            options.put("jrt", "current");
+        }
         options.put("ega", "1");
         options.put("dcc", "1");
         options.put("nls", "0");

@@ -15,6 +15,9 @@ public class MixinNetherPortalHandler {
      *
      * @author Fox2Code
      * @reason Just a hotfix
+     * @param entity entity
+     * @param world world
+     * @return boolean
      */
     @Overwrite
     public boolean useExistingPortal(World world, Entity entity) {
@@ -90,6 +93,9 @@ public class MixinNetherPortalHandler {
      *
      * @author Fox2Code
      * @reason Just a hotfix
+     * @param entity entity
+     * @param world world
+     * @return boolean
      */
     @Overwrite
     public boolean makeNewPortal(World world, Entity entity) {

@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.loader;
 
+import com.fox2code.foxloader.client.network.NetClientHandlerExtensions;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
@@ -10,11 +11,19 @@ import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.network.SidedMetadataAPI;
 import com.fox2code.foxloader.registry.GameRegistryClient;
+import com.fox2code.foxloader.registry.RegisteredItem;
 import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.fox2code.ChatColors;
 import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.src.client.gui.StringTranslate;
+import net.minecraft.src.client.packets.NetworkManager;
+import net.minecraft.src.client.packets.Packet250PluginMessage;
+import net.minecraft.src.game.item.Item;
+import net.minecraft.src.game.item.ItemStack;
+import org.lwjgl.opengl.GL11;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -26,6 +35,7 @@ public final class ClientModLoader extends ModLoader {
     public static final boolean linuxFix = Boolean.parseBoolean(
             System.getProperty("foxloader.linux-fix", // Switch to enable linux workaround
                     Boolean.toString(Platform.getPlatform() == Platform.LINUX)));
+    private static boolean didPreemptiveNetworking = false;
     public static boolean showFrameTimes;
     private static byte[] clientHello;
 
@@ -87,7 +97,11 @@ public final class ClientModLoader extends ModLoader {
         ModLoader.foxLoader.logger.info("Initializing id translator");
         GameRegistryClient.initializeMappings(serverHello);
         ModLoader.foxLoader.logger.info("Ids translated!");
-        networkPlayer.sendNetworkData(ModLoader.foxLoader, clientHello);
+        if (!didPreemptiveNetworking) {
+            networkPlayer.sendNetworkData(ModLoader.foxLoader, clientHello);
+        } else {
+            didPreemptiveNetworking = false;
+        }
     }
 
     @Override
@@ -159,6 +173,7 @@ public final class ClientModLoader extends ModLoader {
 
     public static class Internal {
         public static byte[] networkChunkBytes = null;
+        private static String serverNameCache;
         private static final HashMap<String, Properties> translationsCache = new HashMap<>();
         private static final Function<String, Properties> translationsCacheFiller = lang -> {
             Properties properties = new Properties();
@@ -191,12 +206,89 @@ public final class ClientModLoader extends ModLoader {
             if (ModLoaderOptions.INSTANCE.checkForUpdates) {
                 UpdateManager.getInstance().checkUpdates();
             }
+            SidedMetadataAPI.Internal.addHandler(
+                    () -> Internal.serverNameCache = null);
         }
 
         public static void notifyCameraAndRenderUpdated(float partialTick) {
             for (ModContainer modContainer : ModLoader.modContainers.values()) {
                 modContainer.notifyCameraAndRenderUpdated(partialTick);
             }
+        }
+
+        public static void preemptivelySendClientHello(NetworkManager networkManager) {
+            if (ModLoaderOptions.INSTANCE.preemptiveNetworking) {
+                networkManager.addToSendQueue(new Packet250PluginMessage(
+                        ModLoader.foxLoader.id, clientHello));
+                didPreemptiveNetworking = true;
+            } else {
+                didPreemptiveNetworking = false;
+            }
+        }
+
+        public static void glScaleItem(ItemStack itemStack) {
+            float scale = ClientMod.toRegisteredItemStack(itemStack).getWorldItemScale();
+            if (scale > 0F && scale != 1F) {
+                GL11.glScalef(scale, scale, scale);
+            }
+        }
+
+        public static void glScaleItemNoZFighting(ItemStack itemStack) {
+            float scale = ClientMod.toRegisteredItemStack(itemStack).getWorldItemScale();
+            if (scale > 0F && scale != 1F) {
+                if (scale < 2.001F && scale > 1.999F) scale = 1.999F;
+                GL11.glScalef(scale, scale, scale);
+            }
+        }
+
+        public static void glScaleItemOverXTranslate(ItemStack itemStack, float value) {
+            float scale = ClientMod.toRegisteredItemStack(itemStack).getWorldItemScale();
+            if (scale > 0F && scale != 1F) {
+                GL11.glTranslatef(value - (value * scale), 0, 0);
+                GL11.glScalef(scale, scale, scale);
+            }
+        }
+
+        public static void glScaleItemOverYTranslate(ItemStack itemStack, float value) {
+            float scale = ClientMod.toRegisteredItemStack(itemStack).getWorldItemScale();
+            if (scale > 0F && scale != 1F) {
+                GL11.glTranslatef(0, value - (value * scale), 0);
+                GL11.glScalef(scale, scale, scale);
+            }
+        }
+
+        public static void glScaleItemOverZTranslate(ItemStack itemStack, float value) {
+            float scale = ClientMod.toRegisteredItemStack(itemStack).getWorldItemScale();
+            if (scale > 0F && scale != 1F) {
+                GL11.glTranslatef(0, 0, value - (value * scale));
+                GL11.glScalef(scale, scale, scale);
+            }
+        }
+
+        public static void glScaleItemOverXYTranslate(ItemStack itemStack, float xValue, float yValue) {
+            float scale = ClientMod.toRegisteredItemStack(itemStack).getWorldItemScale();
+            if (scale > 0F && scale != 1F) {
+                GL11.glTranslatef(xValue - (xValue * scale), yValue - (yValue * scale), 0);
+                GL11.glScalef(scale, scale, scale);
+            }
+        }
+
+        public static String getColoredServerNameDebugExt() {
+            if (Internal.serverNameCache == null) {
+                Map<String, String> metadata = SidedMetadataAPI.getActiveMetadata();
+                String serverName = metadata.get(SidedMetadataAPI.KEY_VISIBLE_SERVER_NAME);
+                if (serverName == null) {
+                    if (metadata.containsKey(SidedMetadataAPI.KEY_FOXLOADER_VERSION)) {
+                        serverName = "FoxLoader " + metadata.get(SidedMetadataAPI.KEY_FOXLOADER_VERSION);
+                    } else if (((NetClientHandlerExtensions) Minecraft.getInstance().getSendQueue()).isFoxLoader()) {
+                        serverName = ChatColors.DARK_RED + "Obsolete FoxLoader" + ChatColors.GRAY;
+                    } else {
+                        serverName = "ReIndev " + BuildConfig.REINDEV_VERSION;
+                    }
+                }
+                Internal.serverNameCache = ChatColors.GRAY + " (Server: " + serverName + ")";
+            }
+            return Internal.serverNameCache;
         }
     }
 }

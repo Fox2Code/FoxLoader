@@ -13,13 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Container.class)
 public class MixinContainer {
-    @Inject(method = "onCraftGuiClosed", at = @At("HEAD"), cancellable = true)
-    public void hotfix_onCraftGuiClosedHook(EntityPlayer var1, CallbackInfo ci) {
-        if (var1 == null || var1.inventory == null) {
-            ci.cancel();
-        }
-    }
-
     /**
      * Disable default behaviour on wrapped container for better stability.
      */

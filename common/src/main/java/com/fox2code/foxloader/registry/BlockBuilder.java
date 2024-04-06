@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 
 public final class BlockBuilder {
-    public Class<? extends RegisteredBlock> gameBlockSource;
+    public BlockProvider gameBlockProvider;
     @Nullable
     public ItemBuilder itemBuilder;
     @NotNull
@@ -35,9 +35,29 @@ public final class BlockBuilder {
 
     public BlockBuilder() {}
 
-    public BlockBuilder setGameBlockSource(Class<? extends RegisteredBlock> gameBlockSource) {
-        this.builtInBlockType = GameRegistry.BuiltInBlockType.CUSTOM;
-        this.gameBlockSource = gameBlockSource;
+    @FunctionalInterface
+    public interface BlockProvider {
+        /**
+         * @param id block id of the block
+         * @param blockBuilder block builder used to register this block
+         * @param ext only defined when {@link BlockBuilder#builtInBlockType} register multiple types,
+         *            for example slabs will emit "_full" extension when registering full slabs if the
+         *            type is {@link GameRegistry.BuiltInBlockType#SLAB}
+         * @return the new block to be registered
+         */
+        RegisteredBlock provide(int id,@NotNull BlockBuilder blockBuilder,@NotNull String ext) throws ReflectiveOperationException;
+    }
+
+    public BlockBuilder setGameBlockProvider(@Nullable BlockProvider gameBlockProvider) {
+        this.gameBlockProvider = gameBlockProvider;
+        return this;
+    }
+
+    @Deprecated // Use setGameBlockProvider instead
+    public BlockBuilder setGameBlockSource(final Class<? extends RegisteredBlock> gameBlockSource) {
+        // Note: This code mimic old code, with all it's bugs and glory
+        this.gameBlockProvider = (i, bb, ext) ->
+                gameBlockSource.getDeclaredConstructor(int.class).newInstance(i);
         return this;
     }
 
@@ -48,7 +68,6 @@ public final class BlockBuilder {
 
     public BlockBuilder setBlockType(@NotNull GameRegistry.BuiltInBlockType builtInBlockType) {
         this.builtInBlockType = builtInBlockType;
-        this.gameBlockSource = null;
         return this;
     }
 
@@ -128,5 +147,9 @@ public final class BlockBuilder {
             this.setEffectiveTool(registeredToolType);
         }
         return this;
+    }
+
+    public GameRegistry.BuiltInBlockType getBuiltInBlockTypeForConstructor() {
+        return this.gameBlockProvider != null ? GameRegistry.BuiltInBlockType.CUSTOM : this.builtInBlockType;
     }
 }

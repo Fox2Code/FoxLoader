@@ -6,6 +6,7 @@ import com.fox2code.foxloader.client.gui.GuiUpdateButton;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.network.ChatColors;
+import com.fox2code.foxloader.network.SidedMetadataAPI;
 import net.minecraft.src.client.Session;
 import net.minecraft.src.client.gui.*;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,6 +20,9 @@ public abstract class MixinGuiMainMenu extends GuiScreen {
     @Inject(method = "initGui", at = @At(value = "RETURN"))
     public void onInitGui(CallbackInfo ci) {
         this.controlList.add(new GuiUpdateButton(500, this.width - 62, 2, 60, 20, "Mods"));
+        if (this.mc.theWorld == null) {
+            SidedMetadataAPI.Internal.setActiveMetaData(null);
+        }
     }
 
     @Inject(method = "actionPerformed", at = @At(value = "HEAD"), cancellable = true)

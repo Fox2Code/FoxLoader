@@ -30,6 +30,13 @@ public class FoxLauncher {
                 Class.forName(cls);
             } catch (ClassNotFoundException ignored) {}
         }
+        // Some Linux-Tkg versions string can be unbearably long
+        // Let's shorten it a bit for F3 menu in that case
+        String osVersion = System.getProperty("os.version");
+        if (osVersion.endsWith("-generic_v3")) {
+            System.setProperty("os.version",
+                    osVersion.substring(0, osVersion.length() - 11));
+        }
     }
 
     public static final File foxLoaderFile = SourceUtil.getSourceFile(FoxLauncher.class);

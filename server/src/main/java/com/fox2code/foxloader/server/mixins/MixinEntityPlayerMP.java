@@ -93,6 +93,13 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
     }
 
     @Override
+    public void handlePreemptiveData(Packet250PluginMessage pluginMessage) {
+        if (!((NetServerHandlerAccessor) this.playerNetServerHandler).hasClientHello()) {
+            this.playerNetServerHandler.handlePluginMessage(pluginMessage);
+        }
+    }
+
+    @Override
     public void sendNetworkDataRaw(String modContainer, byte[] data) {
         this.playerNetServerHandler.sendPacket(new Packet250PluginMessage(modContainer, data));
     }

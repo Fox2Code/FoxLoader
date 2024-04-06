@@ -22,6 +22,20 @@ public class MixinNetClientHandler implements NetClientHandlerExtensions {
     @Shadow private boolean disconnected;
     @Shadow private NetworkManager netManager;
     @Unique boolean isFoxLoader = false;
+    @Unique boolean preemptive = true;
+
+    @Unique
+    private void preemptivelySendClientHello() {
+        if (this.preemptive) {
+            this.preemptive = false;
+            ClientModLoader.Internal.preemptivelySendClientHello(this.netManager);
+        }
+    }
+
+    @Inject(method = "handleLogin", at = @At("HEAD"))
+    public void onHandleLogin(Packet1Login packet1, CallbackInfo ci) {
+        this.preemptivelySendClientHello();
+    }
 
     @Inject(method = "handlePickupSpawn", at = @At("HEAD"))
     public void onHandlePickupSpawn(Packet21PickupSpawn packet21, CallbackInfo ci) {
@@ -73,9 +87,10 @@ public class MixinNetClientHandler implements NetClientHandlerExtensions {
     public void onHandlePluginMessage(Packet250PluginMessage packet250, CallbackInfo ci) {
         NetworkPlayer networkPlayer = (NetworkPlayer)
                 Minecraft.getInstance().thePlayer;
-        if (ModLoader.FOX_LOADER_MOD_ID.equals(packet250.channel)) {
+        if (ModLoader.FOX_LOADER_MOD_ID.equals(packet250.channel) && !this.isFoxLoader) {
             ModLoader.getModLoaderLogger().info("Got FoxLoader packet");
             this.isFoxLoader = true;
+            this.preemptivelySendClientHello();
         }
         ModContainer modContainer = ModLoader.getModContainer(packet250.channel);
         if (networkPlayer != null && modContainer != null && packet250.data != null) {

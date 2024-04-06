@@ -4,6 +4,7 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.ClientModLoader;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.network.NetworkPlayer;
+import com.fox2code.foxloader.network.SidedMetadataAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.GameSettings;
 import net.minecraft.src.game.entity.player.EntityPlayer;
@@ -57,6 +58,9 @@ public class MixinMinecraft {
                     this.loadedWorldType = world.multiplayerWorld ?
                             NetworkPlayer.ConnectionType.CLIENT_ONLY :
                             NetworkPlayer.ConnectionType.SINGLE_PLAYER);
+            if (!world.multiplayerWorld) {
+                SidedMetadataAPI.Internal.setActiveMetaData(null);
+            }
         }
     }
 

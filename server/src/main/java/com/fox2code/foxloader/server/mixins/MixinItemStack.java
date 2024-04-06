@@ -16,6 +16,7 @@ public abstract class MixinItemStack implements RegisteredItemStack {
     @Shadow public int itemID;
     @Shadow public int stackSize;
     @Shadow public int itemDamage;
+    @Shadow public NBTTagCompound nbtTagCompound;
 
     @Shadow public abstract Item getItem();
     @Shadow public abstract String getDisplayName();
@@ -75,6 +76,40 @@ public abstract class MixinItemStack implements RegisteredItemStack {
     @Override
     public void setRegisteredDisplayName(String displayName) {
         this.setItemName(displayName);
+    }
+
+    @Override
+    public boolean hasCustomWorldItemScale() {
+        return this.nbtTagCompound != null &&
+                this.nbtTagCompound.hasKey("WorldItemScale");
+    }
+
+    @Override
+    public void resetWorldItemScale() {
+        if (this.nbtTagCompound != null &&
+                this.nbtTagCompound.hasKey("WorldItemScale")) {
+            this.nbtTagCompound.removeTag("WorldItemScale");
+        }
+    }
+
+    @Override
+    public void setWorldItemScale(float scale) {
+        if (this.nbtTagCompound == null) {
+            this.nbtTagCompound = new NBTTagCompound();
+        }
+        this.nbtTagCompound.setFloat("WorldItemScale", scale);
+    }
+
+    @Override
+    public float getWorldItemScale() {
+        if (this.nbtTagCompound != null &&
+                this.nbtTagCompound.hasKey("WorldItemScale")) {
+            try {
+                return Math.max(this.nbtTagCompound.getFloat("WorldItemScale"),
+                        RegisteredItemStack.MINIMUM_WORLD_ITEM_SCALE);
+            } catch (ClassCastException ignored) {}
+        }
+        return this.getRegisteredItem().getWorldItemScale();
     }
 
     @Override
