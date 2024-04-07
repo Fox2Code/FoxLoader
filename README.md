@@ -17,6 +17,9 @@ Either by double-clicking on it, or running `java -jar FoxLoader.jar`
 
 To run FoxLoader as a server just run `java -jar FoxLoader.jar --server`
 
+Note: For PojavLauncher, click on "Install .jar" and the rest should be automatic,
+only the Android version of PojavLauncher is supported.
+
 ## Documentation
 
 For mixins usage check here: https://github.com/2xsaiko/mixin-cheatsheet

@@ -425,27 +425,6 @@ class GradlePlugin implements Plugin<Project> {
                 try {
                     System.out.println("Decompiling patched ReIndev " + logSideName)
                     decompilerHelper.decompile(unpickedJarFox, sourcesJarFox, client)
-                } catch (OutOfMemoryError oom) {
-                    boolean deleteFailed = false
-                    try {
-                        closeJarFileSystem(unpickedJarFox)
-                        closeJarFileSystem(sourcesJarFox)
-                    } finally {
-                        if (!sourcesJarFox.delete()) {
-                            sourcesJarFox.deleteOnExit()
-                            deleteFailed = true
-                        }
-                    }
-                    Throwable root = oom
-                    while (root.getCause() != null)
-                        root = root.getCause()
-
-                    root.initCause(deleteFailed ? // If delete failed, restart
-                            UserMessage.UNRECOVERABLE_STATE_DECOMPILE :
-                            client ? UserMessage.FAIL_DECOMPILE_CLIENT :
-                                    UserMessage.FAIL_DECOMPILE_SERVER)
-                    if (deleteFailed) throw oom // If delete failed, we can't recover
-                    oom.printStackTrace()
                 } catch (Throwable throwable) {
                     boolean deleteFailed = false
                     try {
@@ -470,10 +449,14 @@ class GradlePlugin implements Plugin<Project> {
                                     UserMessage.FAIL_DECOMPILE_SERVER)
                     if (deleteFailed) {
                         terminateProcess()
+                        throw throwable
                     }
-                    throw throwable
+                    if (throwable instanceof OutOfMemoryError ||
+                            throwable instanceof RuntimeException) {
+                        throwable.printStackTrace()
+                    } else throw throwable
                 }
-                // Close not critical there, as if close fails, it's still not a big issue
+                // Close not critical there, as if close fails here, it's still not a big issue
                 closeJarFileSystem(unpickedJarFox, false)
                 closeJarFileSystem(sourcesJarFox, false)
             }

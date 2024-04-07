@@ -110,9 +110,10 @@ public class Main {
     }
 
     public static boolean isPojavLauncherHome(String userHome) {
-        int index;
-        return (userHome.startsWith("/storage/emulated/") && (index = userHome.indexOf('/', 18)) != -1 &&
-                userHome.substring(index).startsWith("/Android/data/") || userHome.startsWith("/sdcard/Android/data/"));
+        int index; String ext;
+        return ((userHome.startsWith("/storage/emulated/") && (index = userHome.indexOf('/', 18)) != -1 &&
+                ((ext = userHome.substring(index)).startsWith("/Android/data/") || ext.startsWith("/games/"))) ||
+                userHome.startsWith("/sdcard/Android/data/") || userHome.startsWith("/sdcard/games/"));
     }
 
     static {
