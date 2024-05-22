@@ -35,17 +35,17 @@ public class DependencyHelper {
             new Dependency("org.ow2.asm:asm-commons:9.7", MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter"),
             new Dependency("org.ow2.asm:asm-util:9.7", MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter"),
             GSON_DEPENDENCY, new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files"),
-            new Dependency("org.semver4j:semver4j:5.2.2", MAVEN_CENTRAL, "org.semver4j.Semver"),
+            new Dependency("org.semver4j:semver4j:5.3.0", MAVEN_CENTRAL, "org.semver4j.Semver"),
             new Dependency("org.apache.commons:commons-lang3:3.3.2", MAVEN_CENTRAL, "org.apache.commons.lang3.tuple.Pair"),
             new Dependency("org.luaj:luaj-jse:3.0.1", MAVEN_CENTRAL, "org.luaj.vm2.Globals"),
-            new Dependency("it.unimi.dsi:fastutil-core:8.5.12", MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair"),
+            new Dependency("it.unimi.dsi:fastutil-core:8.5.13", MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair"),
             // new Dependency("org.spongepowered:mixin:0.8.5", SPONGE_POWERED, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("net.fabricmc:sponge-mixin:0.13.2+mixin.0.8.5", FABRIC_MC, "org.spongepowered.asm.mixin.Mixins"),
-            new Dependency("io.github.llamalad7:mixinextras-common:0.3.5",
+            new Dependency("net.fabricmc:sponge-mixin:0.13.4+mixin.0.8.5", FABRIC_MC, "org.spongepowered.asm.mixin.Mixins"),
+            new Dependency("io.github.llamalad7:mixinextras-common:0.3.6",
                     MAVEN_CENTRAL, "com.llamalad7.mixinextras.MixinExtrasBootstrap"),
-            new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.2-beta.5",
+            new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:0.1.2-beta.6",
                     JITPACK, "com.bawnorton.mixinsquared.MixinSquaredBootstrap",
-                    "https://github.com/Bawnorton/MixinSquared/releases/download/0.1.2-beta.5/mixinsquared-common-0.1.2-beta.5.jar"),
+                    "https://github.com/Bawnorton/MixinSquared/releases/download/0.1.2-beta.6/mixinsquared-common-0.1.2-beta.6.jar"),
             jFallback, // jFallback have special handling in dev plugin
     };
 

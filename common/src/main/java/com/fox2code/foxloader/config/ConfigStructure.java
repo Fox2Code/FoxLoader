@@ -238,11 +238,13 @@ public class ConfigStructure {
         int tmpIndex;
         while ((tmpIndex = path.indexOf('.', index)) != -1) {
             String subKey = path.substring(index, tmpIndex);
-            if (!directJsonObject.has(subKey)) return null;
+            if (directJsonObject == null || !directJsonObject.has(subKey)) {
+                return null;
+            }
             directJsonObject = directJsonObject.getAsJsonObject(subKey);
             index = tmpIndex + 1;
         }
-        return directJsonObject.get(path.substring(index));
+        return directJsonObject == null ? null : directJsonObject.get(path.substring(index));
     }
 
     private static void setElementJsonObject(JsonObject jsonObject, String path, JsonElement jsonElement) {

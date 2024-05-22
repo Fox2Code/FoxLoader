@@ -12,6 +12,7 @@ import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.RegisteredEntity;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
+import com.fox2code.foxloader.utils.WatchdogTimer;
 import com.fox2code.jfallback.JFallbackClassLoader;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -516,21 +517,25 @@ public class ModLoader extends Mod {
     static final AsyncItrLinkedList<LifecycleListener> listeners = new AsyncItrLinkedList<>();
 
     public static class Internal {
-        public static Properties fallbackTranslations = new Properties();
+        public static final Properties fallbackTranslations = new Properties();
+        public static final WatchdogTimer watchdogTimer = new WatchdogTimer(true);
 
         public static void notifyOnTick() {
+            watchdogTimer.heartbeat();
             for (ModContainer modContainer : modContainers.values()) {
                 modContainer.notifyOnTick();
             }
         }
 
         public static void notifyOnServerStart(NetworkPlayer.ConnectionType connectionType) {
+            watchdogTimer.megaHeartbeat();
             for (LifecycleListener lifecycleListener : listeners) {
                 lifecycleListener.onServerStart(connectionType);
             }
         }
 
         public static void notifyOnServerStop(NetworkPlayer.ConnectionType connectionType) {
+            watchdogTimer.megaHeartbeat();
             for (LifecycleListener lifecycleListener : listeners) {
                 lifecycleListener.onServerStop(connectionType);
             }
