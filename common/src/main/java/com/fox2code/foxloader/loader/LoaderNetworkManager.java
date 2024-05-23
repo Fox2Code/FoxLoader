@@ -3,6 +3,7 @@ package com.fox2code.foxloader.loader;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.FoxPacket;
 import com.fox2code.foxloader.loader.packet.ServerHello;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.network.io.NetworkDataInputStream;
 import com.fox2code.foxloader.network.io.NetworkDataOutputStream;
@@ -12,7 +13,7 @@ import java.util.logging.Level;
 import java.util.zip.*;
 
 final class LoaderNetworkManager {
-    static void executeClientPacketData(NetworkPlayer networkPlayer, byte[] data) {
+    static void executeClientPacketData(NetworkConnection networkConnection, byte[] data) {
         try (DataInputStream dataInputStream =
                      new NetworkDataInputStream(new ByteArrayInputStream(data))) {
             int packetId = dataInputStream.readUnsignedByte();
@@ -25,7 +26,7 @@ final class LoaderNetworkManager {
                     clientHello.readData(dataInputStream);
                     ModLoader.foxLoader.getMod()
                             .loaderHandleClientHello(
-                                    networkPlayer, clientHello);
+                                    networkConnection, clientHello);
                     break;
             }
         } catch (IOException ignored) {}
@@ -45,7 +46,7 @@ final class LoaderNetworkManager {
         networkPlayer.sendNetworkData(ModLoader.foxLoader, byteArrayOutputStream.toByteArray());
     }
 
-    static void executeServerPacketData(NetworkPlayer networkPlayer, byte[] data) {
+    static void executeServerPacketData(NetworkConnection networkConnection, byte[] data) {
         InputStream inputStream = new ByteArrayInputStream(data);
         try {
             int compressed = inputStream.read();
@@ -76,7 +77,7 @@ final class LoaderNetworkManager {
                     serverHello.readData(dataInputStream);
                     ModLoader.foxLoader.getMod()
                             .loaderHandleServerHello(
-                                    networkPlayer, serverHello);
+                                    networkConnection, serverHello);
                     break;
             }
         } catch (IOException e) {

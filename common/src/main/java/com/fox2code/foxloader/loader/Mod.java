@@ -2,6 +2,7 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.ServerHello;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.*;
 
@@ -78,11 +79,37 @@ public abstract class Mod implements LifecycleListener {
     /**
      * When server receive client packet.
      */
+    public void onReceiveClientPacket(NetworkConnection networkConnection, byte[] data) {
+        NetworkPlayer networkPlayer = networkConnection.getNetworkPlayer();
+        if (networkPlayer != null) {
+            this.onReceiveClientPacket(networkPlayer, data);
+        } else {
+            this.getLogger().warning("Received preemptive client packet, but failed to translate to non preemptive");
+        }
+    }
+
+    /**
+     * When server receive client packet.
+     */
+    @Deprecated
     public void onReceiveClientPacket(NetworkPlayer networkPlayer, byte[] data) {}
 
     /**
      * When client receive server packet.
      */
+    public void onReceiveServerPacket(NetworkConnection networkConnection, byte[] data) {
+        NetworkPlayer networkPlayer = networkConnection.getNetworkPlayer();
+        if (networkPlayer != null) {
+            this.onReceiveServerPacket(networkPlayer, data);
+        } else {
+            this.getLogger().warning("Received preemptive server packet, but failed to translate to non preemptive");
+        }
+    }
+
+    /**
+     * When client receive server packet.
+     */
+    @Deprecated
     public void onReceiveServerPacket(NetworkPlayer networkPlayer, byte[] data) {}
 
     /**
@@ -243,8 +270,8 @@ public abstract class Mod implements LifecycleListener {
     }
 
     // For internal use only
-    void loaderHandleServerHello(NetworkPlayer networkPlayer, ServerHello serverHello) {}
-    void loaderHandleClientHello(NetworkPlayer networkPlayer, ClientHello clientHello) {}
+    void loaderHandleServerHello(NetworkConnection networkConnection, ServerHello serverHello) {}
+    void loaderHandleClientHello(NetworkConnection networkPlayer, ClientHello clientHello) {}
     void loaderHandleDoFoxLoaderUpdate(String version, String url) throws IOException {
         System.err.println("Unhandled loaderHandleDoFoxLoaderUpdate()");
     }

@@ -2,6 +2,7 @@ package com.fox2code.foxloader.server.mixins;
 
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ServerMod;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
 import com.fox2code.foxloader.server.network.NetServerHandlerAccessor;
@@ -31,6 +32,11 @@ public class MixinEntityPlayerMP extends EntityPlayer implements NetworkPlayer, 
     @Override
     public void teleportRegistered(double x, double y, double z) {
         this.playerNetServerHandler.teleportTo(x, y, z, this.rotationYaw, this.rotationPitch);
+    }
+
+    @Override
+    public NetworkConnection getNetworkConnection() {
+        return (NetworkConnection) this.playerNetServerHandler;
     }
 
     @Override

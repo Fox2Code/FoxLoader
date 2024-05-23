@@ -1,7 +1,7 @@
 package com.fox2code.foxloader.client.mixins;
 
-import com.fox2code.foxloader.client.network.NetClientHandlerExtensions;
 import com.fox2code.foxloader.loader.ModContainer;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.client.Session;
@@ -32,6 +32,11 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
     }
 
     @Override
+    public NetworkConnection getNetworkConnection() {
+        return (NetworkConnection) this.sendQueue;
+    }
+
+    @Override
     public ConnectionType getConnectionType() {
         return ConnectionType.CLIENT_ONLY;
     }
@@ -56,7 +61,7 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
 
     @Override
     public boolean hasFoxLoader() {
-        return sendQueue != null && ((NetClientHandlerExtensions) sendQueue).isFoxLoader();
+        return sendQueue != null && ((NetworkConnection) sendQueue).hasFoxLoader();
     }
 
     @Override
@@ -72,7 +77,7 @@ public class MixinEntityClientPlayerMP extends EntityPlayerSP implements Network
     @Override
     public boolean isConnected() {
         return sendQueue != null && Minecraft.getInstance().isMultiplayerWorld() &&
-                !((NetClientHandlerExtensions) sendQueue).isDisconnected();
+                ((NetworkConnection) sendQueue).isConnected();
     }
 
     @Override

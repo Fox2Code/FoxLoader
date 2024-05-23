@@ -2,6 +2,7 @@ package com.fox2code.foxloader.server.mixins;
 
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.server.network.NetServerHandlerAccessor;
 import net.minecraft.src.game.entity.player.EntityPlayerMP;
@@ -18,8 +19,14 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(NetServerHandler.class)
-public abstract class MixinNetServerHandler implements NetServerHandlerAccessor {
+public abstract class MixinNetServerHandler implements NetServerHandlerAccessor, NetworkConnection {
     @Shadow private EntityPlayerMP playerEntity;
+    @Shadow public boolean connectionClosed;
+
+    @Shadow public abstract void sendPacket(Packet var1);
+
+    @Shadow public abstract void kickPlayer(String var1);
+
     @Unique private boolean hasFoxLoader;
     @Unique private boolean hasClientHello;
     @Unique private String kickMessage;
@@ -49,18 +56,39 @@ public abstract class MixinNetServerHandler implements NetServerHandlerAccessor 
         this.hasClientHello = true;
     }
 
+    @Override
+    public boolean isConnected() {
+        return !this.connectionClosed;
+    }
+
+    @Override
+    public void sendNetworkData(ModContainer modContainer, byte[] data) {
+        this.sendPacket(new Packet250PluginMessage(modContainer.id, data));
+    }
+
+    @Override
+    public NetworkPlayer getNetworkPlayer() {
+        return (NetworkPlayer) this.playerEntity;
+    }
+
+    @Override
+    public void kick(String message) {
+        if (!this.connectionClosed) {
+            this.kickPlayer(message);
+        }
+    }
+
     @Inject(method = "handlePluginMessage", at = @At("HEAD"))
     public void onHandlePluginMessage(Packet250PluginMessage packet250, CallbackInfo ci) {
-        NetworkPlayer networkPlayer = (NetworkPlayer) this.playerEntity;
         // Stop client that are not modded from sending modded packets
         // Also do not allow modded packet when client didn't finish connecting yet.
-        if (networkPlayer == null || !(this.hasClientHello || // Make exception for FoxLoader packets
+        if (this.playerEntity == null || !(this.hasClientHello || // Make exception for FoxLoader packets
                 (this.hasFoxLoader && ModLoader.FOX_LOADER_MOD_ID.equals(packet250.channel)))) {
             return;
         }
         ModContainer modContainer = ModLoader.getModContainer(packet250.channel);
         if (modContainer != null && packet250.data != null) {
-            modContainer.notifyReceiveClientPacket(networkPlayer, packet250.data);
+            modContainer.notifyReceiveClientPacket(this, packet250.data);
         }
     }
 

@@ -2,6 +2,7 @@ package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.loader.ClientMod;
 import com.fox2code.foxloader.loader.ModContainer;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
 import net.minecraft.client.Minecraft;
@@ -20,6 +21,11 @@ public abstract class MixinEntityPlayerSP extends EntityPlayer implements Networ
 
     public MixinEntityPlayerSP(World var1) {
         super(var1);
+    }
+
+    @Override
+    public NetworkConnection getNetworkConnection() {
+        return null;
     }
 
     @Override

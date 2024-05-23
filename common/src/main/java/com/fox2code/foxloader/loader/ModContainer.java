@@ -7,6 +7,7 @@ import com.fox2code.foxloader.launcher.utils.FastThreadLocal;
 import com.fox2code.foxloader.loader.lua.LuaVMHelper;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.transformer.PreClassTransformer;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.RegisteredEntity;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
@@ -274,22 +275,22 @@ public final class ModContainer {
         return mod;
     }
 
-    public void notifyReceiveClientPacket(NetworkPlayer networkPlayer, byte[] data) {
+    public void notifyReceiveClientPacket(NetworkConnection networkConnection, byte[] data) {
         if (commonMod != null)
-            commonMod.onReceiveClientPacket(networkPlayer, data);
+            commonMod.onReceiveClientPacket(networkConnection, data);
         if (clientMod != null)
-            clientMod.onReceiveClientPacket(networkPlayer, data);
+            clientMod.onReceiveClientPacket(networkConnection, data);
         if (serverMod != null)
-            serverMod.onReceiveClientPacket(networkPlayer, data);
+            serverMod.onReceiveClientPacket(networkConnection, data);
     }
 
-    public void notifyReceiveServerPacket(NetworkPlayer networkPlayer, byte[] data) {
+    public void notifyReceiveServerPacket(NetworkConnection networkConnection, byte[] data) {
         if (commonMod != null)
-            commonMod.onReceiveServerPacket(networkPlayer, data);
+            commonMod.onReceiveServerPacket(networkConnection, data);
         if (clientMod != null)
-            clientMod.onReceiveServerPacket(networkPlayer, data);
+            clientMod.onReceiveServerPacket(networkConnection, data);
         if (serverMod != null)
-            serverMod.onReceiveServerPacket(networkPlayer, data);
+            serverMod.onReceiveServerPacket(networkConnection, data);
     }
 
     void notifyNetworkPlayerJoined(NetworkPlayer networkPlayer) {

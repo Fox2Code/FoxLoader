@@ -1,6 +1,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.loader.packet.ClientHello;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.CommandCompat;
 import com.fox2code.foxloader.registry.GameRegistryServer;
@@ -81,13 +82,18 @@ public final class ServerModLoader extends ModLoader {
     }
 
     @Override
-    public void onReceiveClientPacket(NetworkPlayer networkPlayer, byte[] data) {
+    public void onReceiveClientPacket(NetworkConnection networkConnection, byte[] data) {
         if (data.length == 0) return;
-        LoaderNetworkManager.executeClientPacketData(networkPlayer, data);
+        LoaderNetworkManager.executeClientPacketData(networkConnection, data);
     }
 
     @Override
-    void loaderHandleClientHello(NetworkPlayer networkPlayer, ClientHello clientHello) {
+    void loaderHandleClientHello(NetworkConnection networkConnection, ClientHello clientHello) {
+        NetworkPlayer networkPlayer = networkConnection.getNetworkPlayer();
+        if (networkPlayer == null) {
+            networkConnection.kick("Preemptive networking edge case");
+            return;
+        }
         ((NetworkPlayerImpl) networkPlayer).notifyClientHello();
         for (ModContainer modContainer : ModLoader.modContainers.values()) {
             modContainer.notifyNetworkPlayerHello(networkPlayer, clientHello);

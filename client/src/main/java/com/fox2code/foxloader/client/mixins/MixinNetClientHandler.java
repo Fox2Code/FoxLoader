@@ -1,9 +1,9 @@
 package com.fox2code.foxloader.client.mixins;
 
-import com.fox2code.foxloader.client.network.NetClientHandlerExtensions;
 import com.fox2code.foxloader.loader.ClientModLoader;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.registry.GameRegistryClient;
 import net.minecraft.client.Minecraft;
@@ -18,11 +18,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(NetClientHandler.class)
-public class MixinNetClientHandler implements NetClientHandlerExtensions {
+public abstract class MixinNetClientHandler implements NetworkConnection {
     @Shadow private boolean disconnected;
     @Shadow private NetworkManager netManager;
     @Unique boolean isFoxLoader = false;
     @Unique boolean preemptive = true;
+
+    @Shadow public abstract void addToSendQueue(Packet packet);
 
     @Unique
     private void preemptivelySendClientHello() {
@@ -85,27 +87,40 @@ public class MixinNetClientHandler implements NetClientHandlerExtensions {
 
     @Inject(method = "handlePluginMessage", at = @At("HEAD"))
     public void onHandlePluginMessage(Packet250PluginMessage packet250, CallbackInfo ci) {
-        NetworkPlayer networkPlayer = (NetworkPlayer)
-                Minecraft.getInstance().thePlayer;
         if (ModLoader.FOX_LOADER_MOD_ID.equals(packet250.channel) && !this.isFoxLoader) {
             ModLoader.getModLoaderLogger().info("Got FoxLoader packet");
             this.isFoxLoader = true;
             this.preemptivelySendClientHello();
         }
         ModContainer modContainer = ModLoader.getModContainer(packet250.channel);
-        if (networkPlayer != null && modContainer != null && packet250.data != null) {
+        if (modContainer != null && packet250.data != null) {
             ModLoader.getModLoaderLogger().info("Processing FoxLoader packet");
-            modContainer.notifyReceiveServerPacket(networkPlayer, packet250.data);
+            modContainer.notifyReceiveServerPacket(this, packet250.data);
         }
     }
 
     @Override
-    public boolean isFoxLoader() {
+    public boolean hasFoxLoader() {
         return this.isFoxLoader;
     }
 
     @Override
-    public boolean isDisconnected() {
-        return this.disconnected;
+    public boolean isConnected() {
+        return !this.disconnected;
+    }
+
+    @Override
+    public void sendNetworkData(ModContainer modContainer, byte[] data) {
+        this.addToSendQueue(new Packet250PluginMessage(modContainer.id, data));
+    }
+
+    @Override
+    public NetworkPlayer getNetworkPlayer() {
+        return (NetworkPlayer) Minecraft.getInstance().thePlayer;
+    }
+
+    @Override
+    public void kick(String message) {
+        throw new IllegalStateException("kick cannot be used client-side");
     }
 }

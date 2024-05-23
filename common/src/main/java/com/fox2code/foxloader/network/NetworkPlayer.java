@@ -12,6 +12,11 @@ public interface NetworkPlayer extends RegisteredEntityLiving, RegisteredCommand
     byte[] NULL_DATA = new byte[0];
 
     /**
+     * Get player network connection if available
+     */
+    default NetworkConnection getNetworkConnection() { throw new RuntimeException(); }
+
+    /**
      * Get the connection type of the object.
      */
     default ConnectionType getConnectionType() { throw new RuntimeException(); }

@@ -1,11 +1,8 @@
 package com.fox2code.foxloader.client.mixins;
 
-import com.fox2code.foxloader.client.network.NetClientHandlerExtensions;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.loader.ClientModLoader;
-import com.fox2code.foxloader.network.SidedMetadataAPI;
 import net.minecraft.client.Minecraft;
-import net.minecraft.fox2code.ChatColors;
 import net.minecraft.src.client.gui.FontRenderer;
 import net.minecraft.src.client.gui.GuiDebug;
 import org.lwjgl.input.Keyboard;
@@ -13,8 +10,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-import java.util.Map;
 
 @Mixin(GuiDebug.class)
 public class MixinGuiDebug {

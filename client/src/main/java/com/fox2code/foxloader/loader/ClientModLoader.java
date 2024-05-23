@@ -1,6 +1,5 @@
 package com.fox2code.foxloader.loader;
 
-import com.fox2code.foxloader.client.network.NetClientHandlerExtensions;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
@@ -10,10 +9,10 @@ import com.fox2code.foxloader.launcher.utils.Platform;
 import com.fox2code.foxloader.launcher.utils.SourceUtil;
 import com.fox2code.foxloader.loader.packet.ClientHello;
 import com.fox2code.foxloader.loader.packet.ServerHello;
+import com.fox2code.foxloader.network.NetworkConnection;
 import com.fox2code.foxloader.network.NetworkPlayer;
 import com.fox2code.foxloader.network.SidedMetadataAPI;
 import com.fox2code.foxloader.registry.GameRegistryClient;
-import com.fox2code.foxloader.registry.RegisteredItem;
 import com.fox2code.foxloader.updater.UpdateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.fox2code.ChatColors;
@@ -21,7 +20,6 @@ import net.minecraft.mitask.PlayerCommandHandler;
 import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.client.packets.NetworkManager;
 import net.minecraft.src.client.packets.Packet250PluginMessage;
-import net.minecraft.src.game.item.Item;
 import net.minecraft.src.game.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
@@ -87,18 +85,18 @@ public final class ClientModLoader extends ModLoader {
     }
 
     @Override
-    public void onReceiveServerPacket(NetworkPlayer networkPlayer, byte[] data) {
+    public void onReceiveServerPacket(NetworkConnection networkPlayer, byte[] data) {
         ModLoader.foxLoader.logger.info("Received server packet");
         LoaderNetworkManager.executeServerPacketData(networkPlayer, data);
     }
 
     @Override
-    void loaderHandleServerHello(NetworkPlayer networkPlayer, ServerHello serverHello) {
+    void loaderHandleServerHello(NetworkConnection networkConnection, ServerHello serverHello) {
         ModLoader.foxLoader.logger.info("Initializing id translator");
         GameRegistryClient.initializeMappings(serverHello);
         ModLoader.foxLoader.logger.info("Ids translated!");
         if (!didPreemptiveNetworking) {
-            networkPlayer.sendNetworkData(ModLoader.foxLoader, clientHello);
+            networkConnection.sendNetworkData(ModLoader.foxLoader, clientHello);
         } else {
             didPreemptiveNetworking = false;
         }
@@ -280,7 +278,7 @@ public final class ClientModLoader extends ModLoader {
                 if (serverName == null) {
                     if (metadata.containsKey(SidedMetadataAPI.KEY_FOXLOADER_VERSION)) {
                         serverName = "FoxLoader " + metadata.get(SidedMetadataAPI.KEY_FOXLOADER_VERSION);
-                    } else if (((NetClientHandlerExtensions) Minecraft.getInstance().getSendQueue()).isFoxLoader()) {
+                    } else if (((NetworkConnection) Minecraft.getInstance().getSendQueue()).hasFoxLoader()) {
                         serverName = ChatColors.DARK_RED + "Obsolete FoxLoader" + ChatColors.GRAY;
                     } else {
                         serverName = "ReIndev " + BuildConfig.REINDEV_VERSION;
