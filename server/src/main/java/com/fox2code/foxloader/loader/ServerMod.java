@@ -21,7 +21,6 @@ public interface ServerMod extends Mod.SidedMod {
         return (EntityPlayerMP) networkPlayer;
     }
 
-    @SuppressWarnings("unchecked")
     static List<EntityPlayerMP> getOnlinePlayers() {
         return getGameInstance().configManager.playerEntities;
     }

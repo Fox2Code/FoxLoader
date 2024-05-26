@@ -13,6 +13,7 @@
     "MixinEntityLiving",
     "MixinEntityPlayer",
     "MixinEntityPlayerMP",
+    "MixinEntityWyvern",
     "MixinItem",
     "MixinItemStack",
     "MixinMinecraftServer",

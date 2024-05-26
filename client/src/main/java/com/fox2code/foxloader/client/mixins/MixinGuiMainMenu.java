@@ -10,13 +10,19 @@ import com.fox2code.foxloader.network.SidedMetadataAPI;
 import net.minecraft.src.client.Session;
 import net.minecraft.src.client.gui.*;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
+
 @Mixin(GuiMainMenu.class)
 public abstract class MixinGuiMainMenu extends GuiScreen {
+    @Unique private String rainbowUserName;
+    @Unique private String username;
+
     @Inject(method = "initGui", at = @At(value = "RETURN"))
     public void onInitGui(CallbackInfo ci) {
         this.controlList.add(new GuiUpdateButton(500, this.width - 62, 2, 60, 20, "Mods"));
@@ -38,7 +44,11 @@ public abstract class MixinGuiMainMenu extends GuiScreen {
     public String onGetUsername(Session instance) {
         final String username = instance.username;
         if (ModLoader.Contributors.hasContributorName(username)) {
-            return ChatColors.RAINBOW + username;
+            if (!Objects.equals(this.username, username)) {
+                this.rainbowUserName = ChatColors.RAINBOW + username;
+                this.username = username;
+            }
+            return this.rainbowUserName;
         }
         return username;
     }
