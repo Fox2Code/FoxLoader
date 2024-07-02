@@ -33,12 +33,12 @@ final class WatchdogThread extends Thread {
                     WatchdogTimer watchdogTimer = watchdogTimerRef.get();
                     if (watchdogTimer != null && watchdogTimer.isEnabled()) {
                         long computingFor = watchdogTimer.getComputingFor();
-                        if (computingFor / T1_SECONDS == 10L) {
+                        if (computingFor / T1_SECONDS == 20L) {
                             needDump = true;
                             if (watchdogTimer.isEssential()) {
                                 exit = true;
                             }
-                        } else if (computingFor / T1_SECONDS == 5L) {
+                        } else if (computingFor / T1_SECONDS == 10L) {
                             needDump = true;
                         }
                     }

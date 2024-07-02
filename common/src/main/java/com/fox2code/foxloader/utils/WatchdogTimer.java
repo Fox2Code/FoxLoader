@@ -27,7 +27,7 @@ public final class WatchdogTimer {
     }
 
     public void megaHeartbeat() {
-        this.megaLastCheck = System.currentTimeMillis() + 10000L;
+        this.megaLastCheck = System.currentTimeMillis() + 20000L;
     }
 
     public boolean isEnabled() {
