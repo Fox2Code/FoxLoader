@@ -43,6 +43,7 @@
     "MixinPlayerControllerTest",
     "MixinRenderEngine",
     "MixinRenderItem",
+    "MixinRenderManager",
     "MixinStringTranslate",
     "MixinTextureMap",
     "MixinTexturePackCustom",
