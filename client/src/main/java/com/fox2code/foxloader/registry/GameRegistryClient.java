@@ -11,8 +11,8 @@ import net.minecraft.src.client.gui.StringTranslate;
 import net.minecraft.src.game.block.*;
 import net.minecraft.src.game.item.*;
 import net.minecraft.src.game.recipe.*;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -160,10 +160,7 @@ public class GameRegistryClient extends GameRegistry {
         int blockId = generateNewBlockId(name, fallbackId);
         Block block;
         Material material = MATERIAL.translate(blockBuilder.builtInMaterial);
-        String blockName = blockBuilder.blockName == null ? name : blockBuilder.blockName;
         Block blockSource = (Block) blockBuilder.blockSource;
-        String blockType = blockBuilder.blockType == null ?
-                (blockSource != null ? blockSource.getBlockName() : blockName) : blockBuilder.blockType;
         boolean selfNotify = false;
         switch (blockBuilder.getBuiltInBlockTypeForConstructor()) {
             default:
@@ -300,35 +297,37 @@ public class GameRegistryClient extends GameRegistry {
         return (RegisteredItem) item;
     }
 
-    private static boolean recipeFrozen = false;
-
     @Override
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {
-        if (recipeFrozen) throw new IllegalArgumentException("Too late to register recipes!");
+        if (recipeFrozen) throw new UnsupportedOperationException(LATE_RECIPE_MESSAGE);
         CraftingManager.getInstance().addRecipe(toItemStack(result), recipe);
     }
 
     @Override
     public void registerShapelessRecipe(RegisteredItemStack result, Ingredient... ingredients) {
-        if (recipeFrozen) throw new IllegalArgumentException("Too late to register recipes!");
+        if (recipeFrozen) throw new UnsupportedOperationException(LATE_RECIPE_MESSAGE);
         CraftingManager.getInstance().addShapelessRecipe(toItemStack(result), (Object[]) ingredients);
     }
 
     @Override
-    public void addFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+    public void registerFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+        if (recipeFrozen) throw new UnsupportedOperationException(LATE_RECIPE_MESSAGE);
         FurnaceRecipes.instance.addSmelting(input.getRegisteredItemId(), toItemStack(output));
     }
 
     @Override
-    public void addBlastFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+    public void registerBlastFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+        if (recipeFrozen) throw new UnsupportedOperationException(LATE_RECIPE_MESSAGE);
         BlastFurnaceRecipes.instance.addSmelting(input.getRegisteredItemId(), toItemStack(output));
     }
 
     @Override
-    public void addFreezerRecipe(RegisteredItem input, RegisteredItemStack output) {
+    public void registerFreezerRecipe(RegisteredItem input, RegisteredItemStack output) {
+        if (recipeFrozen) throw new UnsupportedOperationException(LATE_RECIPE_MESSAGE);
         RefridgifreezerRecipes.instance.addSmelting(input.getRegisteredItemId(), toItemStack(output));
     }
 
+    @ApiStatus.Internal
     public static void freezeRecipes() {
         if (recipeFrozen) return;
         recipeFrozen = true;

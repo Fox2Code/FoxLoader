@@ -140,15 +140,42 @@ public abstract class GameRegistry {
 
     public abstract RegisteredItem registerNewItem(String name, ItemBuilder itemBuilder, int fallbackId);
 
+    protected static final String LATE_RECIPE_MESSAGE = "Too late to register recipes!";
+    protected static boolean recipeFrozen = false;
+
     public abstract void registerRecipe(RegisteredItemStack result, Object... recipe);
 
     public abstract void registerShapelessRecipe(RegisteredItemStack result, Ingredient... ingredients);
 
-    public abstract void addFurnaceRecipe(RegisteredItem input, RegisteredItemStack output);
+    public abstract void registerFurnaceRecipe(RegisteredItem input, RegisteredItemStack output);
 
-    public abstract void addBlastFurnaceRecipe(RegisteredItem input, RegisteredItemStack output);
+    public abstract void registerBlastFurnaceRecipe(RegisteredItem input, RegisteredItemStack output);
 
-    public abstract void addFreezerRecipe(RegisteredItem input, RegisteredItemStack output);
+    public abstract void registerFreezerRecipe(RegisteredItem input, RegisteredItemStack output);
+
+    /**
+     * @deprecated replace with {@link #registerFurnaceRecipe(RegisteredItem, RegisteredItemStack)}
+     */
+    @Deprecated
+    public void addFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+        this.registerFurnaceRecipe(input, output);
+    }
+
+    /**
+     * @deprecated replace with {@link #registerBlastFurnaceRecipe(RegisteredItem, RegisteredItemStack)}
+     */
+    @Deprecated
+    public void addBlastFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+        this.registerBlastFurnaceRecipe(input, output);
+    }
+
+    /**
+     * @deprecated replace with {@link #registerFreezerRecipe(RegisteredItem, RegisteredItemStack)}
+     */
+    @Deprecated
+    public void addFreezerRecipe(RegisteredItem input, RegisteredItemStack output) {
+        this.registerFreezerRecipe(input, output);
+    }
 
     @LuaInterop
     public boolean isFrozen() {

@@ -269,6 +269,27 @@ public abstract class Mod implements LifecycleListener {
         GameRegistry.getInstance().registerShapelessRecipe(result, ingredients);
     }
 
+    /**
+     * @see GameRegistry#registerFurnaceRecipe(RegisteredItem, RegisteredItemStack)
+     */
+    public void registerFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+        GameRegistry.getInstance().registerFurnaceRecipe(input, output);
+    }
+
+    /**
+     * @see GameRegistry#registerBlastFurnaceRecipe(RegisteredItem, RegisteredItemStack)
+     */
+    public void registerBlastFurnaceRecipe(RegisteredItem input, RegisteredItemStack output) {
+        GameRegistry.getInstance().registerBlastFurnaceRecipe(input, output);
+    }
+
+    /**
+     * @see GameRegistry#registerFreezerRecipe(RegisteredItem, RegisteredItemStack)
+     */
+    public void registerFreezerRecipe(RegisteredItem input, RegisteredItemStack output) {
+        GameRegistry.getInstance().registerFreezerRecipe(input, output);
+    }
+
     // For internal use only
     void loaderHandleServerHello(NetworkConnection networkConnection, ServerHello serverHello) {}
     void loaderHandleClientHello(NetworkConnection networkPlayer, ClientHello clientHello) {}
