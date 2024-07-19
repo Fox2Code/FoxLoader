@@ -625,6 +625,7 @@ public class ModLoader extends Mod {
             addContributor("76982056-c381-46f6-ab25-2415e1e4d554", "kivattt");
             addContributor("898febf0-4bd0-4a77-892c-2b1cbf534830", "_Dereku");
             addContributor("66580d8e-19ad-4564-a8f1-448d021be321", "Chocohead");
+            addContributor("4a23f5f2-03ce-41e3-bad4-cfa827d13458", "Halotroop2288");
         }
 
         private static void addContributor(String uuid, String name) {
