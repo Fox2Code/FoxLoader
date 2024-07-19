@@ -39,7 +39,7 @@ dependencies {
     includeOnly(project(":dev11")) {
         transitive = false
     }
-    // For testes only
+    // For tests only
     testImplementation(gradleTestKit())
     testImplementation(gradleFixtures()) { transitive = false }
     testRuntimeOnly(project(":common"))
@@ -51,7 +51,13 @@ dependencies {
 gradlePlugin {
     compatibility {
         minimumGradleVersion = '8.2'
-        gradleApiVersion = '8.6'
+        gradleApiVersion = '8.9'
+    }
+    plugins {
+        create('simplePlugin') {
+            id = 'com.fox2code.foxloader.dev'
+            implementationClass = 'com.fox2code.foxloader.dev.GradlePlugin'
+        }
     }
 }
 
