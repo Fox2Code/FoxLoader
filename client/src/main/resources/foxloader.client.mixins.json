@@ -5,8 +5,11 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "AccessorEntityList",
+    "AcessorSaveHandlers",
+    "MixinChunkLoader",
     "MixinBlock",
     "MixinBlockFire",
+    "MixinBlockPortal",
     "MixinChunk",
     "MixinChunkBlockMap",
     "MixinCommandHelperGUI",
@@ -45,10 +48,13 @@
     "MixinRenderEngine",
     "MixinRenderItem",
     "MixinRenderManager",
+    "MixinSaveOldDir",
+    "MixinSaveHandler",
     "MixinStringTranslate",
     "MixinTextureMap",
     "MixinTexturePackCustom",
     "MixinTileEntity",
-    "MixinWorld"
+    "MixinWorld",
+    "MixinWorldProvider"
   ]
 }

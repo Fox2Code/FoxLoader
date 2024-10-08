@@ -6,11 +6,20 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Chunk.class)
 public class MixinChunk {
     @Shadow public short[] blocks;
+    @Shadow public boolean isChunkLoaded;
+    @Inject(method = "tryOptimizeChunk",at = @At("HEAD"),cancellable = true)
+    public void tryOptimizeChunk(CallbackInfo ci) {
+        if (this.isChunkLoaded && this.blocks!=null&&blocks.length!=4096) {
+            this.blocks=null;
+            ci.cancel();
+        }
+    }
 
     @Inject(method = "setChunkData", at = @At("RETURN"))
     public void onSetChunkData(byte[] data, int mix, int miy, int miz, int max, int may, int maz, boolean init, int progress, CallbackInfoReturnable<Integer> cir) {

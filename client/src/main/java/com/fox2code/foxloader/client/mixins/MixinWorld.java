@@ -8,7 +8,9 @@ import net.minecraft.src.game.entity.Entity;
 import net.minecraft.src.game.entity.other.EntityItem;
 import net.minecraft.src.game.entity.player.EntityPlayer;
 import net.minecraft.src.game.level.World;
+import net.minecraft.src.game.level.WorldInfo;
 import net.minecraft.src.game.level.WorldProvider;
+import net.minecraft.src.game.level.chunk.ISaveHandler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,8 +28,11 @@ public abstract class MixinWorld implements RegisteredWorld {
     @Shadow public abstract int getBlockMetadata(int xCoord, int yCoord, int zCoord);
     @Shadow public abstract boolean setBlockAndMetadataWithNotify(int xCoord, int yCoord, int zCoord, int block, int metadata);
     @Shadow public abstract boolean entityJoinedWorld(Entity entity);
-
+    @Shadow public WorldInfo worldInfo;
+    @Shadow @Final
+    protected ISaveHandler saveHandler;
     @Shadow @Final public WorldProvider worldProvider;
+
 
     @Override
     public boolean hasRegisteredControl() {

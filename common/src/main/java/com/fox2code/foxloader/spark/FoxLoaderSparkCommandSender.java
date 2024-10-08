@@ -8,7 +8,7 @@ import me.lucko.spark.lib.adventure.text.serializer.legacy.LegacyComponentSerial
 import java.util.UUID;
 
 public class FoxLoaderSparkCommandSender extends AbstractCommandSender<NetworkPlayer> {
-    private static final LegacyComponentSerializer LEGACY_COMPONENT_SERIALIZER = LegacyComponentSerializer.legacy('§');
+    private static final LegacyComponentSerializer LEGACY_COMPONENT_SERIALIZER = LegacyComponentSerializer.legacy(LegacyComponentSerializer.SECTION_CHAR);
     private final boolean absolute;
 
     public FoxLoaderSparkCommandSender(NetworkPlayer delegate) {
