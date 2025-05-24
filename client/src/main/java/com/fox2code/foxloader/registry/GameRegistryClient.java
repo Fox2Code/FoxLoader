@@ -4,6 +4,7 @@ import static com.fox2code.foxloader.loader.ClientMod.*;
 
 import com.fox2code.foxloader.client.CreativeItems;
 import com.fox2code.foxloader.client.mixins.AccessorEntityList;
+import com.fox2code.foxloader.client.mixins.AccessorTileEntity;
 import com.fox2code.foxloader.client.registry.RegisteredBlockImpl;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
@@ -199,8 +200,6 @@ public class GameRegistryClient extends GameRegistry {
         Block blockSource = (Block) blockBuilder.blockSource;
         boolean selfNotify = false;
         switch (blockBuilder.getBuiltInBlockTypeForConstructor()) {
-            default:
-                throw new IllegalArgumentException("Invalid block type " + blockBuilder.builtInBlockType);
             case CUSTOM:
                 try {
                     block = (Block) blockBuilder.gameBlockProvider.provide(blockId, blockBuilder, ext);
@@ -241,6 +240,8 @@ public class GameRegistryClient extends GameRegistry {
                 block = new BlockStairs(blockId, Objects.requireNonNull(blockSource, "blockSource")) {};
                 selfNotify = true;
                 break;
+            default:
+                throw new IllegalArgumentException("Invalid block type " + blockBuilder.builtInBlockType);
         }
         if (selfNotify) {
             Block.selfNotify.set(blockId, true);
@@ -335,8 +336,15 @@ public class GameRegistryClient extends GameRegistry {
 
 	@Override
 	public void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId) {
+        name = validateAndFixRegistryName(name);
 		AccessorEntityList.invokeAddMapping(entityClass, name, generateNewEntityTypeId(name, fallbackId));
 	}
+
+    @Override
+    public void registerNewTileEntityType(String name, Class<? extends RegisteredTileEntity> tileEntityClass) {
+        name = validateAndFixRegistryName(name);
+        AccessorTileEntity.invokeAddMapping(tileEntityClass, name);
+    }
 
     @Override
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {

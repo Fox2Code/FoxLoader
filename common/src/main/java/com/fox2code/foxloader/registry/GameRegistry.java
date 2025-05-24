@@ -18,7 +18,7 @@ public abstract class GameRegistry {
     public static final int INITIAL_ITEM_ID = 4096;
     public static final int MAXIMUM_ITEM_ID = 8192; // Hard max: 31999
     public static final int INITIAL_ENTITY_TYPE_ID = 210;
-    // Array size limit is fuzzy so lets avoid it.
+    // Array size limit is fuzzy so let's avoid it.
     public static final int MAXIMUM_ENTITY_TYPE_ID = 255; // Integer.MAX_VALUE - Short.MAX_VALUE;
     // Block ids but translated to item ids
     public static final int INITIAL_TRANSLATED_BLOCK_ID = convertBlockIdToItemId(INITIAL_BLOCK_ID);
@@ -165,7 +165,15 @@ public abstract class GameRegistry {
 		this.registerNewEntityType(name, entityClass, DEFAULT_FALLBACK_ENTITY_TYPE_ID);
 	}
 
+    /**
+     * Register a new entity type into the game
+     */
 	public abstract void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId);
+
+    /**
+     * Register a new tile entity type into the game
+     */
+    public abstract void registerNewTileEntityType(String name, Class<? extends RegisteredTileEntity> tileEntityClass);
 
     protected static final String LATE_RECIPE_MESSAGE = "Too late to register recipes!";
     protected static boolean recipeFrozen = false;
