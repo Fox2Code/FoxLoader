@@ -31,6 +31,7 @@
     "MixinGuiMainMenu",
     "MixinGuiScreen",
     "MixinGuiTextField",
+    "MixinIBlockAccess",
     "MixinItem",
     "MixinItemRenderer",
     "MixinItemStack",

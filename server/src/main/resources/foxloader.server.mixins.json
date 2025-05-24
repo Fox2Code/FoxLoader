@@ -15,6 +15,7 @@
     "MixinEntityLiving",
     "MixinEntityPlayer",
     "MixinEntityPlayerMP",
+    "MixinIBlockAccess",
     "MixinItem",
     "MixinItemStack",
     "MixinMinecraftServer",
