@@ -5,6 +5,7 @@ import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.packet.ServerHello;
 import com.fox2code.foxloader.network.SidedMetadataAPI;
 import com.fox2code.foxloader.server.mixins.AccessorEntityList;
+import com.fox2code.foxloader.server.mixins.AccessorTileEntity;
 import com.fox2code.foxloader.server.network.NetworkPlayerImpl;
 import com.fox2code.foxloader.server.registry.RegisteredBlockImpl;
 import net.minecraft.src.game.block.*;
@@ -167,8 +168,6 @@ public class GameRegistryServer extends GameRegistry {
         Block blockSource = (Block) blockBuilder.blockSource;
         boolean selfNotify = false;
         switch (blockBuilder.getBuiltInBlockTypeForConstructor()) {
-            default:
-                throw new IllegalArgumentException("Invalid block type " + blockBuilder.builtInBlockType);
             case CUSTOM:
                 try {
                     block = (Block) blockBuilder.gameBlockProvider.provide(blockId, blockBuilder, ext);
@@ -210,6 +209,8 @@ public class GameRegistryServer extends GameRegistry {
                 block = new BlockStairs(blockId, Objects.requireNonNull(blockSource, "blockSource")) {};
                 selfNotify = true;
                 break;
+            default:
+                throw new IllegalArgumentException("Invalid block type " + blockBuilder.builtInBlockType);
         }
         if (selfNotify) {
             Block.requiresSelfNotify[blockId] = true;
@@ -295,8 +296,15 @@ public class GameRegistryServer extends GameRegistry {
 
 	@Override
 	public void registerNewEntityType(String name, Class<? extends RegisteredEntity> entityClass, int fallbackId) {
+        name = validateAndFixRegistryName(name);
 		AccessorEntityList.invokeAddMapping(entityClass, name, generateNewEntityTypeId(name, fallbackId));
 	}
+
+    @Override
+    public void registerNewTileEntityType(String name, Class<? extends RegisteredTileEntity> tileEntityClass) {
+        name = validateAndFixRegistryName(name);
+        AccessorTileEntity.invokeAddMapping(tileEntityClass, name);
+    }
 
     @Override
     public void registerRecipe(RegisteredItemStack result, Object... recipe) {
