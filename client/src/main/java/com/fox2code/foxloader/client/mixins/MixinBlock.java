@@ -1,7 +1,6 @@
 package com.fox2code.foxloader.client.mixins;
 
 import com.fox2code.foxloader.client.registry.RegisteredBlockImpl;
-import com.fox2code.foxloader.client.utils.ClientBlockWithFaces;
 import com.fox2code.foxloader.registry.RegisteredBlock;
 import com.fox2code.foxloader.registry.RegisteredItem;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
@@ -17,7 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Block.class)
-public abstract class MixinBlock implements RegisteredBlock, RegisteredBlockImpl, ClientBlockWithFaces {
+public abstract class MixinBlock implements RegisteredBlock<IBlockAccess, World>, RegisteredBlockImpl {
 	@Shadow
 	public abstract int getBlockID();
 	@Shadow @Final
@@ -142,7 +141,7 @@ public abstract class MixinBlock implements RegisteredBlock, RegisteredBlockImpl
 	@Deprecated
 	@Override
 	public final void setTexture(Icon icon, BlockFace blockFace, int metadata) {
-		ClientBlockWithFaces.super.setTexture(icon, blockFace, metadata);
+		RegisteredBlockImpl.super.setTexture(icon, blockFace, metadata);
 	}
 
 	/**

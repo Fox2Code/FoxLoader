@@ -4,7 +4,6 @@ import com.fox2code.foxloader.registry.RegisteredBlock;
 import com.fox2code.foxloader.registry.RegisteredItem;
 import com.fox2code.foxloader.registry.RegisteredItemStack;
 import com.fox2code.foxloader.server.registry.RegisteredBlockImpl;
-import com.fox2code.foxloader.server.utils.ServerBlockWithFaces;
 import com.fox2code.foxloader.utils.BlockFace;
 import net.minecraft.src.game.block.Block;
 import net.minecraft.src.game.item.Item;
@@ -16,7 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(Block.class)
-public abstract class MixinBlock implements RegisteredBlock, RegisteredBlockImpl, ServerBlockWithFaces {
+public abstract class MixinBlock implements RegisteredBlock<IBlockAccess, World>, RegisteredBlockImpl {
     @Shadow
     public abstract int getBlockID();
     @Shadow @Final
