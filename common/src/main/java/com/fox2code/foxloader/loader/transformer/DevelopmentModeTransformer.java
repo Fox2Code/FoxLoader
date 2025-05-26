@@ -15,6 +15,8 @@ public class DevelopmentModeTransformer implements PreClassTransformer {
     static {
         interfacesFromMixin.put("net.minecraft.src.game.block.Block",
                 "com.fox2code.foxloader.registry.RegisteredBlock");
+        interfacesFromMixin.put("net.minecraft.src.game.level.IBlockAccess",
+                "com.fox2code.foxloader.registry.RegisteredBlockAccess");
         interfacesFromMixin.put("net.minecraft.src.game.item.Item",
                 "com.fox2code.foxloader.registry.RegisteredItem");
         interfacesFromMixin.put("net.minecraft.src.game.item.ItemStack",
