@@ -1,7 +1,6 @@
 package com.fox2code.foxloader.patching.dev;
 
 import com.fox2code.foxloader.patching.TransformerUtils;
-import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.GL11;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -9,10 +8,7 @@ import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.Textifier;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.*;
 
 public final class DevelopmentSourceTransformer implements Opcodes {
     private static final HashMap<String, ConstantUnpick> staticConstantUnpicks = new HashMap<>();
@@ -225,9 +221,15 @@ public final class DevelopmentSourceTransformer implements Opcodes {
 
     private DevelopmentSourceTransformer() {}
 
-    public static ClassNode patchForDev(ClassNode classNode) {
+    static void patchForDev(DevelopmentSourceConstantData developmentSourceConstantData, ClassNode classNode) {
+        final IdentityHashMap<AbstractInsnNode, InsnList> constantPatching = new IdentityHashMap<>();
+        final ArrayList<AbstractInsnNode> nodesCache = new ArrayList<>();
         for (MethodNode methodNode : classNode.methods) {
             final InsnList insnList = methodNode.instructions;
+            final int state = developmentSourceConstantData.methodStatus(classNode, methodNode);
+            if (!constantPatching.isEmpty()) {
+                constantPatching.clear();
+            }
             for (AbstractInsnNode abstractInsnNode : insnList) {
                 final int opcode = abstractInsnNode.getOpcode();
                 if (opcode == Opcodes.INVOKESTATIC) {
@@ -277,10 +279,21 @@ public final class DevelopmentSourceTransformer implements Opcodes {
                     if (constantUnpick != null) {
                         constantUnpick.unpick(insnList, fieldInsnNode.getPrevious());
                     }
+                } else if (opcode == Opcodes.LDC) {
+                    LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
+                    if (ldcInsnNode.cst instanceof String) {
+                        developmentSourceConstantData.patchStringConstant(
+                                constantPatching, state, ldcInsnNode, nodesCache);
+                    }
                 }
             }
+            for (Map.Entry<AbstractInsnNode, InsnList> patching : constantPatching.entrySet()) {
+                AbstractInsnNode oldConstant = patching.getKey();
+                if (oldConstant.getNext() == null) continue;
+                insnList.insert(oldConstant, patching.getValue());
+                insnList.remove(oldConstant);
+            }
         }
-        return classNode;
     }
 
     public static abstract class ConstantUnpick {

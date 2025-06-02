@@ -1,5 +1,6 @@
 package com.fox2code.foxloader.patching;
 
+import com.fox2code.foxloader.utils.EmptyArrays;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,11 +16,12 @@ import java.util.*;
 
 public final class TransformerUtils {
     public static final int ASM_BUILD = Opcodes.ASM9;
-    private static final String[] STRING_ARRAY = new String[0];
+    public static final AbstractInsnNode[] EMPTY_ABSTRACT_INSN_NODE_ARRAY = new AbstractInsnNode[0];
 
     public static MethodNode copyMethodNode(MethodNode methodNode) {
         MethodNode methodNodeCopy = new MethodNode(ASM_BUILD, methodNode.access,
-                methodNode.name, methodNode.desc, methodNode.signature, methodNode.exceptions.toArray(STRING_ARRAY));
+                methodNode.name, methodNode.desc, methodNode.signature,
+                methodNode.exceptions.toArray(EmptyArrays.EMPTY_STRING_ARRAY));
         Map<LabelNode, LabelNode> map = new IdentityHashMap<LabelNode, LabelNode>() {
             @Override
             public LabelNode get(Object key) {
@@ -910,5 +912,48 @@ public final class TransformerUtils {
             }
         }
         classNode.methods.add(classNode.methods.indexOf(values) + 1, values$);
+    }
+
+    public static InsnList compileStringAppendChain(AbstractInsnNode... stringConstants) {
+        return compileStringAppendChain(Arrays.asList(stringConstants));
+    }
+
+    public static InsnList compileStringAppendChain(Collection<AbstractInsnNode> stringConstants) {
+        // This is to trick the decompiler to use + sign when concatenating strings or constants.
+        InsnList insnList = new InsnList();
+        if (stringConstants.isEmpty()) {
+            insnList.add(new LdcInsnNode(""));
+            return insnList;
+        } else if (stringConstants.size() == 1) {
+            insnList.add(stringConstants.iterator().next());
+            return insnList;
+        }
+        insnList.add(new TypeInsnNode(Opcodes.NEW, "java/lang/StringBuilder"));
+        insnList.add(new InsnNode(Opcodes.DUP));
+        insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL,
+                "java/lang/StringBuilder", "<init>", "()V", false));
+        appendStringsInAppendChain(insnList, stringConstants);
+        insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false));
+        return insnList;
+    }
+
+    public static void appendStringsInAppendChain(InsnList insnList, AbstractInsnNode... stringConstants) {
+        appendStringsInAppendChain(insnList, Arrays.asList(stringConstants));
+    }
+
+    public static void appendStringsInAppendChain(InsnList insnList, Iterable<AbstractInsnNode> stringConstants) {
+        for (AbstractInsnNode abstractInsnNode : stringConstants) {
+            insnList.add(abstractInsnNode);
+            insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,
+                    "java/lang/StringBuilder", "append",
+                    "(Ljava/lang/String;)Ljava/lang/StringBuilder;", false));
+        }
+    }
+
+    public static String getFieldStringData(ClassNode classNode, String fieldName) {
+        FieldNode fieldNode = getField(classNode, fieldName, "Ljava/lang/String;");
+        if (fieldNode.value == null) throw new RuntimeException("Field isn't a final constant");
+        return (String) fieldNode.value;
     }
 }

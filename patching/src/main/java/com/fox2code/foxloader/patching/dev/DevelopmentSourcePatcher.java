@@ -14,9 +14,8 @@ import java.util.zip.ZipOutputStream;
 
 public final class DevelopmentSourcePatcher {
     public static void unpickPatchedJar(File patchedJar, File unpickedJar) throws IOException {
-        /* WIP: try (JarFile jarFile = new JarFile(patchedJar)) {
-            JarEntry jarEntry = jarFile.getJarEntry("");
-        } / will be for better decomp later */
+        DevelopmentSourceConstantData developmentSourceConstantData =
+                DevelopmentSourceConstantData.fromPatchedJar(patchedJar);
 
         try(ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(patchedJar.toPath()));
             ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(unpickedJar.toPath()))) {
@@ -32,7 +31,7 @@ public final class DevelopmentSourcePatcher {
                     ClassReader classReader = new ClassReader(byteArrayOutputStream.toByteArray());
                     ClassNode classNode = new ClassNode();
                     classReader.accept(classNode, ClassReader.SKIP_FRAMES);
-                    DevelopmentSourceTransformer.patchForDev(classNode);
+                    DevelopmentSourceTransformer.patchForDev(developmentSourceConstantData, classNode);
                     ClassWriter classWriter = new ClassWriter(0);
                     classNode.accept(classWriter);
                     byte[] compiled = classWriter.toByteArray();
