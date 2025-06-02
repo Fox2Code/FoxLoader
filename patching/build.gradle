@@ -7,6 +7,12 @@ dependencies {
     compileOnly("org.lwjgl.lwjgl:lwjgl:2.9.3")
 }
 
+jar {
+    from(project.rootProject.rootDir) {
+        include("LICENSE")
+    }
+}
+
 File slimFile = new File(project.rootProject.rootDir, "loader" + File.separator +
         "libs" + File.separator + project['reindev.slimJar'])
 File patchedFile = new File(project.rootProject.rootDir, "loader" + File.separator +
