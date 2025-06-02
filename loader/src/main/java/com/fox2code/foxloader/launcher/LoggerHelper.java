@@ -180,6 +180,10 @@ final class LoggerHelper {
             if (sessionToken != null && sessionToken.length() > 4) {
                 message = message.replace(sessionToken, "<session token>");
             }
+            Object[] params = lr.getParameters();
+            if (params != null && params.length != 0) {
+                message = String.format(message, params);
+            }
             String loggerName = lr.getLoggerName();
             if (loggerName != null && !loggerName.isEmpty() && !"global".equals(loggerName)) {
                 message = "[" + loggerName + "] " + message;
