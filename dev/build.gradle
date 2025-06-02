@@ -1,0 +1,101 @@
+import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles
+// Dev build.gradle
+plugins {
+    id 'groovy'
+    id 'maven-publish'
+    id 'xyz.wagyourtail.jvmdowngrader'
+    // https://github.com/gradle-plugins/toolbox
+    id("dev.gradleplugins.java-gradle-plugin") version("1.6.13")
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+    sourceCompatibility = 8
+    targetCompatibility = 8
+}
+
+configurations {
+    downgrade
+}
+
+group 'com.fox2code'
+version project['foxloader.version']
+
+dependencies {
+    //compileOnly gradleApi()
+    //compileOnly localGroovy()
+    final String ASM_VERSION = project['asm.version']
+    api 'com.google.code.gson:gson:2.10.1'
+    api "org.ow2.asm:asm-util:${ASM_VERSION}"
+    api "org.ow2.asm:asm-commons:${ASM_VERSION}"
+    final String JVM_DOWNGRADER_VERSION = project['jvm-downgrader.version']
+    // implementation "xyz.wagyourtail.jvmdowngrader:jvmdowngrader:${JVM_DOWNGRADER_VERSION}"
+    // implementation "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${JVM_DOWNGRADER_VERSION}:downgraded-8"
+    downgrade(project['vineflower.dependency'] as String) {
+        transitive = false
+    }
+    // Need LWJGL 2 for game decompilation.
+    api('org.lwjgl.lwjgl:lwjgl:2.9.3') {
+        transitive = false
+    }
+    include(project(":patching")) {
+        transitive = false
+    }
+    // For tests only
+    testImplementation(gradleTestKit())
+    testImplementation(gradleFixtures()) { transitive = false }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+jvmdg.shadeInlining = false
+
+tasks.register('downgradeModernJavaDependencies', DowngradeFiles) {
+    convention(jvmdg)
+    inputCollection = files(configurations.downgrade)
+    downgradeTo = JavaVersion.VERSION_1_8
+    classpath = files()
+}
+
+dependencies {
+    compileOnly(tasks.downgradeModernJavaDependencies.outputCollection)
+}
+
+gradlePlugin {
+    compatibility {
+        minimumGradleVersion = '8.2'
+        gradleApiVersion = '8.8'
+    }
+    plugins {
+        create('simplePlugin') {
+            id = 'foxloader.dev'
+            implementationClass = 'com.fox2code.foxloader.dev.GradlePlugin'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar.dependsOn(":patching:jar")
+jar.dependsOn(":loader:jar")
+
+jvmdg.downgradeTo.set(JavaVersion.VERSION_1_8)
+jvmdg.shadeInlining.set(false)
+
+File unpickedFile = new File(project.rootProject.rootDir, "loader" + File.separator +
+        "patched" + File.separator + (project['reindev.patchedJar'] as String).replace(".jar", "-unpicked.jar"))
+File sourcesFile = new File(project.rootProject.rootDir, "loader" + File.separator +
+        "patched" + File.separator + (project['reindev.patchedJar'] as String).replace(".jar", "-sources.jar"))
+
+tasks.register("decompileGame", JavaExec) {
+    classpath = tasks.shadeJarFile.outputs.files + sourceSets.main.runtimeClasspath
+    mainClass = "com.fox2code.foxloader.dev.FoxLoaderDecompiler"
+    args = ["default", unpickedFile.getAbsolutePath(), sourcesFile.getAbsolutePath()]
+    dependsOn(":patching:unpickGame")
+    dependsOn(tasks.jar)
+}

@@ -1,0 +1,13 @@
+{
+  "formatVersion": 1,
+  "name": "Workaround to display CoreMods tab",
+  "releaseTime": "2011-07-08T00:00:00+02:00",
+  "requires": [
+    {
+      "uid": "com.fox2code.foxloader"
+    }
+  ],
+  "type": "old_beta",
+  "uid": "net.minecraftforge",
+  "version": "no-op"
+}

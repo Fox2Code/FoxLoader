@@ -1,0 +1,9 @@
+# net/minecraft/common/item/Item.getRegisteringMod()
+@return the {@link ModContainer} that registered this item.
+# net/minecraft/common/block/Block.getRegisteringMod()
+@return the {@link ModContainer} that registered this block.
+# net/minecraft/common/item/ItemStack.getRemoteItemID()
+@return the server-side id of this ItemStack
+# net/minecraft/common/item/ItemStack.setRemoteItemID()
+Set the server-side id of this ItemStack, useful when parsing item IDs from the server.
+@param netItemID the server-side id of this ItemStack

@@ -1,0 +1,31 @@
+dependencies {
+    final String ASM_VERSION = project['asm.version']
+    api "org.ow2.asm:asm-util:${ASM_VERSION}"
+    api "org.ow2.asm:asm-commons:${ASM_VERSION}"
+    api 'org.jetbrains:annotations:24.1.0'
+    //noinspection GradlePackageUpdate
+    compileOnly("org.lwjgl.lwjgl:lwjgl:2.9.3")
+}
+
+File slimFile = new File(project.rootProject.rootDir, "loader" + File.separator +
+        "libs" + File.separator + project['reindev.slimJar'])
+File patchedFile = new File(project.rootProject.rootDir, "loader" + File.separator +
+        "patched" + File.separator + (project['reindev.patchedJar'] as String))
+File unpickedFile = new File(project.rootProject.rootDir, "loader" + File.separator +
+        "patched" + File.separator + (project['reindev.patchedJar'] as String).replace(".jar", "-unpicked.jar"))
+
+tasks.register("patchGame", JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = "com.fox2code.foxloader.patching.PatchBridge"
+    args = [slimFile.getAbsolutePath(), patchedFile.getAbsolutePath(), "dev"]
+}
+
+tasks.register("unpickGame", JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = "com.fox2code.foxloader.patching.PatchBridge"
+    args = [patchedFile.getAbsolutePath(), unpickedFile.getAbsolutePath(), "true"]
+    dependsOn(tasks.patchGame)
+}
+
+// Generated code is in another script to make code cleaner.
+apply from: "generate.gradle"

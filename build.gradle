@@ -1,0 +1,275 @@
+import java.nio.file.Files
+import java.security.MessageDigest
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
+
+buildscript {
+    ext {
+        jvmDowngraderVersion = (project['jvm-downgrader.version'] as String)
+        debugCompiler = false
+    }
+    dependencies {
+        // classpath("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:$jvmDowngraderVersion")
+    }
+}
+
+plugins {
+    id 'java-base'
+    id 'xyz.wagyourtail.jvmdowngrader' version "$jvmDowngraderVersion" apply false
+}
+
+group 'com.fox2code'
+version project['foxloader.version']
+
+tasks.register('publishToMavenLocal', Task)
+
+subprojects {
+    apply plugin: 'java-library'
+
+    version project['foxloader.version']
+
+    repositories {
+        mavenCentral()
+        maven {
+            name = "Modrinth"
+            url = "https://api.modrinth.com/maven"
+            content {
+                includeGroup "maven.modrinth"
+            }
+        }
+        maven {
+            url 'https://repo.spongepowered.org/maven'
+            content {
+                includeGroup "org.spongepowered"
+            }
+        }
+        maven {
+            name = 'Fabric'
+            url 'https://maven.fabricmc.net/'
+            content {
+                includeGroup "net.fabricmc"
+            }
+        }
+        maven {
+            name = 'Unascribed'
+            url "https://repo.unascribed.com"
+            content {
+                includeGroup "com.unascribed"
+            }
+        }
+        maven {
+            name = 'Sleeping Town'
+            url 'https://repo.sleeping.town/'
+            content {
+                includeGroup 'blue.endless'
+            }
+            metadataSources {
+                artifact()
+            }
+        }
+        maven {
+            name = 'Fox2Code Maven'
+            url 'https://cdn.fox2code.com/maven'
+        }
+        maven {
+            url 'https://jitpack.io/'
+        }
+    }
+
+    configurations {
+        include
+        compileOnly.extendsFrom(include)
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    }
+
+    java {
+        // We need at least java 11 to diagnose obscure compile errors
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(debugCompiler ? 21 : 8)
+        }
+
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+        withSourcesJar()
+        withJavadocJar()
+    }
+
+    javadoc {
+        failOnError false
+    }
+
+    // Support "@reason" javadoc Mixin tag mandated by Minecraft-Dev Intellij plugin
+    javadoc.options.tags = [ "reason" ]
+
+    test {
+        useJUnitPlatform()
+    }
+
+    afterEvaluate {
+        tasks.withType(JavaCompile.class).configureEach {
+            if (debugCompiler) {
+                options.compilerArgs.addAll(['--release', '8'])
+            }
+            options.compilerArgs += '-g'
+            options.encoding = 'UTF-8'
+        }
+
+        jar {
+            from(configurations.include.collect { it.isDirectory() ? it : zipTree(it) }) {
+                exclude("module-info.class")
+            }
+        }
+
+        final String reindevVersion = project['reindev.version'] as String
+        final String reindevVersionAllowFrom = project['reindev.version.allowFrom'] as String
+
+        if (project.pluginManager.hasPlugin("maven-publish")) {
+            rootProject.tasks.publishToMavenLocal.dependsOn(publishToMavenLocal)
+
+            publishing {
+                publications {
+                    release(MavenPublication) {
+                        from components.java
+                        groupId = "com.github.Fox2Code.FoxLoader"
+                        artifactId = project.name
+                        version = '1.0' // JitPack only work with "1.0" as version
+                        pom {
+                            url = 'https://github.com/Fox2Code/FoxLoader'
+                            if (reindevVersion == reindevVersionAllowFrom) {
+                                properties = [
+                                        "foxloader.version": project['foxloader.version'] as String,
+                                        "reindev.version"  : reindevVersion,
+                                ]
+                            } else {
+                                properties = [
+                                        "foxloader.version"        : project['foxloader.version'] as String,
+                                        "reindev.version"          : reindevVersion,
+                                        "reindev.version.allowFrom": reindevVersionAllowFrom,
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// We need to download client and server to be able to compile the project.
+// Let's do that there really quick.
+static void downloadIfNeeded(URL url, File file, String hash) {
+    file.getParentFile().mkdirs()
+    if (file.exists()) {
+        byte[] localData = Files.readAllBytes(file.toPath())
+        byte[] localHash = MessageDigest.getInstance("SHA-256").digest(localData)
+        String hashString = new BigInteger(1, localHash).toString(16)
+        if (hashString == hash) return
+        if (!file.delete()) {
+            throw new IOException("Failed to delete corrupted file: " + file.getName())
+        }
+    }
+    println("Downloading " + url)
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY)
+    String javaVendor = System.getProperty("java.vendor")
+    String javaVersion = System.getProperty("java.version")
+    String javaVendorVersion = System.getProperty("java.vm.version")
+    String osName = System.getProperty("os.name")
+    String osVersion = System.getProperty("os.version")
+    String osArch = System.getProperty("os.arch")
+    connection.setConnectTimeout(5000)
+    connection.setRequestProperty("Connection", "keep-alive")
+    connection.setRequestProperty("User-Agent", String.format("Gradle/7.5.1 (%s;%s;%s) (%s;%s;%s)",
+            osName, osVersion, osArch, javaVendor, javaVersion, javaVendorVersion))
+    file.withOutputStream { fileOut ->
+        fileOut << connection.getInputStream()
+    }
+    byte[] fileData = Files.readAllBytes(file.toPath())
+    byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
+    String hashString = new BigInteger(1, fileHash).toString(16)
+    if (hash != hashString) {
+        throw new IOException("Excpeted HASH: " + hash + " got " + hashString)
+    }
+}
+
+File clientFile = new File(project.rootDir, "loader" + File.separator +
+        "libs" + File.separator + project['reindev.clientJar'])
+File serverFile = new File(project.rootDir, "loader" + File.separator +
+        "libs" + File.separator + project['reindev.serverJar'])
+File slimFile = new File(project.rootDir, "loader" + File.separator +
+        "libs" + File.separator + project['reindev.slimJar'])
+File patchedFile = new File(project.rootDir, "loader" + File.separator +
+        "libs" + File.separator + project['reindev.patchedJar'])
+final String slimURL = project['reindev.slimUrl'] as String
+
+static ZipEntry partialCopy(ZipEntry zipEntry) {
+    ZipEntry newZipEntry = new ZipEntry(zipEntry)
+    newZipEntry.setCompressedSize(-1)
+    newZipEntry.setComment(null)
+    return newZipEntry
+}
+
+String slimHash = project['reindev.slimSHA256Sum'] as String
+if (slimURL == "null") {
+    if (slimFile.exists()) {
+        byte[] fileData = Files.readAllBytes(slimFile.toPath())
+        byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
+        String hashString = new BigInteger(1, fileHash).toString(16)
+        if (slimHash != hashString) {
+            throw new IOException("Excpeted HASH: " + slimHash + " got " + hashString)
+        }
+    } else if (clientFile.exists() && serverFile.exists()) {
+        HashSet<String> common = new HashSet<>()
+        ZipOutputStream slimOutputStream = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(slimFile)))
+        slimOutputStream.setLevel(9)
+        ZipEntry zipEntry
+        ZipInputStream clientInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(clientFile)))
+        while ((zipEntry = clientInputStream.nextEntry)) {
+            String path = zipEntry.getName()
+            // Don't save folders unless it's a panorama folder
+            if (path.endsWith("/") && !path.startsWith("textures/gui/panorama/")) continue
+            if (path.indexOf("/") == -1 || path.startsWith("com/jcraft/") || path.startsWith("paulscode/") ||
+                    path.startsWith("textures/") || path.startsWith("lang/") || path.startsWith("com/mojang/nbt/") ||
+                    path.startsWith("com/indigo3d/") || path.startsWith("net/minecraft/")) {
+                if (path.startsWith("net/minecraft/common/")) common.add(path)
+                slimOutputStream.putNextEntry(partialCopy(zipEntry))
+                slimOutputStream << clientInputStream
+                slimOutputStream.closeEntry()
+                clientInputStream.closeEntry()
+            }
+        }
+        clientInputStream.close()
+        ZipInputStream serverInputStream = new ZipInputStream(new BufferedInputStream(new FileInputStream(serverFile)))
+        while ((zipEntry = serverInputStream.nextEntry)) {
+            String path = zipEntry.getName()
+            if (path.endsWith("/")) continue
+            if (path.startsWith("net/minecraft/server/") ||
+                    (path.startsWith("net/minecraft/common/") && !common.contains(path))) {
+                slimOutputStream.putNextEntry(partialCopy(zipEntry))
+                slimOutputStream << serverInputStream
+                slimOutputStream.closeEntry()
+                serverInputStream.closeEntry()
+            }
+        }
+        serverInputStream.close()
+        slimOutputStream.finish()
+        slimOutputStream.flush()
+        slimOutputStream.close()
+        byte[] fileData = Files.readAllBytes(slimFile.toPath())
+        byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
+        String hashString = new BigInteger(1, fileHash).toString(16)
+        if (slimHash != hashString) {
+            throw new IOException("Excpeted HASH: " + slimHash + " got " + hashString)
+        }
+    } else {
+        throw new IOException("Missing " + clientFile.getName() + " | " + serverFile.getName())
+    }
+} else {
+    downloadIfNeeded(new URI(slimURL).toURL(), slimFile,
+            project['reindev.slimSHA256Sum'] as String)
+}

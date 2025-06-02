@@ -1,0 +1,145 @@
+import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles
+// Loader build.gradle
+plugins {
+    id 'maven-publish'
+    id 'xyz.wagyourtail.jvmdowngrader'
+}
+
+group 'com.fox2code'
+version project['foxloader.version']
+
+configurations {
+    downgrade
+}
+
+dependencies {
+    // ReIndev dependencies
+    api "com.unascribed:ears-api:${project['ears.version']}"
+    api "com.unascribed:ears-common:${project['ears.version']}"
+    api 'com.google.code.gson:gson:2.10.1'
+    api 'org.jetbrains:annotations:24.1.0'
+    api "it.unimi.dsi:fastutil-core:${project['fastutil.version']}"
+
+    // TODO: Don't forget to update DependencyHelper and ":dev" project
+    api "org.slf4j:slf4j-api:${project['slf4j.version']}"
+    final String ASM_VERSION = project['asm.version']
+    api "org.ow2.asm:asm-util:${ASM_VERSION}"
+    api "org.ow2.asm:asm-commons:${ASM_VERSION}"
+    downgrade("blue.endless:jankson:${project['jankson.version']}") { transitive = false }
+    api "net.fabricmc:sponge-mixin:${project['fabric-mixin.version']}"
+    api "io.github.llamalad7:mixinextras-common:${project['mixin-extras.version']}"
+    api "com.bawnorton.mixinsquared:mixinsquared-common:${project['mixin-squared.version']}"
+    downgrade("com.moulberry:mixinconstraints:${project['mixin-constraints.version']}") { transitive = false }
+    api "com.fox2code:FoxFlexVer:${project['fox-flex-ver.version']}"
+    api "com.fox2code.FoxEvents:core:${project['fox-events.version']}"
+    api "com.fox2code:ReBuild:${project['rebuild.version']}"
+    include(project(":patching")) { transitive = false }
+    runtimeOnly(files("${rootProject.rootDir.absolutePath}/patching/build/libs/patching-${project['foxloader.version']}.jar"))
+
+    // Mixin dependencies
+    api 'com.google.guava:guava:21.0'
+
+    // jansi is only injected into the loader when needed
+    implementation "org.fusesource.jansi:jansi:${project['jansi.version']}"
+
+    // Unpick transformer helper
+    compileOnly('org.lwjgl.lwjgl:lwjgl:2.9.3') {
+        transitive = false
+    }
+
+    // Do not expose JVMDowngrader API to mods ( https://github.com/unimined/JvmDowngrader/releases )
+    final String JVM_DOWNGRADER_VERSION = project['jvm-downgrader.version']
+    implementation "xyz.wagyourtail.jvmdowngrader:jvmdowngrader:${JVM_DOWNGRADER_VERSION}"
+    compileOnly "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${JVM_DOWNGRADER_VERSION}:downgraded-8"
+    implementation "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${JVM_DOWNGRADER_VERSION}"
+
+    // Do no expose spark APIs to mods
+    implementation(project['spark.dependency'] as String)
+
+    //implementation(fileTree(dir: 'patched', include: '*.jar'))
+    implementation(files("patched/" + (project['reindev.patchedJar'] as String)))
+
+    //noinspection GradlePackageUpdate
+    api("net.java.jinput:jinput:2.0.5")
+    //noinspection GradlePackageUpdate
+    api("org.lwjgl.lwjgl:lwjgl:2.9.3")
+    //noinspection GradlePackageUpdate
+    api("org.lwjgl.lwjgl:lwjgl_util:2.9.3")
+    //noinspection GradlePackageUpdate
+    api("org.lwjgl.lwjgl:lwjgl-platform:2.9.3")
+}
+
+jvmdg.shadeInlining = false
+
+tasks.register('downgradeModernJavaDependencies', DowngradeFiles) {
+    convention(jvmdg)
+    inputCollection = files(configurations.downgrade)
+    downgradeTo = JavaVersion.VERSION_1_8
+    classpath = files()
+}
+
+dependencies {
+    compileOnly(tasks.downgradeModernJavaDependencies.outputCollection)
+}
+
+jar {
+    manifest {
+        attributes 'FoxLoader-Version': project['foxloader.version']
+        attributes 'ReIndev-Version': project['reindev.version']
+        attributes 'Main-Class': 'com.fox2code.foxloader.installer.Main'
+        // Only supported on Java9+ but only needed on Java9+! :3
+        attributes 'Launcher-Agent-Class': 'com.fox2code.foxloader.dependencies.DependencyHelper$Agent'
+        attributes 'Premain-Class': 'com.fox2code.foxloader.dependencies.DependencyHelper$Agent'
+    }
+    dependsOn(":patching:jar")
+}
+
+tasks.compileJava.dependsOn(":patching:patchGame")
+tasks.compileJava.dependsOn(":patching:jar")
+
+File classDir = new File(project.rootProject.rootDir, "loader" + File.separator +
+        "build" + File.separator + "classes" + File.separator + "java" + File.separator + "main")
+
+tasks.register("transformFoxLoader", JavaExec) {
+    classpath = project(":patching").sourceSets.main.runtimeClasspath
+    mainClass = "com.fox2code.foxloader.patching.FoxLoaderPatches"
+    args = [classDir.getAbsolutePath()]
+    dependsOn(tasks.compileJava)
+}
+
+tasks.classes.dependsOn(tasks.transformFoxLoader)
+
+final Properties properties = new Properties()
+final File localPropertiesFile =
+        project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.newDataInputStream())
+}
+
+tasks.register('runClient', JavaExec) {
+    // We must use java8 on linux for client because of LWJGL2
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = rootProject.file("run")
+    mainClass = 'com.fox2code.foxloader.launcher.ClientMain'
+    if (properties.getProperty('username') != null) {
+        args properties.getProperty('username')
+    }
+}
+
+tasks.register('runServer', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = rootProject.file("run")
+    mainClass = 'com.fox2code.foxloader.launcher.ServerMain'
+}
+
+tasks.register('runClientAndServer', JavaExec) {
+    // We must use java8 on linux for client because of LWJGL2
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+    classpath = sourceSets.main.runtimeClasspath
+    workingDir = rootProject.file("run")
+    mainClass = 'com.fox2code.foxloader.launcher.ClientAndServerMain'
+    if (properties.getProperty('username') != null) {
+        args properties.getProperty('username')
+    }
+}
