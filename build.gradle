@@ -110,6 +110,10 @@ subprojects {
         }
     }
 
+    // Always apply spotless on compile
+    spotlessJavaCheck.enabled = false
+    compileJava.dependsOn(spotlessApply)
+
     afterEvaluate {
         if (project.pluginManager.hasPlugin("groovy")) {
             spotless {
@@ -117,6 +121,8 @@ subprojects {
                     licenseHeader(processedLicense)
                 }
             }
+
+            compileGroovy.dependsOn(spotlessApply)
         }
 
         rootProject.tasks.spotlessApply.dependsOn(spotlessApply)
