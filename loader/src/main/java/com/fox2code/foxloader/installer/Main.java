@@ -56,7 +56,7 @@ public class Main {
                 InstallerGUI installerGUI = new InstallerGUI(InstallerPlatform.DEFAULT, LauncherType.MMC_LIKE);
                 if (installerName.startsWith("loader-") && !installerName.endsWith("-installer.jar")) {
                     File newName = new File("fox" + installerName.substring(
-                            0, installerName.length() - 3) + "-installer.jar");
+                            0, installerName.length() - 4) + "-installer.jar");
                     if (!newName.exists()) {
                         Files.copy(currentInstallerFile.toPath(), newName.toPath());
                     }
