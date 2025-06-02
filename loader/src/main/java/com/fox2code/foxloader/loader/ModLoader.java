@@ -44,7 +44,6 @@ import net.minecraft.client.player.EntityPlayerSP;
 import net.minecraft.common.CoreConstants;
 import net.minecraft.common.command.Command;
 import net.minecraft.common.command.ICommandListener;
-import net.minecraft.common.command.IllegalCmdListenerOperation;
 import net.minecraft.common.networking.NetworkManager;
 import net.minecraft.server.MinecraftServer;
 

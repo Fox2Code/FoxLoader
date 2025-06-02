@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.jar.Attributes;
-import java.util.logging.Level;
 
 public class ModInfo extends FileInfo implements IMixinConfigSource {
     private static final Attributes.Name MOD_ID = new Attributes.Name("ModId");

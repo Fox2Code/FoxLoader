@@ -105,8 +105,9 @@ subprojects {
 
     spotless {
         java {
-            formatAnnotations()
             licenseHeader(processedLicense)
+            removeUnusedImports()
+            formatAnnotations()
         }
     }
 

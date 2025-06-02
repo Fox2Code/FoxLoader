@@ -24,7 +24,6 @@
 package com.fox2code.foxloader.patching.game;
 
 import com.fox2code.foxloader.patching.TransformerUtils;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.*;

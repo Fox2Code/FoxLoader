@@ -26,7 +26,6 @@ package com.fox2code.foxloader.config;
 import blue.endless.jankson.api.document.*;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoaderInit;
-import net.minecraft.common.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

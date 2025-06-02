@@ -25,7 +25,6 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.loader.java.JavaModInfo;
 import com.fox2code.foxloader.updater.AbstractUpdater;
-import com.fox2code.foxloader.utils.SourceUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

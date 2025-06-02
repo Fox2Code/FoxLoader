@@ -25,7 +25,6 @@ package com.fox2code.foxloader.patching.game;
 
 import com.fox2code.foxloader.patching.TransformerUtils;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.util.Objects;

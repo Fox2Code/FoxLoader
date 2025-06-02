@@ -26,7 +26,6 @@ package com.fox2code.foxloader.client.gui;
 import com.fox2code.foxloader.config.*;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoaderInit;
-import com.fox2code.foxloader.loader.ModLoaderOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
 import net.minecraft.common.util.i18n.StringTranslate;

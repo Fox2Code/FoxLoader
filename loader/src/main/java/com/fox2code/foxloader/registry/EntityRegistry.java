@@ -30,7 +30,6 @@ import net.minecraft.common.entity.Entity;
 import net.minecraft.common.entity.EntityList;
 import net.minecraft.common.world.World;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public final class EntityRegistry {

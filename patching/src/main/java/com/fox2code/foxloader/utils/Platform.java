@@ -23,7 +23,6 @@
  */
 package com.fox2code.foxloader.utils;
 
-import org.objectweb.asm.Opcodes;
 
 import java.io.File;
 import java.io.IOException;

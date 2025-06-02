@@ -29,8 +29,6 @@ import org.objectweb.asm.tree.ClassNode;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;

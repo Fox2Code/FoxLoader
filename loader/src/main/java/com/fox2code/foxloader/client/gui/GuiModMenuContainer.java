@@ -30,12 +30,10 @@ import com.fox2code.foxloader.loader.ModLoaderInit;
 import com.fox2code.foxloader.updater.UpdateManager;
 import com.indigo3d.util.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiSlot;
 import net.minecraft.client.gui.GuiSlotSimple;
 import net.minecraft.client.renderer.world.Tessellator;
 import net.minecraft.common.util.ChatColors;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.input.Keyboard;
 
 import java.util.ArrayList;
 

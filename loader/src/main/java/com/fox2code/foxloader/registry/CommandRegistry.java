@@ -28,8 +28,6 @@ import net.minecraft.client.command.ClientCommandCompletion;
 import net.minecraft.common.command.Command;
 import net.minecraft.common.command.IllegalCmdListenerOperation;
 import net.minecraft.common.command.PlayerCommandHandler;
-import net.minecraft.common.command.completion.CommandCompletion;
-import net.minecraft.common.command.completion.CommandCompletionTree;
 
 import java.util.*;
 

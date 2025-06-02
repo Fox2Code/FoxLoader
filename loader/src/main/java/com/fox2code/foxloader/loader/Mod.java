@@ -25,9 +25,7 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxevents.Event;
 import com.fox2code.foxevents.EventCallback;
-import net.minecraft.common.item.ItemStack;
 import net.minecraft.common.networking.NetworkManager;
-import net.minecraft.common.recipe.CraftingManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

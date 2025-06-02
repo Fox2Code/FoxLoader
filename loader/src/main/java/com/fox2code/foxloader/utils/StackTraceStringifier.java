@@ -26,7 +26,6 @@ package com.fox2code.foxloader.utils;
 import com.fox2code.foxloader.utils.async.FastThreadLocal;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 

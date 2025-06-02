@@ -25,11 +25,9 @@ package com.fox2code.foxloader.utils.async;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 
 /**
  * A variant of LinkedList that support concurrent modifications on iterator.

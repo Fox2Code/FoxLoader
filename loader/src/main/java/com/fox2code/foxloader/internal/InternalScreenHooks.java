@@ -25,7 +25,6 @@ package com.fox2code.foxloader.internal;
 
 import com.fox2code.foxevents.EventHolder;
 import com.fox2code.foxloader.event.client.GuiScreenInitEvent;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiElement;
 import net.minecraft.client.gui.GuiScreen;
 
