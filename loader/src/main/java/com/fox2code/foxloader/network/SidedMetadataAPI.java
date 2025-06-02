@@ -26,13 +26,11 @@ public final class SidedMetadataAPI {
 
     private SidedMetadataAPI() { throw new AssertionError(); }
 
-    @NotNull
-    public static Map<String, String> getSelfMetadata() {
+    @NotNull public static Map<String, String> getSelfMetadata() {
         return publicSelfMetaData;
     }
 
-    @NotNull
-    public static Map<String, String> getActiveMetadata() {
+    @NotNull public static Map<String, String> getActiveMetadata() {
         Map<String, String> active = SidedMetadataAPI.activeMetaData;
         return active == null ? publicSelfMetaData : active;
     }

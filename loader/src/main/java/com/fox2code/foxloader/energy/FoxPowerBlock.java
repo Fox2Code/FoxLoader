@@ -14,8 +14,7 @@ public interface FoxPowerBlock {
      * @param blockFace the blockFace to get a FoxPowerInterface from
      * @return the {@link FoxPowerInterface} for this block
      */
-    @Nullable
-    default FoxPowerInterface getPowerInterfaceForFace(BlockAccess blockAccess, int x, int y, int z, int blockFace) {
+    @Nullable default FoxPowerInterface getPowerInterfaceForFace(BlockAccess blockAccess, int x, int y, int z, int blockFace) {
         return this.getIntrinsicPowerInterface(blockAccess, x, y, z);
     }
 
@@ -28,8 +27,7 @@ public interface FoxPowerBlock {
      * @param z the z block pos coordinate
      * @return the {@link FoxPowerInterface} for this block
      */
-    @Nullable
-    FoxPowerInterface getIntrinsicPowerInterface(BlockAccess blockAccess, int x, int y, int z);
+    @Nullable FoxPowerInterface getIntrinsicPowerInterface(BlockAccess blockAccess, int x, int y, int z);
 
     /**
      * Called to notify a block a new neighboring power block has updated its power interface.

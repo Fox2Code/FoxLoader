@@ -18,6 +18,5 @@ public interface FoxPowerItem {
 
     long sendFoxPower(ItemStack itemStack, long amount);
 
-    @NotNull
-    FoxPowerType getFoxPowerType();
+    @NotNull FoxPowerType getFoxPowerType();
 }

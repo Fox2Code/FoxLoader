@@ -71,8 +71,7 @@ public class GuiModMenuContainer extends GuiSlotSimple {
         return this.slotHeight * this.mods.length;
     }
 
-    @NotNull
-    public ModContainer getSelectedModContainer() {
+    @NotNull public ModContainer getSelectedModContainer() {
         return this.mods[this.selected];
     }
 

@@ -17,18 +17,15 @@ public class Mod {
 
     public Mod() {}
 
-    @NotNull
-    public final ModContainer getModContainer() {
+    @NotNull public final ModContainer getModContainer() {
         return Objects.requireNonNull(modContainer == null ? ModContainer.tmp : modContainer);
     }
 
-    @NotNull
-    public final Logger getLogger() {
+    @NotNull public final Logger getLogger() {
         return this.getModContainer().getLogger();
     }
 
-    @NotNull
-    public final org.slf4j.Logger getSlf4jLogger() {
+    @NotNull public final org.slf4j.Logger getSlf4jLogger() {
         return this.getModContainer().getSlf4jLogger();
     }
 
@@ -36,8 +33,7 @@ public class Mod {
         this.getModContainer().setConfigObject(configObject);
     }
 
-    @Nullable
-    public final Object getConfigObject() {
+    @Nullable public final Object getConfigObject() {
         return this.getModContainer().getConfigObject();
     }
 

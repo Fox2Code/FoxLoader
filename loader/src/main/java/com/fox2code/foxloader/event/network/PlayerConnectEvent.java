@@ -30,18 +30,15 @@ public final class PlayerConnectEvent extends Event implements Event.Cancellable
         this.cancelMessage = "Event cancelled";
     }
 
-    @NotNull
-    public NetworkManager getNetworkManager() {
+    @NotNull public NetworkManager getNetworkManager() {
         return this.networkManager;
     }
 
-    @Nullable
-    public ClientHello getClientHello() {
+    @Nullable public ClientHello getClientHello() {
         return this.clientHello;
     }
 
-    @NotNull
-    public String getUsername() {
+    @NotNull public String getUsername() {
         return this.username;
     }
 
@@ -52,8 +49,7 @@ public final class PlayerConnectEvent extends Event implements Event.Cancellable
         return this.incompatibleClient;
     }
 
-    @NotNull
-    public String getCancelMessage() {
+    @NotNull public String getCancelMessage() {
         return this.cancelMessage;
     }
 

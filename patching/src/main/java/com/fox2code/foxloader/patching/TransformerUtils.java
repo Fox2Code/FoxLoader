@@ -82,8 +82,7 @@ public final class TransformerUtils {
         return copy;
     }
 
-    @NotNull
-    public static InsnList copyCodeUntil(final AbstractInsnNode start, int endOpCode) {
+    @NotNull public static InsnList copyCodeUntil(final AbstractInsnNode start, int endOpCode) {
         AbstractInsnNode abstractInsnNode = start;
         IdentityHashMap<LabelNode, LabelNode> map = new IdentityHashMap<LabelNode, LabelNode>() {
             @Override
@@ -112,23 +111,19 @@ public final class TransformerUtils {
         return copy;
     }
 
-    @NotNull
-    public static MethodNode getMethod(ClassNode classNode, String methodName) {
+    @NotNull public static MethodNode getMethod(ClassNode classNode, String methodName) {
         return findMethod0(classNode, methodName, null, true);
     }
 
-    @NotNull
-    public static MethodNode getMethod(ClassNode classNode, String methodName, String methodDesc) {
+    @NotNull public static MethodNode getMethod(ClassNode classNode, String methodName, String methodDesc) {
         return findMethod0(classNode, methodName, methodDesc, true);
     }
 
-    @Nullable
-    public static MethodNode findMethod(ClassNode classNode, String methodName) {
+    @Nullable public static MethodNode findMethod(ClassNode classNode, String methodName) {
         return findMethod0(classNode, methodName, null, false);
     }
 
-    @Nullable
-    public static MethodNode findMethod(ClassNode classNode, String methodName, String methodDesc) {
+    @Nullable public static MethodNode findMethod(ClassNode classNode, String methodName, String methodDesc) {
         return findMethod0(classNode, methodName, methodDesc, false);
     }
 

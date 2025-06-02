@@ -45,8 +45,7 @@ public final class ModContainer {
         return modContainer;
     }
 
-    @Nullable
-    public static ModContainer getActiveModContainer() {
+    @Nullable public static ModContainer getActiveModContainer() {
         return activeModContainer.get();
     }
 
@@ -75,38 +74,31 @@ public final class ModContainer {
         return result;
     }
 
-    @NotNull
-    public ModInfo getModInfo() {
+    @NotNull public ModInfo getModInfo() {
         return this.modInfo;
     }
 
-    @NotNull
-    public String getModId() {
+    @NotNull public String getModId() {
         return this.modId;
     }
 
-    @NotNull
-    public String getModName() {
+    @NotNull public String getModName() {
         return this.modInfo.name;
     }
 
-    @NotNull
-    public Logger getLogger() {
+    @NotNull public Logger getLogger() {
         return this.logger;
     }
 
-    @NotNull
-    public org.slf4j.Logger getSlf4jLogger() {
+    @NotNull public org.slf4j.Logger getSlf4jLogger() {
         return this.slf4jLogger;
     }
 
-    @NotNull
-    public Mod getMod() {
+    @NotNull public Mod getMod() {
         return this.mod;
     }
 
-    @NotNull
-    public String getFileName() {
+    @NotNull public String getFileName() {
         return this.modInfo.fileName;
     }
 
@@ -115,8 +107,7 @@ public final class ModContainer {
         ConfigIO.readAndUpdateConfiguration(this, configObject);
     }
 
-    @Nullable
-    public Object getConfigObject() {
+    @Nullable public Object getConfigObject() {
         return this.configObject;
     }
 

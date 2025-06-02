@@ -37,8 +37,7 @@ public class GuiModListContainer extends GuiSlot {
         return this.selected == i;
     }
 
-    @NotNull
-    public ModContainer getSelectedModContainer() {
+    @NotNull public ModContainer getSelectedModContainer() {
         return this.mods[this.selected];
     }
 

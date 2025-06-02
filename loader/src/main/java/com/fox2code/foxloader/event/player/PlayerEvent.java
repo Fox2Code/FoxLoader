@@ -13,8 +13,7 @@ public abstract class PlayerEvent extends Event {
         this.entityPlayer = Objects.requireNonNull(entityPlayer, "entityPlayer");
     }
 
-    @NotNull
-    public final EntityPlayer getEntityPlayer() {
+    @NotNull public final EntityPlayer getEntityPlayer() {
         return this.entityPlayer;
     }
 }

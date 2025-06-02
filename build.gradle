@@ -6,16 +6,15 @@ import java.util.zip.ZipOutputStream
 
 buildscript {
     ext {
+        spotlessVersion = (project['spotless.version'] as String)
         jvmDowngraderVersion = (project['jvm-downgrader.version'] as String)
         debugCompiler = false
-    }
-    dependencies {
-        // classpath("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:$jvmDowngraderVersion")
     }
 }
 
 plugins {
     id 'java-base'
+    id 'com.diffplug.spotless' version "$spotlessVersion" apply false
     id 'xyz.wagyourtail.jvmdowngrader' version "$jvmDowngraderVersion" apply false
 }
 
@@ -23,9 +22,11 @@ group 'com.fox2code'
 version project['foxloader.version']
 
 tasks.register('publishToMavenLocal', Task)
+tasks.register('spotlessApply', Task)
 
 subprojects {
     apply plugin: 'java-library'
+    apply plugin: 'com.diffplug.spotless'
 
     version project['foxloader.version']
 
@@ -99,6 +100,12 @@ subprojects {
         withJavadocJar()
     }
 
+    spotless {
+        java {
+            formatAnnotations()
+        }
+    }
+
     javadoc {
         failOnError false
     }
@@ -111,6 +118,8 @@ subprojects {
     }
 
     afterEvaluate {
+        rootProject.tasks.spotlessApply.dependsOn(spotlessApply)
+
         tasks.withType(JavaCompile.class).configureEach {
             if (debugCompiler) {
                 options.compilerArgs.addAll(['--release', '8'])

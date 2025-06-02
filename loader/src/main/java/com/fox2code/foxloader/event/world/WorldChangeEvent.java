@@ -17,8 +17,7 @@ public abstract class WorldChangeEvent extends WorldEvent {
     /**
      * @return source entity of this event, or {@code null} if no entity was linked to the event
      */
-    @Nullable
-    public abstract Entity getEntitySource();
+    @Nullable public abstract Entity getEntitySource();
 
     public abstract boolean doesChangeBlock(int x, int y, int z);
 

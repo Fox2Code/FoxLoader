@@ -77,8 +77,7 @@ public class MavenUpdater extends AbstractUpdater {
         return getTagValue(manifest, "release");
     }
 
-    @Nullable
-    public static String getTagValue(String manifest, String tag) {
+    @Nullable public static String getTagValue(String manifest, String tag) {
         int start = manifest.indexOf("<" + tag + ">");
         if (start == -1) return null;
         start += tag.length() + 2;

@@ -16,8 +16,7 @@ public abstract class AbstractUpdater {
         this.modContainer = modContainer;
     }
 
-    @Nullable
-    protected abstract String findLatestVersion() throws IOException;
+    @Nullable protected abstract String findLatestVersion() throws IOException;
 
     protected abstract void doUpdate() throws IOException;
 

@@ -16,13 +16,11 @@ public final class PlayerChatEvent extends PlayerEvent implements Event.Cancella
         this.formattedMessage = "<" + entityPlayer.username + "> " + chatMessage;
     }
 
-    @NotNull
-    public String getChatMessage() {
+    @NotNull public String getChatMessage() {
         return this.chatMessage;
     }
 
-    @NotNull
-    public String getFormattedMessage() {
+    @NotNull public String getFormattedMessage() {
         return this.formattedMessage;
     }
 

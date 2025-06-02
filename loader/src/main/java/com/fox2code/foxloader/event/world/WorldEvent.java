@@ -13,8 +13,7 @@ public abstract class WorldEvent extends Event {
         this.world = Objects.requireNonNull(world, "world");
     }
 
-    @NotNull
-    public World getWorld() {
+    @NotNull public World getWorld() {
         return this.world;
     }
 }

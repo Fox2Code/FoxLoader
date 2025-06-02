@@ -32,6 +32,5 @@ public abstract class FoxPowerInterface {
      */
     public abstract int getCableSinkPriority();
 
-    @NotNull
-    public abstract FoxPowerType getFoxPowerType();
+    @NotNull public abstract FoxPowerType getFoxPowerType();
 }

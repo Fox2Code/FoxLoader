@@ -30,6 +30,5 @@ public abstract class ClassTransformer implements Opcodes, Comparable<ClassTrans
         return Long.compare(this.priority, o.priority);
     }
 
-    @Nullable
-    public abstract ClassNode transform(@Nullable FileInfo container,@Nullable ClassNode classNode,@NotNull String className);
+    @Nullable public abstract ClassNode transform(@Nullable FileInfo container,@Nullable ClassNode classNode,@NotNull String className);
 }

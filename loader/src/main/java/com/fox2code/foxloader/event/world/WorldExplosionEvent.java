@@ -22,8 +22,7 @@ public final class WorldExplosionEvent extends WorldMultiBlockChange {
         return this.explosion.exploder;
     }
 
-    @NotNull
-    public Explosion getExplosion() {
+    @NotNull public Explosion getExplosion() {
         return this.explosion;
     }
 }

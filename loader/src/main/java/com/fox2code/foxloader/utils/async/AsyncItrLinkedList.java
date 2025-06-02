@@ -15,8 +15,7 @@ import java.util.function.Consumer;
  * @param <E> the type of elements held in this collection
  */
 public class AsyncItrLinkedList<E> extends LinkedList<E> {
-    @NotNull
-    @Override
+    @NotNull @Override
     public ListIterator<E> listIterator(int index) {
         return new UnsafeAsyncLinkedListItr(super.listIterator(index));
     }
