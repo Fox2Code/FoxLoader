@@ -264,6 +264,14 @@ final class InstallerGUI {
     }
 
     public void extractMMCInstance() {
+        String fileName = Main.currentInstallerFile.getName();
+        if (fileName.endsWith("-installer.jar")) {
+            fileName = fileName.replace("-installer.jar", ".jar");
+        }
+        this.extractMMCInstance(fileName);
+    }
+
+    public void extractMMCInstance(String baseFileName) {
         if (this.checkInstaller(true)) {
             return;
         }
@@ -272,9 +280,8 @@ final class InstallerGUI {
             privateDevBuildSlimJarInput = DependencyHelper.getLocalSlimReIndevJarFile();
         }
 
-        String fileName = Main.currentInstallerFile.getName();
         File instanceDest = new File(Main.currentInstallerFile.getParentFile(),
-                fileName.substring(0, fileName.length() - 4) + "-mmc.zip");
+                baseFileName.substring(0, baseFileName.length() - 4) + "-mmc.zip");
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(instanceDest.toPath()))) {
             zipOutputStream.putNextEntry(new ZipEntry("libraries/foxloader-" + BuildConfig.FOXLOADER_VERSION + ".jar"));
             copyCloseIn(Files.newInputStream(Main.currentInstallerFile.toPath()), zipOutputStream);
@@ -287,7 +294,7 @@ final class InstallerGUI {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             for (String entry : new String[]{"patches/com.fox2code.foxloader.json",
                     "patches/net.minecraft.json", "patches/net.minecraftforge.json",
-                    "instance.cfg", "mmc-pack.json"}) {
+                    "patches/org.lwjgl.json", "instance.cfg", "mmc-pack.json"}) {
                 zipOutputStream.putNextEntry(new ZipEntry(entry));
                 byteArrayOutputStream.reset();
                 IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(

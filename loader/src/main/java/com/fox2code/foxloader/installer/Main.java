@@ -7,6 +7,7 @@ import com.fox2code.foxloader.utils.SourceUtil;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -19,6 +20,7 @@ public class Main {
         }
         boolean platform = false;
         boolean update = false;
+        boolean dist = false;
         if (args.length >= 1) {
             boolean server = false;
             boolean nogui = false;
@@ -41,9 +43,28 @@ public class Main {
                 case "--server":
                     server = true;
                     break;
+                case "--dist":
+                    dist = true;
+                    break;
                 default:
                     System.out.println("Unknown argument: " + args[0]);
                     return;
+            }
+
+            if (dist) {
+                String installerName = currentInstallerFile.getName();
+                InstallerGUI installerGUI = new InstallerGUI(InstallerPlatform.DEFAULT, LauncherType.MMC_LIKE);
+                if (installerName.startsWith("loader-") && !installerName.endsWith("-installer.jar")) {
+                    File newName = new File("fox" + installerName.substring(
+                            0, installerName.length() - 3) + "-installer.jar");
+                    if (!newName.exists()) {
+                        Files.copy(currentInstallerFile.toPath(), newName.toPath());
+                    }
+                    installerGUI.extractMMCInstance("fox" + installerName);
+                } else {
+                    installerGUI.extractMMCInstance();
+                }
+                return;
             }
 
             if (server) {
