@@ -36,7 +36,7 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.*;
 import java.nio.file.Files;
-import java.util.Objects;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,6 +124,40 @@ public final class DependencyHelper {
             new Dependency("net.silveros:reindev-slim:" + BuildConfig.REINDEV_VERSION,
                     BuildConfig.SLIM_URL, "net.minecraft.server.MinecraftServer",
                     null, BuildConfig.SLIM_SHA256_SUM);
+
+    // Dependencies bundles
+    public static final Set<String> availableDependencyBundles =
+            Collections.unmodifiableSet(new HashSet<>(Arrays.asList("kotlin", "jna")));
+
+    public static final Dependency[] kotlinDependencyBundle = new Dependency[]{
+            new Dependency("org.jetbrains.kotlin:kotlin-reflect:" + BuildConfig.KOTLIN_VERSION,
+                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "bcd75a36ca4ad8e06117214ed807f8dea2fe61a71e07f91ca14f4335024b8463"),
+            new Dependency("org.jetbrains.kotlin:kotlin-stdlib:" + BuildConfig.KOTLIN_VERSION,
+                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "263bdc679e1f62012db7b091796279b6d71cf36f4797a98ff1ace05835f201c8"),
+            new Dependency("org.jetbrains.kotlinx:atomicfu-jvm:" + BuildConfig.KOTLINX_ATOMICFU_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "2b68464170070a8b085d8a7224c7c002dbd65ea14e1f8b97a9605115a252f7fb"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:" + BuildConfig.KOTLINX_COROUTINES_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.coroutines.CoroutineDispatcher", null, "5ca175b38df331fd64155b35cd8cae1251fa9ee369709b36d42e0a288ccce3fd"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-datetime-jvm:" + BuildConfig.KOTLINX_DATETIME_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.datetime.DateTimeUnit", null, "102764921129e1e44a74f408b7a0b8dac6d1892c6042e0e48f8bdbbbf78c6d2e"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-io-bytestring-jvm:" + BuildConfig.KOTLINX_IO_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.io.bytestring.ByteString", null, "ea38a66b0ff46ed82dded9e81d2dce70e5fbe03bd6cc52b4fc8869381dea7b7d"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-io-core-jvm:" + BuildConfig.KOTLINX_IO_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.io.Buffer", null, "6ededc9be4d878aea80c7dd609f91bfc47fcd3d36cc91fd0f3f328fbd6656c8f"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-metadata-jvm:" + BuildConfig.KOTLINX_METADATA_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.metadata.KmClass", null, "d42f4bac60b81c4fdcef1c666aed4181d00401e5e696e496f44935fe32fea58f"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.serialization.cbor.Cbor", null, "604c4130ca7a0e979a449cf550087a5c2c586485e8af01dcf24b03b7b287306d"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.serialization.KSerializer", null, "3565b6d4d789bf70683c45566944287fc1d8dc75c23d98bd87d01059cc76f2b3"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.serialization.json.Json", null, "8769e5647557e3700919c32d508f5c5dad53c5d8234cd10846354fbcff14aa24"),
+    };
+
+    public static final Dependency[] jnaDependencyBundle = new Dependency[]{
+            new Dependency("net.java.dev.jna:jna:" + BuildConfig.JNA_VERSION,
+                    MAVEN_CENTRAL, "com.sun.jna.Native", null, "b3a9408e7c51e08ef0e3bfcc08f443f6ec0f6191ba8cd7c18d53d2b22e5bdbc0"),
+    };
 
     private static File mcLibraries;
 
@@ -496,6 +530,16 @@ public final class DependencyHelper {
         throw new RuntimeException("Invalid Dep");
     }
 
+    public static Dependency[] getDependencyBundle(String bundleName) {
+        switch (bundleName) {
+            case "kotlin":
+                return kotlinDependencyBundle;
+            case "jna":
+                return jnaDependencyBundle;
+        }
+        throw new NoSuchElementException(bundleName);
+    }
+
     public static class Dependency {
         public final String name, repository, classCheck, fallbackUrl, sha256Sum;
         public final int javaSupport;
@@ -519,7 +563,32 @@ public final class DependencyHelper {
             this.fallbackUrl = fallbackUrl;
             this.sha256Sum = sha256Sum;
             this.javaSupport = javaSupport;
+        }
 
+        public String getNameForVersion(String newVersion) {
+            String[] depKeys = newVersion.split(":");
+            if (newVersion.equals(depKeys[2])) {
+                return this.name;
+            }
+            return this.getNameForVersionImpl(depKeys, newVersion);
+        }
+
+        public Dependency getDependencyForVersion(String newVersion) {
+            String[] depKeys = newVersion.split(":");
+            if (newVersion.equals(depKeys[2])) {
+                return this;
+            }
+            return new Dependency(this.getNameForVersionImpl(depKeys, newVersion),
+                    this.repository, this.classCheck, this.fallbackUrl, null, this.javaSupport);
+        }
+
+        private String getNameForVersionImpl(String[] depKeys, String newVersion) {
+            depKeys[2] = newVersion;
+            StringJoiner stringJoiner = new StringJoiner(":");
+            for (String token : depKeys) {
+                stringJoiner.add(token);
+            }
+            return stringJoiner.toString();
         }
 
         @Override

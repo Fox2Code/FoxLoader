@@ -39,6 +39,8 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -122,9 +124,23 @@ public final class JavaLoadingPlugin extends LoadingPlugin {
         // We are guaranteed to have created that mod info ourselves, so the cast is fine.
         JavaModInfo modInfo = (JavaModInfo) modContainer.getModInfo();
         if (modInfo.main != null && !modInfo.main.isEmpty()) {
-            Constructor<? extends Mod> constructor = Class.forName(
-                    modInfo.main, false, FoxLauncher.getFoxClassLoader())
-                    .asSubclass(Mod.class).getConstructor();
+            Class<? extends Mod> cls = Class.forName(modInfo.main, false,
+                    FoxLauncher.getFoxClassLoader()).asSubclass(Mod.class);
+            try {
+                // This is to support kotlin objects as Mod.
+                Field field = cls.getDeclaredField("INSTANCE");
+                if (Modifier.isPublic(field.getModifiers()) &&
+                        Modifier.isStatic(field.getModifiers()) &&
+                        Modifier.isFinal(field.getModifiers()) &&
+                        field.getType() == cls) {
+                    Mod mod = (Mod) field.get(null);
+                    if (mod != null && mod.getModContainer() == modContainer) {
+                        return mod;
+                    }
+                }
+            } catch (NoSuchFieldException ignored) {}
+
+            Constructor<? extends Mod> constructor = cls.getConstructor();
             if (constructor.getDeclaringClass().getClassLoader() ==
                     JavaLoadingPlugin.class.getClassLoader()) {
                 constructor.setAccessible(true);

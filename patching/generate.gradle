@@ -57,6 +57,14 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
     final String REBUILD_VERSION = project['rebuild.version']
     final String FOX_EVENTS_VERSION = project['fox-events.version']
     final String FOX_FLEX_VER_VERSION = project['fox-flex-ver.version']
+    final String JNA_VERSION = project['jna.version']
+    final String KOTLIN_VERSION = project['kotlin.version']
+    final String KOTLINX_ATOMICFU_VERSION = project['kotlinx.atomicfu.version']
+    final String KOTLINX_COROUTINES_VERSION = project['kotlinx.coroutines.version']
+    final String KOTLINX_DATETIME_VERSION = project['kotlinx.datetime.version']
+    final String KOTLINX_IO_VERSION = project['kotlinx.io.version']
+    final String KOTLINX_METADATA_VERSION = project['kotlinx.metadata.version']
+    final String KOTLINX_SERIALIZATION_VERSION = project['kotlinx.serialization.version']
     FileOutputStream fileOutputStream = new FileOutputStream(buildConfigSrc)
     try {
         PrintStream printStream = new PrintStream(fileOutputStream)
@@ -94,6 +102,14 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
         printStream.println("    public static final String REBUILD_VERSION = \"" + REBUILD_VERSION + "\";")
         printStream.println("    public static final String FOX_EVENTS_VERSION = \"" + FOX_EVENTS_VERSION + "\";")
         printStream.println("    public static final String FOX_FLEX_VER_VERSION = \"" + FOX_FLEX_VER_VERSION + "\";")
+        printStream.println("    public static final String JNA_VERSION = \"" + JNA_VERSION + "\";")
+        printStream.println("    public static final String KOTLIN_VERSION = \"" + KOTLIN_VERSION + "\";")
+        printStream.println("    public static final String KOTLINX_ATOMICFU_VERSION = \"" + KOTLINX_ATOMICFU_VERSION + "\";")
+        printStream.println("    public static final String KOTLINX_COROUTINES_VERSION = \"" + KOTLINX_COROUTINES_VERSION + "\";")
+        printStream.println("    public static final String KOTLINX_DATETIME_VERSION = \"" + KOTLINX_DATETIME_VERSION + "\";")
+        printStream.println("    public static final String KOTLINX_IO_VERSION = \"" + KOTLINX_IO_VERSION + "\";")
+        printStream.println("    public static final String KOTLINX_METADATA_VERSION = \"" + KOTLINX_METADATA_VERSION + "\";")
+        printStream.println("    public static final String KOTLINX_SERIALIZATION_VERSION = \"" + KOTLINX_SERIALIZATION_VERSION + "\";")
         printStream.println("}")
     } finally {
         fileOutputStream.close()

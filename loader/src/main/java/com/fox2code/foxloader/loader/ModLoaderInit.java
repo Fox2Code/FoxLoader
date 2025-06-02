@@ -207,6 +207,7 @@ public final class ModLoaderInit {
         modContainers.put(FOX_LOADER_CONTAINER.getModId(), FOX_LOADER_CONTAINER);
         ArrayList<JavaModInfo> loadersInfo = new ArrayList<>();
         HashMap<String, LoadingPlugin> loaders = new HashMap<>();
+        HashSet<String> loadedBundles = new HashSet<>();
         LinkedHashMap<String, EarlyModRegistryInfo> earlyModRegistryInfos = new LinkedHashMap<>();
         LinkedHashMap<String, EarlyModRegistryInfo> earlyInjectedModRegistryInfos = new LinkedHashMap<>();
         LinkedList<File> files = new LinkedList<>(Arrays.asList(
@@ -278,6 +279,8 @@ public final class ModLoaderInit {
         }
         // Construct loading plugins
         for (EarlyModRegistryInfo earlyModRegistryInfo : earlyModRegistryInfos.values()) {
+            // Load dependencies bundles of potential loading plugins early.
+            loadDependencyBundlesForMod(loadedBundles, earlyModRegistryInfo.modInfo);
             // Allow loading plugins to run
             FoxLauncher.getFoxClassLoader().addFileToClassLoader(earlyModRegistryInfo.modInfo);
         }
@@ -385,7 +388,7 @@ public final class ModLoaderInit {
         sortedEarlyModRegistryInfo.sort((o1, o2) -> Long.compare(
                 o2.modInfo.loadOrderPriority, o1.modInfo.loadOrderPriority));
         for (EarlyModRegistryInfo earlyModRegistryInfo : sortedEarlyModRegistryInfo) {
-            earlyModRegistryInfo.register();
+            earlyModRegistryInfo.register(loadedBundles);
         }
         if (FoxLauncher.DEVELOPING_FOXLOADER && !files.isEmpty()) {
             throw new Error("Leftovers files detected: " + files);
@@ -405,6 +408,9 @@ public final class ModLoaderInit {
         }
         for (LoadingPlugin loadingPlugin : loaders.values()) {
             loadingPlugin.onAllModContainersPreloaded();
+        }
+        if (FoxLauncher.DEVELOPING_FOXLOADER) {
+            loadAllDependencyBundlesForDev(loadedBundles);
         }
         return loaders.values();
     }
@@ -434,6 +440,30 @@ public final class ModLoaderInit {
         assertValidModField(modInfo.version, "version", modInfo.fileName);
         assertValidModField(modInfo.description, "description", modInfo.fileName);
         assertValidModField(modInfo.authors, "authors", modInfo.fileName);
+    }
+
+    private static void loadAllDependencyBundlesForDev(HashSet<String> loadedBundles) {
+        for (String dependencyBundle : DependencyHelper.availableDependencyBundles) {
+            if (loadedBundles.add(dependencyBundle)) {
+                for (DependencyHelper.Dependency dependency : DependencyHelper.getDependencyBundle(dependencyBundle)) {
+                    DependencyHelper.loadDependency(dependency);
+                }
+            }
+        }
+    }
+
+    private static void loadDependencyBundlesForMod(HashSet<String> loadedBundles, ModInfo modInfo) {
+        for (String dependencyBundle : modInfo.getRequestedDependencyBundles()) {
+            if (!DependencyHelper.availableDependencyBundles.contains(dependencyBundle)) {
+                throw new RuntimeException("Mod " + idAndFile(modInfo) + " is asking for " + dependencyBundle +
+                        " dependency bundle, but it is missing on FoxLoader " + BuildConfig.FOXLOADER_VERSION);
+            }
+            if (loadedBundles.add(dependencyBundle)) {
+                for (DependencyHelper.Dependency dependency : DependencyHelper.getDependencyBundle(dependencyBundle)) {
+                    DependencyHelper.loadDependency(dependency);
+                }
+            }
+        }
     }
 
     private static void assertValidModField(String value, String fieldName, String modName) {
@@ -479,7 +509,8 @@ public final class ModLoaderInit {
             this.direct = direct;
         }
 
-        private void register() {
+        private void register(HashSet<String> loadedBundles) {
+            loadDependencyBundlesForMod(loadedBundles, this.modInfo);
             FoxLauncher.getFoxClassLoader().addFileToClassLoader(this.modInfo);
             modContainers.put(this.modInfo.id, new ModContainer(this.loadingPlugin, this.modInfo));
         }

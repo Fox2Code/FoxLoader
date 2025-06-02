@@ -31,8 +31,11 @@ import com.fox2code.foxloader.utils.io.JarUtils;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 
 public final class JavaModInfo extends ModInfo {
     private static final Attributes.Name MOD_CLASS_TRANSFORMER = new Attributes.Name("ModClassTransformer");
@@ -41,6 +44,8 @@ public final class JavaModInfo extends ModInfo {
     private static final Attributes.Name MOD_MIXIN = new Attributes.Name("ModMixin");
     private static final Attributes.Name MOD_MAIN = new Attributes.Name("ModMain");
     private static final Attributes.Name FOR_FOX_LOADER_VERSION = new Attributes.Name("For-FoxLoader-Version");
+    private static final Attributes.Name REQUEST_FOXLOADER_DEPENDENCY_BUNDLES =
+            new Attributes.Name("Request-FoxLoader-Dependency-Bundles");
     public static final JavaModInfo FOX_LOADER_MOD_INFO;
 
     static {
@@ -54,6 +59,7 @@ public final class JavaModInfo extends ModInfo {
         }
     }
 
+    public final List<String> requestedDependencyBundles;
     public final String forFoxLoaderVersion;
     public final String classTransformer;
     public final String loadingPlugin;
@@ -69,6 +75,13 @@ public final class JavaModInfo extends ModInfo {
 
     private JavaModInfo(File file, String jarPath, Attributes mainAttributes) throws IOException {
         super(file, jarPath, mainAttributes);
+        String requestedDependencyBundlesText = mainAttributes.getValue(REQUEST_FOXLOADER_DEPENDENCY_BUNDLES);
+        if (requestedDependencyBundlesText == null || requestedDependencyBundlesText.isEmpty()) {
+            this.requestedDependencyBundles = Collections.emptyList();
+        } else {
+            this.requestedDependencyBundles = Collections.unmodifiableList(
+                    Arrays.asList(requestedDependencyBundlesText.split(",")));
+        }
         this.forFoxLoaderVersion = mainAttributes.getValue(FOR_FOX_LOADER_VERSION);
         this.classTransformer = mainAttributes.getValue(MOD_CLASS_TRANSFORMER);
         this.loadingPlugin = mainAttributes.getValue(MOD_LOADING_PLUGIN);
@@ -84,6 +97,7 @@ public final class JavaModInfo extends ModInfo {
     JavaModInfo(File file, String jarPath, String id, String name, String version, String description, String authors, String iconPath,
                         String environment, boolean unofficial, long loadOrderPriority, String main) throws IOException {
         super(file, jarPath, id, name, version, description, authors, iconPath, environment, unofficial, loadOrderPriority);
+        this.requestedDependencyBundles = Collections.emptyList();
         this.forFoxLoaderVersion = BuildConfig.FOXLOADER_VERSION;
         this.classTransformer = null;
         this.loadingPlugin = null;
@@ -102,5 +116,10 @@ public final class JavaModInfo extends ModInfo {
     @Override
     public final boolean isJavaArchive() {
         return true;
+    }
+
+    @Override
+    public Collection<String> getRequestedDependencyBundles() {
+        return this.requestedDependencyBundles;
     }
 }

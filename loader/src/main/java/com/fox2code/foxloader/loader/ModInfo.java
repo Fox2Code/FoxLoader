@@ -30,6 +30,8 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigSource;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.jar.Attributes;
 import java.util.logging.Level;
 
@@ -130,5 +132,9 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
     @Override
     public final String getDescription() {
         return this.description;
+    }
+
+    public Collection<String> getRequestedDependencyBundles() {
+        return Collections.emptyList();
     }
 }

@@ -23,7 +23,12 @@
  */
 package com.fox2code.foxloader.dev;
 
+import com.fox2code.foxloader.dependencies.DependencyHelper;
+
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import java.util.StringJoiner;
 
 /**
  * Config for the FoxLoader gradle plugin
@@ -31,9 +36,11 @@ import java.text.Normalizer;
 public class FoxLoaderConfig {
     public FoxLoaderConfig() {}
 
+    boolean configImmutable = false;
     boolean decompileSources = // Only decompile sources if we have no CI to not waste server time
             System.getenv("CI") == null && System.getenv("JITPACK") == null;
     boolean addJitPackCIPublish = false;
+    ArrayList<String> usedDependencyBundlesList = new ArrayList<>();
     String username = Normalizer.normalize(System.getProperty("user.name"),
             Normalizer.Form.NFD).replaceAll("[^a-zA-Z0-9_]+","");
     public String modMain;
@@ -48,6 +55,7 @@ public class FoxLoaderConfig {
     public String modLoadingPlugin;
 
     public void modDesc() {
+        this.checkConfigMutable();
         if (this.modDesc == null) {
             this.modDesc = "";
         } else {
@@ -56,11 +64,30 @@ public class FoxLoaderConfig {
     }
 
     public void modDesc(String text) {
+        this.checkConfigMutable();
         if (this.modDesc == null) {
             this.modDesc = text;
         } else {
             this.modDesc += "\n" + text;
         }
+    }
+
+    public void useDependencyBundle(String dependencyBundle) {
+        this.checkConfigMutable();
+        if (!DependencyHelper.availableDependencyBundles.contains(dependencyBundle)) {
+            throw new NoSuchElementException("Unknown dependency bundle ID: " + dependencyBundle);
+        }
+        if (!this.usedDependencyBundlesList.contains(dependencyBundle)) {
+            this.usedDependencyBundlesList.add(dependencyBundle);
+        }
+    }
+
+    public String getUsedDependencyBundles() {
+        StringJoiner stringJoiner = new StringJoiner(",");
+        for (String dependencyBundle : this.usedDependencyBundlesList) {
+            stringJoiner.add(dependencyBundle);
+        }
+        return stringJoiner.toString();
     }
 
     // For testing only
@@ -72,4 +99,10 @@ public class FoxLoaderConfig {
     public boolean useLWJGLX = false;
     public String LWJGLXVersion = "0.21";
     public String LWJGLXLWJGLVersion = "3.3.1";
+
+    private void checkConfigMutable() {
+        if (this.configImmutable) {
+            throw new IllegalStateException("Trying to modify config after it has been loaded");
+        }
+    }
 }

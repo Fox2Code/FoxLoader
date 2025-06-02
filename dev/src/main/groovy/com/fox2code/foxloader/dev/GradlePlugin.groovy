@@ -198,16 +198,20 @@ class GradlePlugin implements Plugin<Project> {
                 options.encoding = 'UTF-8'
             }
             FoxLoaderConfig config = ((FoxLoaderConfig) project.extensions.getByName("foxloader"))
+            if (project.pluginManager.hasPlugin("org.jetbrains.kotlin.jvm")) {
+                config.useDependencyBundle("kotlin")
+            }
+            config.configImmutable = true
             for (DependencyHelper.Dependency dependency : DependencyHelper.commonDependencies) {
                 if (dependency == DependencyHelper.jvmDowngraderCore ||
                         dependency == DependencyHelper.jvmDowngraderJavaAPI) {
                     continue
                 }
-                project.dependencies {
-                    implementation(dependency.name)
-                    if (!DependencyHelper.skipDevSources(dependency)) {
-                        sourcePreDownload(dependency.name + ":sources")
-                    }
+                addDependencyToProject(project, dependency)
+            }
+            for (String dependencyBundle : config.usedDependencyBundlesList) {
+                for (DependencyHelper.Dependency dependency : DependencyHelper.getDependencyBundle(dependencyBundle)) {
+                    addDependencyToProject(project, dependency)
                 }
             }
             project.configurations.configureEach {
@@ -275,6 +279,9 @@ class GradlePlugin implements Plugin<Project> {
             (project.getTasks().named("jar").get() as Jar).manifest {
                 attributes 'For-FoxLoader-Version': BuildConfig.FOXLOADER_VERSION
                 attributes 'For-ReIndev-Version': BuildConfig.REINDEV_VERSION
+                if (!config.usedDependencyBundles.isEmpty()) {
+                    attributes 'Request-FoxLoader-Dependency-Bundles': config.getUsedDependencyBundles()
+                }
                 attributes 'ModId': config.modId
                 if (config.modMain != null &&
                         !config.modMain.isEmpty()) {
@@ -403,6 +410,15 @@ class GradlePlugin implements Plugin<Project> {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    static void addDependencyToProject(Project project, DependencyHelper.Dependency dependency) {
+        project.dependencies {
+            implementation(dependency.name)
+            if (!DependencyHelper.skipDevSources(dependency)) {
+                sourcePreDownload(dependency.name + ":sources")
             }
         }
     }
