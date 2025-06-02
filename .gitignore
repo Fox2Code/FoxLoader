@@ -2,7 +2,7 @@
 /.idea
 /build
 /lib/*
-/.gradle/
+.gradle/
 /.settings/
 /out/
 /bin/

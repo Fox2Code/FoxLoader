@@ -182,7 +182,9 @@ class GradlePlugin implements Plugin<Project> {
                 }
                 project.dependencies {
                     implementation(dependency.name)
-                    sourcePreDownload(dependency.name + ":sources")
+                    if (!DependencyHelper.skipDevSources(dependency)) {
+                        sourcePreDownload(dependency.name + ":sources")
+                    }
                 }
             }
             project.configurations.configureEach {

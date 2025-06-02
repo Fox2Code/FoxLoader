@@ -334,6 +334,10 @@ public final class DependencyHelper {
         return true;
     }
 
+    public static boolean skipDevSources(Dependency dependency) {
+        return dependency.name.startsWith("com.unascribed:ears-");
+    }
+
     public static class Agent {
         private static Instrumentation inst = null;
 
