@@ -121,7 +121,7 @@ public final class FoxLoaderDecompiler extends SingleFileSaver implements IResul
             return;
         }
         File libraryRoot = !"default".equals(args[0]) ? new File(args[0]) :
-                new File(Platform.getAppDir(".minecraft"), "libraries");
+                new File(Platform.getAppDir("minecraft"), "libraries");
         File input = new File(args[1]);
         File output = new File(args[2]);
         if (!input.exists()) {
