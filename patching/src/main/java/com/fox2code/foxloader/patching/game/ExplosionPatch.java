@@ -38,25 +38,35 @@ final class ExplosionPatch extends GamePatch {
     private static final String DirectedExplosion = "net/minecraft/common/world/DirectedExplosion";
     private static final String World = "net/minecraft/common/world/World";
     private static final String ChunkPosition = "net/minecraft/common/world/chunk/ChunkPosition";
+    private static final String Packet60Explosion = "net/minecraft/common/networking/Packet60Explosion";
     private static final String BlockChange = "com/fox2code/foxloader/event/world/WorldMultiBlockChange$BlockChange";
     private static final String InternalExplosionHooks = "com/fox2code/foxloader/internal/InternalExplosionHooks";
 
     ExplosionPatch() {
-        super(new String[]{Explosion, DirectedExplosion});
+        super(new String[]{Explosion, DirectedExplosion, Packet60Explosion});
     }
 
     @Override
     public ClassNode transform(ClassNode classNode) {
-        if (classNode.name.equals(Explosion)) {
-            classNode = remapExplosion(classNode);
-            TransformerUtils.makeFieldPublic(classNode, "worldObj");
-            TransformerUtils.makeFieldPublic(classNode, "ExplosionRNG");
-            classNode.fields.add(new FieldNode(ACC_PUBLIC, "silent", "Z", null, null));
-            patchDoExplosionA(classNode);
-            patchDoExplosionB(classNode);
-        } else if (classNode.name.equals(DirectedExplosion)) {
-            classNode = remapExplosion(classNode);
-            // patchDoExplosionA(classNode);
+        switch (classNode.name) {
+            case Explosion: {
+                classNode = remapExplosion(classNode);
+                TransformerUtils.makeFieldPublic(classNode, "worldObj");
+                TransformerUtils.makeFieldPublic(classNode, "ExplosionRNG");
+                classNode.fields.add(new FieldNode(ACC_PUBLIC, "silent", "Z", null, null));
+                patchDoExplosionA(classNode);
+                patchDoExplosionB(classNode);
+                break;
+            }
+            case DirectedExplosion: {
+                classNode = remapExplosion(classNode);
+                // patchDoExplosionA(classNode);
+                break;
+            }
+            case Packet60Explosion: {
+                classNode = remapExplosion(classNode);
+                break;
+            }
         }
         return classNode;
     }
