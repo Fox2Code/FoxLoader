@@ -31,20 +31,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 final class RecipesPatch extends GamePatch {
+    private static final String ItemStack = "net/minecraft/common/item/ItemStack";
     private static final String Items = "net/minecraft/common/item/Items";
+    private static final String Container = "net/minecraft/common/block/container/Container";
+    private static final String InventoryCrafting = "net/minecraft/common/entity/inventory/InventoryCrafting";
+    private static final String IRecipe = "net/minecraft/common/recipe/IRecipe";
     private static final String ShapedRecipes = "net/minecraft/common/recipe/ShapedRecipes";
     private static final String ShapelessRecipes = "net/minecraft/common/recipe/ShapelessRecipes";
+    private static final String CraftingManager = "net/minecraft/common/recipe/CraftingManager";
     private static final String RecipesDyes = "net/minecraft/common/recipe/RecipesDyes";
     private static final String TaggedIngredient = "net/minecraft/common/recipe/TaggedIngredient";
     private static final String FoxTaggedIngredients = "com/fox2code/foxloader/recipe/FoxTaggedIngredients";
+    private static final String InternalRecipeHooks = "com/fox2code/foxloader/internal/InternalRecipeHooks";
 
     RecipesPatch() {
-        super(new String[]{ShapedRecipes, ShapelessRecipes, RecipesDyes});
+        super(new String[]{InventoryCrafting, ShapedRecipes, ShapelessRecipes, CraftingManager, RecipesDyes});
     }
 
     @Override
     public ClassNode transform(ClassNode classNode) {
         switch (classNode.name) {
+            case InventoryCrafting: {
+                patchInventoryCrafting(classNode);
+                break;
+            }
             case ShapedRecipes: {
                 TransformerUtils.makeGetterForFields(classNode, "width", "height", "ingredients");
                 break;
@@ -53,12 +63,49 @@ final class RecipesPatch extends GamePatch {
                 TransformerUtils.makeGetterForFields(classNode, "ingredients");
                 break;
             }
+            case CraftingManager: {
+                patchCraftingManager(classNode);
+                break;
+            }
             case RecipesDyes: {
                 patchAllDyeRecipes(classNode);
                 break;
             }
         }
         return classNode;
+    }
+
+    private void patchInventoryCrafting(ClassNode classNode) {
+        FieldNode fieldNode = TransformerUtils.getFieldDesc(classNode, "L" + Container + ";");
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC,
+                "getCraftingContainer", "()" + fieldNode.desc, null, null);
+        methodNode.instructions.add(new VarInsnNode(ALOAD, 0));
+        methodNode.instructions.add(new FieldInsnNode(GETFIELD,
+                classNode.name, fieldNode.name, fieldNode.desc));
+        methodNode.instructions.add(new InsnNode(ARETURN));
+        classNode.methods.add(methodNode);
+    }
+
+    private void patchCraftingManager(ClassNode classNode) {
+        MethodNode methodNode = TransformerUtils.getMethod(classNode, "findMatchingRecipe");
+        for (AbstractInsnNode abstractInsnNode : methodNode.instructions.toArray()) {
+            if (abstractInsnNode.getOpcode() == ARETURN) {
+                AbstractInsnNode previous = abstractInsnNode.getPrevious();
+                if (previous.getOpcode() == INVOKEINTERFACE &&
+                        ((MethodInsnNode) previous).owner.equals(IRecipe)) {
+                    methodNode.instructions.remove(previous);
+                    methodNode.instructions.insertBefore(abstractInsnNode, new MethodInsnNode(
+                            INVOKESTATIC, InternalRecipeHooks, "onWorkbenchRecipe",
+                            "(L" + IRecipe + ";L" + InventoryCrafting + ";)L" + ItemStack + ";"));
+                } else if (previous.getOpcode() != ACONST_NULL) {
+                    methodNode.instructions.insertBefore(
+                            abstractInsnNode, new VarInsnNode(ALOAD, 1));
+                    methodNode.instructions.insertBefore(abstractInsnNode, new MethodInsnNode(
+                            INVOKESTATIC, InternalRecipeHooks, "onWorkbenchRecipe",
+                            "(L" + ItemStack + ";L" + InventoryCrafting + ";)L" + ItemStack + ";"));
+                }
+            }
+        }
     }
 
     private static void patchAllDyeRecipes(ClassNode classNode) {

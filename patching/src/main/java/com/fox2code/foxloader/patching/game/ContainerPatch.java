@@ -33,12 +33,16 @@ final class ContainerPatch extends GamePatch {
     private static final String ContainerManager = "com/fox2code/foxloader/container/ContainerManager";
 
     ContainerPatch() {
-        super(new String[]{EntityPlayer, EntityPlayerMP});
+        super(new String[]{Container, EntityPlayer, EntityPlayerMP});
     }
 
     @Override
     public ClassNode transform(ClassNode classNode) {
         switch (classNode.name) {
+            case Container: {
+                patchContainer(classNode);
+                break;
+            }
             case EntityPlayer: {
                 patchEntityPlayer(classNode);
                 break;
@@ -49,6 +53,17 @@ final class ContainerPatch extends GamePatch {
             }
         }
         return classNode;
+    }
+
+    private void patchContainer(ClassNode classNode) {
+        FieldNode fieldNode = TransformerUtils.getField(classNode, "playersList");
+        MethodNode methodNode = new MethodNode(ACC_PUBLIC | ACC_FINAL,
+                "getActiveViewers", "()" + fieldNode.desc, "()" + fieldNode.signature, null);
+        methodNode.instructions.add(new VarInsnNode(ALOAD, 0));
+        methodNode.instructions.add(new FieldInsnNode(GETFIELD,
+                classNode.name, fieldNode.name, fieldNode.desc));
+        methodNode.instructions.add(new InsnNode(ARETURN));
+        classNode.methods.add(methodNode);
     }
 
     private static void patchEntityPlayer(ClassNode classNode) {
