@@ -26,13 +26,15 @@ package com.fox2code.foxloader.event.interaction;
 import com.fox2code.foxevents.Event;
 import net.minecraft.common.entity.player.EntityPlayer;
 import net.minecraft.common.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Event.DelegateEvent
 public final class PlayerUseItemOnBlockEvent extends PlayerUseItem {
     private final int x, y, z, facing;
     private final float xOffset, yOffset, zOffset;
 
-    public PlayerUseItemOnBlockEvent(EntityPlayer entityPlayer, ItemStack heldItem,
+    public PlayerUseItemOnBlockEvent(@NotNull EntityPlayer entityPlayer, @Nullable ItemStack heldItem,
                                      int x, int y, int z, int facing,
                                      float xOffset, float yOffset, float zOffset) {
         super(entityPlayer, heldItem);

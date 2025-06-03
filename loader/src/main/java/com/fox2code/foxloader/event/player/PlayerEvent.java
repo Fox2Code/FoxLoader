@@ -32,7 +32,7 @@ import java.util.Objects;
 public abstract class PlayerEvent extends Event {
     private final EntityPlayer entityPlayer;
 
-    protected PlayerEvent(EntityPlayer entityPlayer) {
+    protected PlayerEvent(@NotNull EntityPlayer entityPlayer) {
         this.entityPlayer = Objects.requireNonNull(entityPlayer, "entityPlayer");
     }
 

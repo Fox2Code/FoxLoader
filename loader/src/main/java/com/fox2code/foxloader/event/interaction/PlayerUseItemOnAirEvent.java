@@ -26,10 +26,12 @@ package com.fox2code.foxloader.event.interaction;
 import com.fox2code.foxevents.Event;
 import net.minecraft.common.entity.player.EntityPlayer;
 import net.minecraft.common.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Event.DelegateEvent
 public final class PlayerUseItemOnAirEvent extends PlayerUseItem {
-    public PlayerUseItemOnAirEvent(EntityPlayer entityPlayer, ItemStack heldItem) {
+    public PlayerUseItemOnAirEvent(@NotNull EntityPlayer entityPlayer, @Nullable ItemStack heldItem) {
         super(entityPlayer, heldItem);
     }
 }

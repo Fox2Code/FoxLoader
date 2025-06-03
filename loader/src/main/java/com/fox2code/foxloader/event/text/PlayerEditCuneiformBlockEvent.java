@@ -21,31 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.fox2code.foxloader.event.player;
+package com.fox2code.foxloader.event.text;
 
+import com.fox2code.foxevents.Event;
 import net.minecraft.common.entity.player.EntityPlayer;
-import net.minecraft.common.util.ChatColors;
+import net.minecraft.common.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * This event is called when a player leaves the world.
- * <p>
- * You can modify the player data during this stage and the changes will be saved on disk
- */
-public final class PlayerLeaveEvent extends PlayerEvent {
-    private String leaveMessage;
+@Event.DelegateEvent
+public final class PlayerEditCuneiformBlockEvent extends PlayerEditTextBlockEvent {
+    private final String oldBlockText;
+    private String newBlockText;
+    private final boolean finish;
 
-    public PlayerLeaveEvent(@NotNull EntityPlayer entityPlayer) {
-        super(entityPlayer);
-        this.leaveMessage = ChatColors.YELLOW + entityPlayer.username + " left the game.";
+    public PlayerEditCuneiformBlockEvent(World world, int x, int y, int z, EntityPlayer entityPlayer,
+                                         String oldBlockText, String newBlockText, boolean finish) {
+        super(world, x, y, z, entityPlayer);
+        this.oldBlockText = oldBlockText == null ? "" : oldBlockText;
+        this.newBlockText = newBlockText == null ? "" : newBlockText;
+        this.finish = finish;
     }
 
-    public void setLeaveMessage(@Nullable String leaveMessage) {
-        this.leaveMessage = leaveMessage;
+    @Override
+    public @NotNull String getOldBlockText() {
+        return this.oldBlockText;
     }
 
-    @Nullable public String getLeaveMessage() {
-        return this.leaveMessage;
+    @Override
+    public @NotNull String getNewBlockText() {
+        return this.newBlockText;
+    }
+
+    public void setNewBlockText(@Nullable String newBlockText) {
+        this.newBlockText = newBlockText == null ?
+                this.oldBlockText : newBlockText;
+    }
+
+    public boolean isFinish() {
+        return this.finish;
     }
 }

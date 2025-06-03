@@ -33,7 +33,7 @@ public final class PlayerChatEvent extends PlayerEvent implements Event.Cancella
     private final String chatMessage;
     private String formattedMessage;
 
-    public PlayerChatEvent(EntityPlayer entityPlayer, String chatMessage) {
+    public PlayerChatEvent(@NotNull EntityPlayer entityPlayer,@NotNull String chatMessage) {
         super(entityPlayer);
         this.chatMessage = Objects.requireNonNull(chatMessage, "chatMessage");
         this.formattedMessage = "<" + entityPlayer.username + "> " + chatMessage;

@@ -25,6 +25,8 @@ package com.fox2code.foxloader.event.player;
 
 import net.minecraft.common.entity.player.EntityPlayer;
 import net.minecraft.common.util.ChatColors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This event is called when a player join the world.
@@ -34,16 +36,16 @@ import net.minecraft.common.util.ChatColors;
 public final class PlayerJoinEvent extends PlayerEvent {
     private String joinMessage;
 
-    public PlayerJoinEvent(EntityPlayer entityPlayer) {
+    public PlayerJoinEvent(@NotNull EntityPlayer entityPlayer) {
         super(entityPlayer);
         this.joinMessage = ChatColors.YELLOW + entityPlayer.username + " joined the game.";
     }
 
-    public void setJoinMessage(String joinMessage) {
+    public void setJoinMessage(@Nullable String joinMessage) {
         this.joinMessage = joinMessage;
     }
 
-    public String getJoinMessage() {
+    @Nullable public String getJoinMessage() {
         return this.joinMessage;
     }
 }

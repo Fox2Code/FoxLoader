@@ -77,6 +77,7 @@ public final class GamePatches {
         addGamePatch(new LogAgentPatch());
         addGamePatch(new ContainerPatch());
         addGamePatch(new TileEntityPatch());
+        addGamePatch(new EditTextPatch());
         // Debug & cosmetic stuff
         addGamePatch(new VarNamePatch());
     }

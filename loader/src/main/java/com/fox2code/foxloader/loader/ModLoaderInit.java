@@ -390,7 +390,8 @@ public final class ModLoaderInit {
         for (EarlyModRegistryInfo earlyModRegistryInfo : sortedEarlyModRegistryInfo) {
             earlyModRegistryInfo.register(loadedBundles);
         }
-        if (FoxLauncher.DEVELOPING_FOXLOADER && !files.isEmpty()) {
+        if (FoxLauncher.DEVELOPING_FOXLOADER && !files.isEmpty() &&
+                !(files.size() == 1 && files.get(0).getName().equals("debugger-agent.jar"))) {
             throw new Error("Leftovers files detected: " + files);
         }
         ModLoaderInit.getModLoaderLogger().info(

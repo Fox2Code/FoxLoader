@@ -83,7 +83,8 @@ public final class GuiScreenPatch extends GamePatch {
             if (abstractInsnNode instanceof LdcInsnNode) {
                 LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
                 if (ldcInsnNode.cst instanceof String &&
-                        ((String) ldcInsnNode.cst).startsWith("ReIndev " + BuildConfig.REINDEV_VERSION)) {
+                        (((String) ldcInsnNode.cst).startsWith("Minecraft ReIndev " + BuildConfig.REINDEV_VERSION) ||
+                                ((String) ldcInsnNode.cst).startsWith("ReIndev " + BuildConfig.REINDEV_VERSION))) {
                     String constant = ((String) ldcInsnNode.cst);
                     if (constant.endsWith(")")) {
                         // This branch happens for betas and such

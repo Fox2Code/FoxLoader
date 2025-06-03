@@ -96,7 +96,7 @@ public final class DependencyHelper {
             new Dependency("com.fox2code:ReBuild:" + BuildConfig.REBUILD_VERSION, FOX2CODE,
                     "com.fox2code.rebuild.ClassDataProvider", null, "6bb4ac7ae84ec752e505c4dc885c003e2550baf4c327a5c9f9c44379a756e43d"),
             new Dependency("com.fox2code.FoxEvents:core:" + BuildConfig.FOX_EVENTS_VERSION, FOX2CODE,
-                    "com.fox2code.foxevents.FoxEvents", null, "19a43c993892ea3dd80d66bcb1a8b12ff4d96f0774f913c62bd34bb395c7af5f"),
+                    "com.fox2code.foxevents.FoxEvents", null, "316fe03dae63f306e8462db752732b1e3359f23f8177fbc4fb02dbabf0271e01"),
             new Dependency("com.fox2code:FoxFlexVer:" + BuildConfig.FOX_FLEX_VER_VERSION, FOX2CODE,
                     "com.fox2code.flexver.FlexVer", null, "4cf356d6c05c1a7008d90500945df21e4bac32e3a09309efc012a5a373431c0b"),
             jvmDowngraderCore, jvmDowngraderJavaAPI, // jvmDowngrader has special handling in dev plugin

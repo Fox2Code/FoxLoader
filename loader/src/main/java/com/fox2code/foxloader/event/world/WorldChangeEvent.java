@@ -67,6 +67,15 @@ public abstract class WorldChangeEvent extends WorldEvent {
         return false;
     }
 
+    /**
+     * @return if the change only change metadata, and not the blocks itself,
+     * like editing text, useful if you want to make a land protection plugin
+     * with finer land claim control.
+     */
+    public boolean isMetadataOnly() {
+        return false;
+    }
+
     @Event.DelegateEvent
     public static abstract class SingleBlockChange extends WorldChangeEvent {
         private final int x, y, z;

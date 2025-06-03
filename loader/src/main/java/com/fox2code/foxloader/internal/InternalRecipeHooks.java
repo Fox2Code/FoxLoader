@@ -41,7 +41,7 @@ public final class InternalRecipeHooks {
         }
         PrepareRecipeEvent prepareRecipeEvent =
                 new PrepareRecipeEvent(null, inventoryCrafting, itemStack);
-        prepareRecipeEvent.callEvent();
+        PREPARE_RECIPE_EVENT.callEvent(prepareRecipeEvent);
         return prepareRecipeEvent.getEffectiveResult();
     }
 
@@ -52,7 +52,7 @@ public final class InternalRecipeHooks {
         PrepareRecipeEvent prepareRecipeEvent =
                 new PrepareRecipeEvent(recipe, inventoryCrafting,
                         recipe.getCraftingResult(inventoryCrafting));
-        prepareRecipeEvent.callEvent();
+        PREPARE_RECIPE_EVENT.callEvent(prepareRecipeEvent);
         return prepareRecipeEvent.getEffectiveResult();
     }
 }

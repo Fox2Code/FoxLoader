@@ -150,6 +150,7 @@ public final class FoxLauncher {
         installLoggerHelper(true); // Install special logger before libraries loading
         DependencyHelper.loadCoreDependencies(true);
         initializeClassPath();
+        initializeDebugOptions();
     }
 
     static void initForServer() {
@@ -193,6 +194,7 @@ public final class FoxLauncher {
         installLoggerHelper(false); // Install special logger before libraries loading
         DependencyHelper.loadCoreDependencies(false);
         initializeClassPath();
+        initializeDebugOptions();
     }
 
     private static void initializeClassLoaderCommon() {
@@ -250,6 +252,12 @@ public final class FoxLauncher {
                     printEarlyStackTrace(e);
                 }
             }
+        }
+    }
+
+    private static void initializeDebugOptions() {
+        if (FoxLauncher.DEVELOPING_FOXLOADER) {
+            System.setProperty("foxevents.debug", "true");
         }
     }
 

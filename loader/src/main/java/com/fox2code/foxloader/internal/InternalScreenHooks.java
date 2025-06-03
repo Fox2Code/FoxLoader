@@ -38,6 +38,6 @@ public final class InternalScreenHooks {
 
     public static void onGuiScreenInitHook(GuiScreen guiScreen, List<GuiElement> controlList) {
         if (GUI_SCREEN_INIT_EVENT.isEmpty()) return;
-        new GuiScreenInitEvent(guiScreen, controlList).callEvent();
+        GUI_SCREEN_INIT_EVENT.callEvent(new GuiScreenInitEvent(guiScreen, controlList));
     }
 }

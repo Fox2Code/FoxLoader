@@ -21,31 +21,46 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.fox2code.foxloader.event.player;
+package com.fox2code.foxloader.event.text;
 
+import com.fox2code.foxevents.Event;
+import com.fox2code.foxloader.event.interaction.PlayerUseItemOnBlockEvent;
+import com.fox2code.foxloader.event.world.WorldChangeEvent;
+import net.minecraft.common.entity.Entity;
 import net.minecraft.common.entity.player.EntityPlayer;
-import net.minecraft.common.util.ChatColors;
+import net.minecraft.common.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * This event is called when a player leaves the world.
+ * This event is used to monitor when a player changes the text of a block in the world, can be used for censoring text.
  * <p>
- * You can modify the player data during this stage and the changes will be saved on disk
+ * For handling player mutes, it is recommended to use {@link PlayerUseItemOnBlockEvent}
  */
-public final class PlayerLeaveEvent extends PlayerEvent {
-    private String leaveMessage;
+@Event.DelegateEvent
+public abstract class PlayerEditTextBlockEvent extends WorldChangeEvent.SingleBlockChange implements Event.Cancellable {
+    private final EntityPlayer entityPlayer;
 
-    public PlayerLeaveEvent(@NotNull EntityPlayer entityPlayer) {
-        super(entityPlayer);
-        this.leaveMessage = ChatColors.YELLOW + entityPlayer.username + " left the game.";
+    public PlayerEditTextBlockEvent(World world, int x, int y, int z, EntityPlayer entityPlayer) {
+        super(world, x, y, z);
+        this.entityPlayer = entityPlayer;
     }
 
-    public void setLeaveMessage(@Nullable String leaveMessage) {
-        this.leaveMessage = leaveMessage;
+    @Override
+    public @Nullable Entity getEntitySource() {
+        return this.entityPlayer;
     }
 
-    @Nullable public String getLeaveMessage() {
-        return this.leaveMessage;
+    @Override
+    public boolean isMetadataOnly() {
+        return true;
     }
+
+    public EntityPlayer getEntityPlayer() {
+        return this.entityPlayer;
+    }
+
+    @NotNull public abstract String getOldBlockText();
+
+    @NotNull public abstract String getNewBlockText();
 }

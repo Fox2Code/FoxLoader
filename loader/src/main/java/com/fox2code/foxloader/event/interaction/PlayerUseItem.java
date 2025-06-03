@@ -27,17 +27,19 @@ import com.fox2code.foxevents.Event;
 import com.fox2code.foxloader.event.player.PlayerEvent;
 import net.minecraft.common.entity.player.EntityPlayer;
 import net.minecraft.common.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Event.DelegateEvent
 public abstract class PlayerUseItem extends PlayerEvent implements Event.Cancellable {
     private final ItemStack heldItem;
 
-    public PlayerUseItem(EntityPlayer entityPlayer, ItemStack heldItem) {
+    public PlayerUseItem(@NotNull EntityPlayer entityPlayer, @Nullable ItemStack heldItem) {
         super(entityPlayer);
         this.heldItem = heldItem;
     }
 
-    public final ItemStack getHeldItem() {
+    @Nullable public final ItemStack getHeldItem() {
         return this.heldItem;
     }
 }
