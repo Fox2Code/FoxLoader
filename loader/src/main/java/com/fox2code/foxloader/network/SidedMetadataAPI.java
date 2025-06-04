@@ -58,7 +58,7 @@ public final class SidedMetadataAPI {
         return active == null ? publicSelfMetaData : active;
     }
 
-    public static boolean getBoolean(String key) {
+    public static boolean getBoolean(@Nullable String key) {
         return Boolean.parseBoolean(getActiveMetadata().get(key));
     }
 

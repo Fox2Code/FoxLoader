@@ -151,7 +151,7 @@ public final class JavaLoadingPlugin extends LoadingPlugin {
     }
 
     @Override
-    public int getModDisplayFlags(ModContainer modContainer) {
+    public int getModDisplayFlags(@NotNull ModContainer modContainer) {
         JavaModInfo javaModInfo = ((JavaModInfo) modContainer.getModInfo());
         switch (javaModInfo.id) {
             case "reindev":
@@ -171,7 +171,7 @@ public final class JavaLoadingPlugin extends LoadingPlugin {
     }
 
     @Override
-    public @Nullable AbstractUpdater makeModContainerUpdater(ModContainer modContainer) {
+    public @Nullable AbstractUpdater makeModContainerUpdater(@NotNull ModContainer modContainer) {
         JavaModInfo javaModInfo = ((JavaModInfo) modContainer.getModInfo());
         if ("foxloader".equals(javaModInfo.id)) {
             return FoxLoaderUpdater.INSTANCE;

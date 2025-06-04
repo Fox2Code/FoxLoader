@@ -28,6 +28,7 @@ import net.minecraft.client.command.ClientCommandCompletion;
 import net.minecraft.common.command.Command;
 import net.minecraft.common.command.IllegalCmdListenerOperation;
 import net.minecraft.common.command.PlayerCommandHandler;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -40,12 +41,14 @@ public final class CommandRegistry {
 
     private CommandRegistry() { throw new AssertionError(); }
 
-    public static void registerCommand(Command command) {
+    public static void registerCommand(@NotNull Command command) {
+        Objects.requireNonNull(command, "command");
         if (Internal.registered) throw new IllegalStateException("Commands already registered");
         commandsMap.put(command.getName(), command);
     }
 
-    public static void registerClientCommand(Command command) {
+    public static void registerClientCommand(@NotNull Command command) {
+        Objects.requireNonNull(command, "command");
         if (Internal.registered) throw new IllegalStateException("Commands already registered");
         String commandName = command.getName();
         if (clientCommandsMap.put(commandName, command) != null) {

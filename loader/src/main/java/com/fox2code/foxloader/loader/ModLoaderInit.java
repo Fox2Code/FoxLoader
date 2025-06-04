@@ -86,7 +86,7 @@ public final class ModLoaderInit {
         return modContainers.get(modId);
     }
 
-    public static Collection<ModContainer> getModContainers() {
+    @NotNull public static Collection<ModContainer> getModContainers() {
         if (modContainers.isEmpty()) {
             throw new IllegalStateException("getModContainers() called before loadModContainersWithLoaders()");
         }

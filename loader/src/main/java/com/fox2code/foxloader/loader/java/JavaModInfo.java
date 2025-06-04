@@ -27,6 +27,7 @@ import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.ModInfo;
 import com.fox2code.foxloader.utils.io.JarUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOError;
@@ -119,7 +120,7 @@ public final class JavaModInfo extends ModInfo {
     }
 
     @Override
-    public Collection<String> getRequestedDependencyBundles() {
+    @NotNull public Collection<String> getRequestedDependencyBundles() {
         return this.requestedDependencyBundles;
     }
 }

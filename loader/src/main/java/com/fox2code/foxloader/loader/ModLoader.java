@@ -46,6 +46,7 @@ import net.minecraft.common.command.Command;
 import net.minecraft.common.command.ICommandListener;
 import net.minecraft.common.networking.NetworkManager;
 import net.minecraft.server.MinecraftServer;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,11 +67,11 @@ public final class ModLoader extends Mod {
 
     ModLoader() { this.modContainer = ModLoaderInit.FOX_LOADER_CONTAINER; }
 
-    public static File getModsFolder() {
+    @NotNull public static File getModsFolder() {
         return ModLoaderInit.mods;
     }
 
-    public static File getConfigFolder() {
+    @NotNull public static File getConfigFolder() {
         return ModLoaderInit.config;
     }
 
@@ -135,12 +136,12 @@ public final class ModLoader extends Mod {
     }
 
     @Override
-    public void onReceiveDataFromClient(NetworkManager connection, byte[] data) throws IOException {
+    public void onReceiveDataFromClient(@NotNull NetworkManager connection, byte[] data) throws IOException {
         LoaderNetworkManager.executeClientPacketData(connection, data);
     }
 
     @Override
-    public void onReceiveDataFromServer(NetworkManager connection, byte[] data) throws IOException {
+    public void onReceiveDataFromServer(@NotNull NetworkManager connection, byte[] data) throws IOException {
         LoaderNetworkManager.executeServerPacketData(connection, data);
     }
 

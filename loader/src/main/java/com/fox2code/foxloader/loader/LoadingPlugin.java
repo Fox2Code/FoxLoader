@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public abstract class LoadingPlugin {
@@ -40,11 +41,11 @@ public abstract class LoadingPlugin {
     private final String id;
     JavaModInfo javaModInfo;
 
-    protected LoadingPlugin(String id) {
-        this.id = id;
+    protected LoadingPlugin(@NotNull String id) {
+        this.id = Objects.requireNonNull(id);
     }
 
-    public final String getPluginId() {
+    @NotNull public final String getPluginId() {
         return this.id;
     }
 
@@ -125,7 +126,7 @@ public abstract class LoadingPlugin {
      * @param modContainer the mod container
      * @return the display flags to use for the current mod.
      */
-    public int getModDisplayFlags(ModContainer modContainer) {
+    public int getModDisplayFlags(@NotNull ModContainer modContainer) {
         return 0;
     }
 
@@ -133,7 +134,7 @@ public abstract class LoadingPlugin {
      * @param modContainer the mod to make an update for
      * @return the update to use for that mod or {@code null} if not applicable.
      */
-    public @Nullable AbstractUpdater makeModContainerUpdater(ModContainer modContainer) {
+    public @Nullable AbstractUpdater makeModContainerUpdater(@NotNull ModContainer modContainer) {
         return null;
     }
 }

@@ -72,7 +72,7 @@ public final class ModContainer {
         return activeModContainer.get();
     }
 
-    static void setActiveModContainer(ModContainer modContainer)  {
+    static void setActiveModContainer(@Nullable ModContainer modContainer)  {
         if (modContainer == null) activeModContainer.remove();
         else activeModContainer.set(modContainer);
     }
@@ -138,7 +138,7 @@ public final class ModContainer {
         this.loadingPlugin.preLoadModContainer(this);
     }
 
-    public void onReceiveDataFromClient(NetworkManager connection, byte[] data) {
+    public void onReceiveDataFromClient(@NotNull NetworkManager connection, byte @NotNull [] data) {
         if (this.mod != null) {
             try {
                 this.mod.onReceiveDataFromClient(connection, data);
@@ -148,7 +148,7 @@ public final class ModContainer {
         }
     }
 
-    public void onReceiveDataFromServer(NetworkManager connection, byte[] data) throws IOException {
+    public void onReceiveDataFromServer(@NotNull NetworkManager connection, byte @NotNull [] data) throws IOException {
         if (this.mod != null) {
             try {
                 this.mod.onReceiveDataFromServer(connection, data);
@@ -158,7 +158,7 @@ public final class ModContainer {
         }
     }
 
-    public void onEventError(Event event, EventCallback callback, Throwable throwable, boolean disable) {
+    public void onEventError(@NotNull Event event,@NotNull EventCallback callback,@NotNull Throwable throwable, boolean disable) {
         if (this.mod != null) {
             try {
                 this.mod.onEventError(event, callback, throwable, disable);

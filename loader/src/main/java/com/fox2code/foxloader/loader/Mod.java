@@ -64,9 +64,9 @@ public class Mod {
 
     public void onPostInit() {}
 
-    public void onReceiveDataFromClient(NetworkManager connection, byte[] data) throws IOException {}
+    public void onReceiveDataFromClient(@NotNull NetworkManager connection, byte[] data) throws IOException {}
 
-    public void onReceiveDataFromServer(NetworkManager connection, byte[] data) throws IOException {}
+    public void onReceiveDataFromServer(@NotNull NetworkManager connection, byte[] data) throws IOException {}
 
-    public void onEventError(Event event, EventCallback callback, Throwable throwable, boolean disable) {}
+    public void onEventError(@NotNull Event event,@NotNull EventCallback callback,@NotNull Throwable throwable, boolean disable) {}
 }

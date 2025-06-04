@@ -25,6 +25,8 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxloader.launcher.FileInfo;
 import com.fox2code.flexver.FlexVer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigSource;
 
 import java.io.DataInputStream;
@@ -32,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.jar.Attributes;
 
 public class ModInfo extends FileInfo implements IMixinConfigSource {
@@ -45,28 +48,35 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
     private static final Attributes.Name UNOFFICIAL = new Attributes.Name("Unofficial");
     private static final Attributes.Name LOAD_ORDER_PRIORITY = new Attributes.Name("LoadOrderPriority");
 
-    public final String id;
-    public final String name;
-    public final String version;
-    public final FlexVer flexver;
-    public final String description;
-    public final String authors;
-    public final String iconPath;
-    public final String environment;
+    @NotNull public final String id;
+    @NotNull public final String name;
+    @NotNull public final String version;
+    @NotNull public final FlexVer flexver;
+    @NotNull public final String description;
+    @NotNull public final String authors;
+    @Nullable public final String iconPath;
+    @NotNull public final String environment;
     public final boolean unofficial;
     public final long loadOrderPriority;
 
-    public ModInfo(File file, String jarPath, String id, String name, String version, String description, String authors,
-                   String iconPath, String environment, boolean unofficial, long loadOrderPriority) throws IOException {
+    public ModInfo(@NotNull File file, @Nullable String jarPath, @NotNull String id,@Nullable String name,
+                   @Nullable String version,@Nullable String description,@Nullable String authors,
+                   @Nullable String iconPath,@Nullable String environment,
+                   boolean unofficial, long loadOrderPriority) throws IOException {
         super(file, jarPath);
-        this.id = id;
-        this.name = name;
+        this.id = Objects.requireNonNull(id);
+        this.name = name == null ? id : name;
+        if (version == null || version.isEmpty()) {
+            version = "1.0.0";
+        }
         this.version = version;
         this.flexver = FlexVer.parse(version);
-        this.description = description;
-        this.authors = authors;
+        this.description = description != null ?
+                description : "Missing mod description";
+        this.authors = authors != null ? authors : "Unknown";
         this.iconPath = iconPath;
-        this.environment = environment;
+        this.environment = environment != null &&
+                !environment.isEmpty() ? environment : "any";
         this.unofficial = unofficial;
         this.loadOrderPriority = loadOrderPriority;
     }
@@ -124,16 +134,16 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
     }
 
     @Override
-    public final String getId() {
+    @NotNull public final String getId() {
         return this.id;
     }
 
     @Override
-    public final String getDescription() {
+    @NotNull public final String getDescription() {
         return this.description;
     }
 
-    public Collection<String> getRequestedDependencyBundles() {
+    @NotNull public Collection<String> getRequestedDependencyBundles() {
         return Collections.emptyList();
     }
 }
