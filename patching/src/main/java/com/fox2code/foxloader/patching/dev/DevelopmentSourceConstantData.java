@@ -31,9 +31,7 @@ import org.objectweb.asm.tree.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.Objects;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -71,6 +69,36 @@ public class DevelopmentSourceConstantData {
         }
     }
 
+    public List<ConstantCheck> getClassConstantChecks(ClassNode classNode) {
+        if ("net/minecraft/common/CoreConstants".equals(classNode.name)) {
+            return Collections.emptyList();
+        }
+        ArrayList<ConstantCheck> constantChecks = null;
+        HashSet<String> usedConstant = null;
+        for (FieldNode fieldNode : classNode.fields) {
+            if (((fieldNode.access & (Opcodes.ACC_STATIC | Opcodes.ACC_FINAL)) ==
+                    (Opcodes.ACC_STATIC | Opcodes.ACC_FINAL)) && fieldNode.value != null &&
+                    "Ljava/lang/String;".equals(fieldNode.desc)) {
+                String value = (String) fieldNode.value;
+                if (value.length() <= 1) continue;
+                if (usedConstant == null) {
+                    usedConstant = new HashSet<>();
+                    usedConstant.add(this.internalVersion);
+                    usedConstant.add(this.version);
+                    usedConstant.add(this.displayVersion);
+                }
+                if (usedConstant.add(value)) {
+                    if (constantChecks == null) constantChecks = new ArrayList<>();
+                    constantChecks.add(new ClassConstantCheck(value, classNode.name, fieldNode.name));
+                } else {
+                    System.out.println("Duplicate constant in " + classNode.name + " for \"" + value + "\"");
+                }
+            }
+        }
+
+        return constantChecks == null ? Collections.emptyList() : constantChecks;
+    }
+
     public int methodStatus(ClassNode classNode, MethodNode methodNode) {
         switch (classNode.name) {
             case "net/minecraft/common/CoreConstants":
@@ -84,7 +112,8 @@ public class DevelopmentSourceConstantData {
     }
 
     public void patchStringConstant(IdentityHashMap<AbstractInsnNode, InsnList> constantPatching,
-                                    int state, LdcInsnNode ldcInsnNode, ArrayList<AbstractInsnNode> list) {
+                                    List<ConstantCheck> classConstantCheck, int state,
+                                    LdcInsnNode ldcInsnNode, ArrayList<AbstractInsnNode> list) {
         if (state == STATUS_DISABLED) return;
         if (!list.isEmpty()) {
             list.clear();
@@ -95,17 +124,24 @@ public class DevelopmentSourceConstantData {
         for (ConstantCheck constantCheck : check) {
             constantCheck.applyCheck(list);
         }
+        for (ConstantCheck constantCheck : classConstantCheck) {
+            constantCheck.applyCheck(list);
+        }
         if (list.size() != 1 || list.get(0).getOpcode() != Opcodes.LDC) {
             constantPatching.put(ldcInsnNode,
                     TransformerUtils.compileStringAppendChain(list));
         }
     }
 
-    private static abstract class ConstantCheck {
+    public static abstract class ConstantCheck {
         private final String value;
 
         private ConstantCheck(String value) {
             this.value = value;
+        }
+
+        public final String getValue() {
+            return this.value;
         }
 
         public void applyCheck(ArrayList<AbstractInsnNode> list) {
@@ -140,7 +176,7 @@ public class DevelopmentSourceConstantData {
         public abstract FieldInsnNode makeFieldInsnNode();
     }
 
-    private static class CoreConstantCheck extends ConstantCheck{
+    private static class CoreConstantCheck extends ConstantCheck {
         private final String fieldName;
 
         private CoreConstantCheck(String value, String fieldName) {
@@ -151,6 +187,23 @@ public class DevelopmentSourceConstantData {
         public FieldInsnNode makeFieldInsnNode() {
             return new FieldInsnNode(Opcodes.GETSTATIC,
                     "net/minecraft/common/CoreConstants", this.fieldName, "Ljava/lang/String;");
+        }
+    }
+
+    private static class ClassConstantCheck extends ConstantCheck {
+        private final String className;
+        private final String fieldName;
+
+        private ClassConstantCheck(String value, String className, String fieldName) {
+            super(value);
+            this.className = className;
+            this.fieldName = fieldName;
+        }
+
+        @Override
+        public FieldInsnNode makeFieldInsnNode() {
+            return new FieldInsnNode(Opcodes.GETSTATIC,
+                    this.className, this.fieldName, "Ljava/lang/String;");
         }
     }
 }

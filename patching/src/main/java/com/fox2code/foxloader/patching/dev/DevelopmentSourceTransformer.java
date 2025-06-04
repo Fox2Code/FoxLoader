@@ -32,6 +32,7 @@ import org.objectweb.asm.util.Textifier;
 
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public final class DevelopmentSourceTransformer implements Opcodes {
     private static final HashMap<String, ConstantUnpick> staticConstantUnpicks = new HashMap<>();
@@ -247,6 +248,8 @@ public final class DevelopmentSourceTransformer implements Opcodes {
     static void patchForDev(DevelopmentSourceConstantData developmentSourceConstantData, ClassNode classNode) {
         final IdentityHashMap<AbstractInsnNode, InsnList> constantPatching = new IdentityHashMap<>();
         final ArrayList<AbstractInsnNode> nodesCache = new ArrayList<>();
+        final List<DevelopmentSourceConstantData.ConstantCheck> classConstantChecks =
+                developmentSourceConstantData.getClassConstantChecks(classNode);
         for (MethodNode methodNode : classNode.methods) {
             final InsnList insnList = methodNode.instructions;
             final int state = developmentSourceConstantData.methodStatus(classNode, methodNode);
@@ -306,7 +309,7 @@ public final class DevelopmentSourceTransformer implements Opcodes {
                     LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
                     if (ldcInsnNode.cst instanceof String) {
                         developmentSourceConstantData.patchStringConstant(
-                                constantPatching, state, ldcInsnNode, nodesCache);
+                                constantPatching, classConstantChecks, state, ldcInsnNode, nodesCache);
                     }
                 }
             }
