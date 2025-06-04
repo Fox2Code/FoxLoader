@@ -30,7 +30,7 @@ import net.minecraft.common.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 @Event.DelegateEvent
-public final class PlayerBreakBlockEvent extends WorldChangeEvent.SingleBlockChange {
+public final class PlayerBreakBlockEvent extends WorldChangeEvent.SingleBlockChange implements Event.Cancellable {
     private final EntityPlayer entityPlayer;
     private final ItemStack heldItem;
 

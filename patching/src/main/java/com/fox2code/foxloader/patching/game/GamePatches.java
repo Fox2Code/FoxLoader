@@ -81,6 +81,7 @@ public final class GamePatches {
         addGamePatch(new ContainerPatch());
         addGamePatch(new TileEntityPatch());
         addGamePatch(new EditTextPatch());
+        addGamePatch(new PlayerSelectionPatch());
         // Debug & cosmetic stuff
         addGamePatch(new VarNamePatch());
     }

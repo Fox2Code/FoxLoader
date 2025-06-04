@@ -35,6 +35,7 @@ import com.fox2code.foxloader.internal.InternalTranslateHooks;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.packet.LoaderNetworkManager;
 import com.fox2code.foxloader.network.SidedMetadataAPI;
+import com.fox2code.foxloader.selection.PlayerSelectionProvider;
 import com.fox2code.foxloader.registry.CommandRegistry;
 import com.fox2code.foxloader.registry.GameRegistry;
 import com.fox2code.foxloader.updater.UpdateManager;
@@ -57,6 +58,7 @@ import java.util.Collections;
 public final class ModLoader extends Mod {
     private static final ArrayList<Mod> mods = new ArrayList<>();
     private static boolean areAllModsLoaded = false;
+    private static boolean areAllModsFullyLoaded = false;
     private static Thread gameThread;
 
     static {
@@ -117,6 +119,8 @@ public final class ModLoader extends Mod {
     }
 
     static void postInitializeMods() {
+        if (ModLoader.areAllModsFullyLoaded())
+            throw new IllegalStateException("Mods are already fully loaded!");
         if (ModContainer.getActiveModContainer() != null)
             throw new IllegalStateException("postInitializeMods() called with active mod container");
         gameThread = Thread.currentThread();
@@ -130,6 +134,8 @@ public final class ModLoader extends Mod {
             mod.onPostInit();
         }
         ModContainer.setActiveModContainer(null);
+        areAllModsFullyLoaded = true;
+        ModLoaderInit.FOX_LOADER_CONTAINER.runInContext(PlayerSelectionProvider::initialize);
         if (FoxLauncher.isClient() && ModLoaderOptions.INSTANCE.checkForUpdates) {
             UpdateManager.getInstance().checkUpdates();
         }
@@ -190,6 +196,10 @@ public final class ModLoader extends Mod {
 
     public static boolean areAllModsLoaded() {
         return areAllModsLoaded;
+    }
+
+    public static boolean areAllModsFullyLoaded() {
+        return areAllModsFullyLoaded;
     }
 
     public static Thread getGameThread() {

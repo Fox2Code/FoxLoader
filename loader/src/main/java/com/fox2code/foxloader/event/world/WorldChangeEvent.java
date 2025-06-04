@@ -128,5 +128,17 @@ public abstract class WorldChangeEvent extends WorldEvent {
         public int getBlockChangeMaxZ() {
             return this.z;
         }
+
+        public int getX() {
+            return this.x;
+        }
+
+        public int getY() {
+            return this.y;
+        }
+
+        public int getZ() {
+            return this.z;
+        }
     }
 }
