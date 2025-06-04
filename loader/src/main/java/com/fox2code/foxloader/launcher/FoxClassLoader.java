@@ -378,6 +378,11 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
     }
 
     public void addTransformerExclusion(String exclusion) {
+        if (exclusion.startsWith("net.minecraft.") ||
+                "net.minecraft.".startsWith(exclusion)) {
+            throw new IllegalArgumentException(
+                    "Cannot exclude the game itself: \"" + exclusion + "\"");
+        }
         if (!this.exclusions.contains(exclusion)) {
             this.exclusions.add(exclusion);
         }
