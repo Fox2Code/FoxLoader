@@ -39,13 +39,18 @@ public class DevelopmentSourceConstantData {
     private static final int STATUS_DISABLED = -1;
     private static final int STATUS_DEFAULT = 0;
     private static final int STATUS_DISPLAY_FIRST = 1;
+    private static final int PUBLIC_STATIC_FINAL = Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
+    private static final String CoreConstants = "net/minecraft/common/CoreConstants";
+    private static final String ChatColors = "net/minecraft/common/util/ChatColors";
     public final String internalVersion, version, displayVersion;
     private final ConstantCheck[] regular, displayFirst;
+    private final ArrayList<ConstantCheck> chatColorsConstantChecks;
+    private final HashSet<String> constants;
 
-    private DevelopmentSourceConstantData(ClassNode classNode) {
-        this.internalVersion = TransformerUtils.getFieldStringData(classNode, "INTERNAL_VERSION");
-        this.version = TransformerUtils.getFieldStringData(classNode, "VERSION");
-        this.displayVersion = TransformerUtils.getFieldStringData(classNode, "DISPLAY_VERSION");
+    private DevelopmentSourceConstantData(ClassNode coreConstantsClassNode, ClassNode chatColorsClassNode) {
+        this.internalVersion = TransformerUtils.getFieldStringData(coreConstantsClassNode, "INTERNAL_VERSION");
+        this.version = TransformerUtils.getFieldStringData(coreConstantsClassNode, "VERSION");
+        this.displayVersion = TransformerUtils.getFieldStringData(coreConstantsClassNode, "DISPLAY_VERSION");
         CoreConstantCheck internalVersionCheck = new CoreConstantCheck(this.internalVersion, "INTERNAL_VERSION");
         CoreConstantCheck versionCheck = new CoreConstantCheck(this.version, "VERSION");
         CoreConstantCheck displayVersionCheck = new CoreConstantCheck(this.displayVersion, "DISPLAY_VERSION");
@@ -56,38 +61,57 @@ public class DevelopmentSourceConstantData {
             this.displayFirst = this.regular = new ConstantCheck[]{
                     displayVersionCheck, versionCheck, internalVersionCheck};
         }
+        this.chatColorsConstantChecks = new ArrayList<>();
+        this.constants = new HashSet<>();
+        this.constants.add(this.internalVersion);
+        this.constants.add(this.version);
+        this.constants.add(this.displayVersion);
+
+        for (FieldNode fieldNode : chatColorsClassNode.fields) {
+            if ((fieldNode.access & PUBLIC_STATIC_FINAL) == PUBLIC_STATIC_FINAL &&
+                    fieldNode.value != null && fieldNode.desc.equals("Ljava/lang/String;")) {
+                String value = (String) fieldNode.value;
+                if (value.length() != 2) continue;
+                if (this.constants.add(value)) {
+                    this.chatColorsConstantChecks.add(
+                            new ColorConstantCheck(value, fieldNode.name));
+                }
+            }
+        }
     }
 
     public static DevelopmentSourceConstantData fromPatchedJar(File patchedJar) throws IOException {
         try (JarFile jarFile = new JarFile(patchedJar)) {
-            JarEntry jarEntry = jarFile.getJarEntry("net/minecraft/common/CoreConstants.class");
+            JarEntry coreConstantsJarEntry = jarFile.getJarEntry(CoreConstants + ".class");
             ClassNode coreConstantsClassNode = new ClassNode();
-            try (InputStream inputStream = jarFile.getInputStream(jarEntry)) {
+            try (InputStream inputStream = jarFile.getInputStream(coreConstantsJarEntry)) {
                 new ClassReader(inputStream).accept(coreConstantsClassNode, ClassReader.SKIP_FRAMES);
             }
-            return new DevelopmentSourceConstantData(coreConstantsClassNode);
+            JarEntry chatColorsJarEntry = jarFile.getJarEntry(ChatColors + ".class");
+            ClassNode chatColorsClassNode = new ClassNode();
+            try (InputStream inputStream = jarFile.getInputStream(chatColorsJarEntry)) {
+                new ClassReader(inputStream).accept(chatColorsClassNode, ClassReader.SKIP_FRAMES);
+            }
+            return new DevelopmentSourceConstantData(coreConstantsClassNode, chatColorsClassNode);
         }
     }
 
     public List<ConstantCheck> getClassConstantChecks(ClassNode classNode) {
-        if ("net/minecraft/common/CoreConstants".equals(classNode.name)) {
+        if (CoreConstants.equals(classNode.name) || ChatColors.equals(classNode.name)) {
             return Collections.emptyList();
         }
         ArrayList<ConstantCheck> constantChecks = null;
-        HashSet<String> usedConstant = null;
+        HashSet<String> usedConstants = null;
         for (FieldNode fieldNode : classNode.fields) {
             if (((fieldNode.access & (Opcodes.ACC_STATIC | Opcodes.ACC_FINAL)) ==
                     (Opcodes.ACC_STATIC | Opcodes.ACC_FINAL)) && fieldNode.value != null &&
                     "Ljava/lang/String;".equals(fieldNode.desc)) {
                 String value = (String) fieldNode.value;
                 if (value.length() <= 1) continue;
-                if (usedConstant == null) {
-                    usedConstant = new HashSet<>();
-                    usedConstant.add(this.internalVersion);
-                    usedConstant.add(this.version);
-                    usedConstant.add(this.displayVersion);
+                if (usedConstants == null) {
+                    usedConstants = new HashSet<>(this.constants);
                 }
-                if (usedConstant.add(value)) {
+                if (usedConstants.add(value)) {
                     if (constantChecks == null) constantChecks = new ArrayList<>();
                     constantChecks.add(new ClassConstantCheck(value, classNode.name, fieldNode.name));
                 } else {
@@ -101,7 +125,7 @@ public class DevelopmentSourceConstantData {
 
     public int methodStatus(ClassNode classNode, MethodNode methodNode) {
         switch (classNode.name) {
-            case "net/minecraft/common/CoreConstants":
+            case CoreConstants:
                 return STATUS_DISABLED;
             case "net/minecraft/client/Minecraft":
                 return "startGame".equals(methodNode.name) ? STATUS_DISPLAY_FIRST : STATUS_DEFAULT;
@@ -125,6 +149,9 @@ public class DevelopmentSourceConstantData {
             constantCheck.applyCheck(list);
         }
         for (ConstantCheck constantCheck : classConstantCheck) {
+            constantCheck.applyCheck(list);
+        }
+        for (ConstantCheck constantCheck : this.chatColorsConstantChecks) {
             constantCheck.applyCheck(list);
         }
         if (list.size() != 1 || list.get(0).getOpcode() != Opcodes.LDC) {
@@ -186,7 +213,21 @@ public class DevelopmentSourceConstantData {
 
         public FieldInsnNode makeFieldInsnNode() {
             return new FieldInsnNode(Opcodes.GETSTATIC,
-                    "net/minecraft/common/CoreConstants", this.fieldName, "Ljava/lang/String;");
+                    CoreConstants, this.fieldName, "Ljava/lang/String;");
+        }
+    }
+
+    private static class ColorConstantCheck extends ConstantCheck {
+        private final String fieldName;
+
+        private ColorConstantCheck(String value, String fieldName) {
+            super(value);
+            this.fieldName = fieldName;
+        }
+
+        public FieldInsnNode makeFieldInsnNode() {
+            return new FieldInsnNode(Opcodes.GETSTATIC,
+                    ChatColors, this.fieldName, "Ljava/lang/String;");
         }
     }
 
