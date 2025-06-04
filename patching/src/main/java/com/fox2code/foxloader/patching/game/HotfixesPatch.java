@@ -112,7 +112,7 @@ final class HotfixesPatch extends GamePatch {
         MethodNode setFullscreenState = new MethodNode(ACC_PUBLIC,
                 "setFullscreenState", "(Z)V", null, null);
         setFullscreenState.instructions.add(new VarInsnNode(ALOAD, 0));
-        setFullscreenState.instructions.add(new VarInsnNode(ALOAD, 1));
+        setFullscreenState.instructions.add(new VarInsnNode(ILOAD, 1));
         setFullscreenState.instructions.add(new FieldInsnNode(PUTFIELD,
                 GameSettings, fullscreenField.name, fullscreenField.desc));
         setFullscreenState.instructions.add(new InsnNode(RETURN));
