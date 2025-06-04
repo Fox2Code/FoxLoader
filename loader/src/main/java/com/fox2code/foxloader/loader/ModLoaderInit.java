@@ -33,6 +33,7 @@ import com.fox2code.foxloader.loader.java.JavaLoadingPlugin;
 import com.fox2code.foxloader.loader.java.JavaModInfo;
 import com.fox2code.foxloader.patching.PreLoader;
 import com.fox2code.foxloader.patching.mixin.MixinModLoader;
+import com.fox2code.foxloader.updater.FoxLoaderUpdater;
 import com.fox2code.foxloader.utils.Platform;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -66,6 +67,7 @@ public final class ModLoaderInit {
     static final LinkedHashMap<String, ModContainer> modContainers = new LinkedHashMap<>();
     private static final Collection<ModContainer> modContainnersCollection =
             Collections.unmodifiableCollection(modContainers.values());
+    private static boolean inPreBootup = true;
     static boolean isClientDevModeImpl = true;
 
     static {
@@ -190,7 +192,7 @@ public final class ModLoaderInit {
     }
 
     private static Collection<LoadingPlugin> loadModContainersWithLoaders() throws Exception {
-        if (!modContainers.isEmpty()) {
+        if (!modContainers.isEmpty() || !inPreBootup) {
             throw new IllegalStateException("Mods container were already loaded.");
         }
         if (!mods.exists() && !mods.mkdirs()) {
@@ -227,6 +229,14 @@ public final class ModLoaderInit {
         Iterator<File> fileIterator = files.iterator();
         while (fileIterator.hasNext()) {
             File file = fileIterator.next();
+            if (FoxLoaderUpdater.updateFoxLoaderFromMod(file)) {
+                if (file.exists() && !file.delete()) {
+                    file.deleteOnExit();
+                }
+                System.exit(0);
+                // We should always be able to exit...
+                throw new Error("System.exit(0); // Failed");
+            }
             if (file.isFile() && file.length() > 0) {
                 gatherJarInJarInfos(jarInJarInfos, file);
             }
@@ -277,6 +287,7 @@ public final class ModLoaderInit {
                 jarInJarIterator.remove();
             }
         }
+        inPreBootup = false;
         // Construct loading plugins
         for (EarlyModRegistryInfo earlyModRegistryInfo : earlyModRegistryInfos.values()) {
             // Load dependencies bundles of potential loading plugins early.
@@ -522,6 +533,10 @@ public final class ModLoaderInit {
             if (modContainer != null) {
                 modContainer.markAddMixin();
             }
+        }
+
+        public static boolean isInPreBootupStage() {
+            return inPreBootup && !FoxLauncher.getFoxClassLoader().isAllowLoadingGame();
         }
     }
 }

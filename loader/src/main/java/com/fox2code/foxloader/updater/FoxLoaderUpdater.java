@@ -43,6 +43,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 
 public final class FoxLoaderUpdater extends MavenUpdater {
     private static final String ALL_LOADERS_URL = "https://cdn.fox2code.com/maven/foxloader-version-map.json";
@@ -75,19 +77,72 @@ public final class FoxLoaderUpdater extends MavenUpdater {
 
     @Override
     protected void doUpdate() throws IOException {
+        updateFoxLoaderImpl(this.latestMavenVersion, this.getUrlForLatestJar(), null);
+    }
+
+    public static boolean updateFoxLoaderFromMod(File file) throws IOException {
+        if (!ModLoaderInit.Internal.isInPreBootupStage()) {
+            throw new IllegalStateException("Cannot be called at runtime");
+        }
+        String fileName = file.getName();
+        if (!((fileName.startsWith("foxloader-") ||
+                fileName.startsWith("loader-")) &&
+                fileName.endsWith(".jar"))) {
+            return false;
+        }
+        String foxLoaderVersion, mainClass;
+        try (JarFile jarFile = new JarFile(file)) {
+            Attributes attributes = jarFile.getManifest().getMainAttributes();
+            foxLoaderVersion = attributes.getValue("FoxLoader-Version");
+            mainClass = attributes.getValue("Main-Class");
+        } catch (IOException e) {
+            return false;
+        }
+        // Allow FoxLoader when it goes through the installer, but not when it is from a server only jar.
+        if (foxLoaderVersion == null || foxLoaderVersion.isEmpty() ||
+                mainClass == null || !mainClass.startsWith("com.fox2code.foxloader.")) {
+            if (mainClass != null && mainClass.startsWith("com.fox2code.foxloader.launcher.")) {
+                throw new IOException("Cannot upgrade from a server only jar. (File: " + fileName + ")");
+            }
+            return false;
+        }
+        ModLoaderInit.getModLoaderLogger().info("Found FoxLoader " +
+                foxLoaderVersion + " in the mods folder: " + fileName);
+        if (FoxLauncher.DEV_MODE || FoxLauncher.DEVELOPING_FOXLOADER) {
+            ModLoaderInit.getModLoaderLogger().info(
+                    "Cannot update in a development environment, shutting down...");
+            return true;
+        }
+        if (foxLoaderVersion.equals(BuildConfig.FOXLOADER_VERSION)) {
+            ModLoaderInit.getModLoaderLogger().info(
+                    "Cannot update to the same version as itself, shutting down...");
+            return true;
+        }
+        ModLoaderInit.getModLoaderLogger().info("Updating to FoxLoader " + foxLoaderVersion);
+        updateFoxLoaderImpl(foxLoaderVersion, null, file);
+        ModLoaderInit.getModLoaderLogger().info("Update completed, shutting down...");
+        return true;
+    }
+
+    private static void updateFoxLoaderImpl(String updateVersion, String remoteFoxLoaderJar, File localFoxLoaderJar) throws IOException {
+        if (remoteFoxLoaderJar == null && localFoxLoaderJar == null) {
+            throw new IOException("Both remoteFoxLoaderJar and localFoxLoaderJar are null...");
+        }
         File dest = null;
         String[] args;
         LauncherType launcherType = FoxLauncher.getLauncherType();
         ModLoaderInit.getModLoaderLogger().info(
-                "Updating to " + this.latestMavenVersion + " from " + launcherType + " launcher");
+                "Updating to " + updateVersion + " from " + launcherType + " launcher");
         switch (launcherType) {
-            default:
-                return;
             case MMC_LIKE:
                 File libraries = ModLoaderInit.getModContainer("foxloader").getModInfo().file.getParentFile();
-                dest = new File(libraries, "foxloader-" + this.latestMavenVersion + ".jar");
+                dest = new File(libraries, "foxloader-" + updateVersion + ".jar");
+                // fall-through
             case VANILLA_LIKE:
                 args = new String[]{null, "-jar", null, "--update", launcherType.name()};
+                break;
+            default:
+                return;
         }
         if (dest == null) {
             File updateTmp = new File(ModLoader.getConfigFolder(), "update-tmp");
@@ -96,18 +151,21 @@ public final class FoxLoaderUpdater extends MavenUpdater {
                         .warning("Unable to create update tmp folder.");
                 return;
             }
-            dest = new File(updateTmp, "foxloader-" + this.latestMavenVersion + ".jar");
+            dest = new File(updateTmp, "foxloader-" + updateVersion + ".jar");
         }
-        if (BuildConfig.FOXLOADER_VERSION.equals(this.latestMavenVersion) &&
+        if (BuildConfig.FOXLOADER_VERSION.equals(updateVersion) &&
                 FoxLauncher.getLauncherType() != LauncherType.BIN) {
             // Can happen if wrongly installed
             if (!dest.equals(FoxLauncher.foxLoaderFile)) {
                 Files.copy(FoxLauncher.foxLoaderFile.toPath(), dest.toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
             }
+        } else if (localFoxLoaderJar != null && localFoxLoaderJar.exists()) {
+            Files.copy(localFoxLoaderJar.toPath(), dest.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
         } else {
             try (FileOutputStream fileOutputStream = new FileOutputStream(dest)) {
-                NetUtils.downloadTo(this.getUrlForLatestJar(), fileOutputStream);
+                NetUtils.downloadTo(remoteFoxLoaderJar, fileOutputStream);
             }
         }
         args[0] = Platform.getPlatform().javaBin.getPath();

@@ -71,7 +71,7 @@ public final class JavaLoadingPlugin extends LoadingPlugin {
     public @Nullable ModInfo getModInfo(@NotNull File mod, @Nullable String jarPath) throws Exception {
         if (mod.getName().endsWith(".jar") && (jarPath == null || jarPath.endsWith(".jar"))) {
             JavaModInfo javaModInfo = new JavaModInfo(mod, jarPath);
-            if (javaModInfo.id != null && !javaModInfo.id.isEmpty() &&
+            if (!javaModInfo.id.isEmpty() &&
                     javaModInfo.forFoxLoaderVersion != null &&
                     (javaModInfo.forFoxLoaderVersion.equals("*") ||
                             javaModInfo.forFoxLoaderVersion.startsWith(

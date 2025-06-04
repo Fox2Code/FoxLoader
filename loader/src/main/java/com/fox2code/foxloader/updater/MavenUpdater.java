@@ -52,6 +52,7 @@ public class MavenUpdater extends AbstractUpdater {
         int i = dependencyBase.indexOf(':');
         int i2 = dependencyBase.indexOf(':', i + 1);
         if (i2 == -1) i2 = dependencyBase.length();
+        if (!repository.endsWith("/")) repository += "/";
         this.mavenUrlRoot = repository + // "https://www.jitpack.io/"
                 dependencyBase.substring(0, i2).replace('.', '/').replace(':', '/');
         this.mavenArtifactId = dependencyBase.substring(i + 1, i2).replace(':', '-');
