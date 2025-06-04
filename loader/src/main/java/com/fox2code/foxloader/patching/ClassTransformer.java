@@ -29,6 +29,9 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 
+/**
+ * Allow to transform the game via ASM as needed, higher priority transformers are run first.
+ */
 public abstract class ClassTransformer implements Opcodes, Comparable<ClassTransformer> {
     public static final int ASM_BUILD = Opcodes.ASM9;
     public static final int ACC_COMPUTE_FRAMES = 0x80000;
@@ -50,7 +53,7 @@ public abstract class ClassTransformer implements Opcodes, Comparable<ClassTrans
 
     @Override
     public int compareTo(@NotNull ClassTransformer o) {
-        return Long.compare(this.priority, o.priority);
+        return Long.compare(o.priority, this.priority);
     }
 
     @Nullable public abstract ClassNode transform(@Nullable FileInfo container,@Nullable ClassNode classNode,@NotNull String className);

@@ -63,6 +63,7 @@ final class PatchingLoaderExtensions extends FoxClassLoader.WrappedExtensions {
         this.classDowngrader = FoxClassDowngrader.INSTANCE;
         this.preMixinTransformers = new ArrayList<>();
         this.transformers = new ArrayList<>();
+        this.transformers.add(new LateOptimizationTransformer());
     }
 
     @Override
