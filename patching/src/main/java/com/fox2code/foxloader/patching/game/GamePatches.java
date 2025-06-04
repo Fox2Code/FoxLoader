@@ -54,6 +54,9 @@ public final class GamePatches {
     }
 
     static {
+        if (HotfixesPatch.USE_HOTFIXES) {
+            addGamePatch(new HotfixesPatch());
+        }
         addGamePatch(new RegistryPatch());
         addGamePatch(new ClientGameDirectoryPatch());
         addGamePatch(new NetworkConnectionPatch());

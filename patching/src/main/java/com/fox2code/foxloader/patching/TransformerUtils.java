@@ -554,6 +554,11 @@ public final class TransformerUtils {
         }
     }
 
+    /**
+     * @param insnList the instruction list to remove instructions from
+     * @param start the start of the range to remove (exclusive)
+     * @param end the end of the range to remove (exclusive)
+     */
     public static void removeInstructionsInRange(InsnList insnList, AbstractInsnNode start, AbstractInsnNode end) {
         if (start == end) throw new IllegalStateException("End is start: " + insnList.indexOf(start));
         AbstractInsnNode remInsn = start.getNext();
