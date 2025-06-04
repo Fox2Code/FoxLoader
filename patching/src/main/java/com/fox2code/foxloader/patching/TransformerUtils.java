@@ -251,6 +251,13 @@ public final class TransformerUtils {
             return new LdcInsnNode(number);
     }
 
+    public static boolean isNumberInsn(AbstractInsnNode abstractInsnNode) {
+        final int opcode = abstractInsnNode.getOpcode();
+        return (opcode >= Opcodes.ICONST_M1 && opcode <= Opcodes.ICONST_5) ||
+                opcode == Opcodes.BIPUSH || opcode == Opcodes.SIPUSH ||
+                (opcode == Opcodes.LDC && ((LdcInsnNode) abstractInsnNode).cst instanceof Integer);
+    }
+
     public static void addMethodBefore(ClassNode classNode, String methodName, MethodNode methodNode) {
         addMethod0(classNode, methodName, methodNode, true);
     }
@@ -903,11 +910,12 @@ public final class TransformerUtils {
         if (findMethod(classNode, "values$", mDesc) != null) {
             return; // Skip if it already exists
         }
-        MethodNode values = (classNode.access & Opcodes.ACC_ENUM) != 0 ?
+        MethodNode values = (classNode.access & Opcodes.ACC_ENUM) != 0 &&
+                "java/lang/Enum".equals(classNode.superName) ?
                 TransformerUtils.getMethod(classNode, "values", mDesc) :
                 TransformerUtils.findMethod(classNode, "values", mDesc);
         if (values == null) {
-            return; // skip if non enum
+            return; // skip if non enum, or anonymous class of enum.
         }
         MethodNode values$ = TransformerUtils.copyMethodNode(values);
         values$.name = "values$";
@@ -973,5 +981,31 @@ public final class TransformerUtils {
         FieldNode fieldNode = getField(classNode, fieldName, "Ljava/lang/String;");
         if (fieldNode.value == null) throw new RuntimeException("Field isn't a final constant");
         return (String) fieldNode.value;
+    }
+
+    public static AbstractInsnNode getConsumingInstruction(MethodNode methodNode, AbstractInsnNode from) {
+        return getConsumingInstruction(methodNode.instructions, from);
+    }
+
+    public static AbstractInsnNode getConsumingInstruction(InsnList insnList, AbstractInsnNode from) {
+        int stackLevel = 1;
+        while (from != null) {
+            // We need special handling for goto instructions
+            if (from.getOpcode() == Opcodes.GOTO) {
+                int gotoIndexOld = insnList.indexOf(from);
+                from = ((JumpInsnNode) from).label.getNext();
+                int gotoIndexNew = insnList.indexOf(from);
+                if (gotoIndexNew < gotoIndexOld) {
+                    break;
+                }
+            }
+            stackLevel -= OpcodesUtils.getStackConsume(from);
+            if (stackLevel <= 0) {
+                return from;
+            }
+            stackLevel += OpcodesUtils.getStackProduce(from);
+            from = from.getNext();
+        }
+        return null;
     }
 }
