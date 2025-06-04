@@ -106,15 +106,15 @@ final class RegistryPatch extends GamePatch {
         switch (classNode.name) {
             case ChunkBlockMap: {
                 patchChunkBlockMap(classNode);
-                return classNode;
+                break;
             }
             case GuiConnecting: {
                 patchGuiConnecting(classNode);
-                return classNode;
+                break;
             }
             case Minecraft: {
                 patchMinecraft(classNode);
-                return classNode;
+                break;
             }
             case ItemStack: {
                 patchItemStackNet(classNode);
@@ -239,8 +239,9 @@ final class RegistryPatch extends GamePatch {
                 "java/lang/Object".equals(classNode.superName)) {
             skipGeneric = true;
         }
-        if ((!skipGeneric) && classNode.name.startsWith("net/minecraft/common/item/children/Item") &&
-                classNode.name.indexOf('/', "net/minecraft/common/item/children/Item".length()) == -1) {
+        if ((!skipGeneric) && ((classNode.name.startsWith("net/minecraft/common/item/children/Item") &&
+                classNode.name.indexOf('/', "net/minecraft/common/item/children/Item".length()) == -1) ||
+                classNode.name.startsWith("net/minecraft/common/item/block/ItemBlock"))) {
             patchItemGeneric(classNode);
         }
         if ((!skipGeneric) && classNode.name.startsWith("net/minecraft/common/block/children/Block") &&
@@ -947,6 +948,7 @@ final class RegistryPatch extends GamePatch {
         boolean isItemBlock = (!classNode.superName.equals(Item)) &&
                 (classNode.name.contains("ItemBlock") || classNode.superName.equals(ItemBlock));
         ArrayList<MethodNode> initializers = new ArrayList<>(4);
+        boolean gotOneValidConstructor = false;
         for (MethodNode methodNode : classNode.methods) {
             if (methodNode.name.equals("<init>")) {
                 if (!methodNode.desc.startsWith("(I")) {
@@ -963,7 +965,10 @@ final class RegistryPatch extends GamePatch {
                         for (LocalVariableNode localVariableNode : methodNode.localVariables) {
                             if (localVariableNode.index == 2) {
                                 String lowercaseName = localVariableNode.name.toLowerCase(Locale.ROOT);
-                                hasBlockIdArg = "blid".equals(lowercaseName) || "blockid".equals(lowercaseName);
+                                hasBlockIdArg = "blid".equals(lowercaseName) ||
+                                        "block_id".equals(lowercaseName) ||
+                                        "blockId".equals(lowercaseName) ||
+                                        "blockid".equals(lowercaseName);
                                 break;
                             }
                         }
