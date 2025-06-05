@@ -24,6 +24,7 @@
 package com.fox2code.foxloader.dev;
 
 import com.fox2code.foxloader.dependencies.DependencyHelper;
+import com.fox2code.foxloader.launcher.BuildConfig;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -97,8 +98,8 @@ public class FoxLoaderConfig {
     public boolean forceReload = false;
     public boolean unofficial = false;
     public boolean useLWJGLX = false;
-    public String LWJGLXVersion = "0.21";
-    public String LWJGLXLWJGLVersion = "3.3.1";
+    public String LWJGLXVersion = BuildConfig.LWJGLX_VERSION;
+    public String LWJGLXLWJGLVersion = "3.3.6";
 
     private void checkConfigMutable() {
         if (this.configImmutable) {

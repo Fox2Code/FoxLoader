@@ -258,7 +258,7 @@ class GradlePlugin implements Plugin<Project> {
 
                 project.dependencies {
                     implementation(platform("org.lwjgl:lwjgl-bom:${config.LWJGLXLWJGLVersion}"))
-                    implementation("com.github.Fox2Code:lwjglx:${config.LWJGLXVersion}")
+                    implementation("com.fox2code:lwjglx:${config.LWJGLXVersion}")
                     runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
                     runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
                     runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
@@ -266,11 +266,13 @@ class GradlePlugin implements Plugin<Project> {
                 }
             } else {
                 project.dependencies {
-                    implementation("net.java.jinput:jinput:2.0.5")
                     implementation("org.lwjgl.lwjgl:lwjgl:2.9.1")
                     implementation("org.lwjgl.lwjgl:lwjgl_util:2.9.1")
                     implementation("org.lwjgl.lwjgl:lwjgl-platform:2.9.1")
                 }
+            }
+            project.dependencies {
+                implementation("net.java.jinput:jinput:2.0.5")
             }
             Objects.requireNonNull(config.modId, "The mod id cannot be null!")
             if (config.modVersion == null && project.version != null) {
