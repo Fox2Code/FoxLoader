@@ -23,6 +23,7 @@
  */
 package com.fox2code.foxloader.client;
 
+import net.minecraft.client.renderer.world.RenderBlocks;
 import net.minecraft.common.block.Block;
 import net.minecraft.common.world.BlockAccess;
 
@@ -34,7 +35,7 @@ public abstract class BlockRender {
         this.renderItemIn3D = renderItemIn3D;
     }
 
-    public abstract boolean renderBlock(BlockAccess blockAccess, Block block, int x, int y, int z);
+    public abstract boolean renderBlock(RenderBlocks renderBlocks, BlockAccess blockAccess, Block block, int x, int y, int z);
 
     public final int getAssignedID() {
         return this.assignedID;

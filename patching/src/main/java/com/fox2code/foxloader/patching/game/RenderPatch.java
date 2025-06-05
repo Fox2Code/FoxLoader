@@ -75,6 +75,7 @@ final class RenderPatch extends GamePatch {
         FieldNode blockAccess = TransformerUtils.getField(classNode, "blockAccess");
         InsnList renderBlockByRenderTypeFLX = new InsnList();
         renderBlockByRenderTypeFLX.add(new VarInsnNode(ALOAD, 0));
+        renderBlockByRenderTypeFLX.add(new VarInsnNode(ALOAD, 0));
         renderBlockByRenderTypeFLX.add(new FieldInsnNode(GETFIELD,
                 RenderBlocks, blockAccess.name, blockAccess.desc));
         renderBlockByRenderTypeFLX.add(new VarInsnNode(ALOAD, 1));
@@ -84,7 +85,7 @@ final class RenderPatch extends GamePatch {
         renderBlockByRenderTypeFLX.add(new VarInsnNode(ILOAD, 5));
         renderBlockByRenderTypeFLX.add(new MethodInsnNode(INVOKESTATIC,
                 BlockRenderManager$Internal, "renderBlockByType",
-                "(L" + BlockAccess + ";L" + Block + ";IIII)Z"));
+                "(L" + RenderBlocks + ";L" + BlockAccess + ";L" + Block + ";IIII)Z"));
         renderBlockByRenderTypeFLX.add(new InsnNode(IRETURN));
         insertDefaultSwitchCodeTail(renderBlockByRenderType, renderBlockByRenderTypeFLX);
     }
