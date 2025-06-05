@@ -236,6 +236,12 @@ class GradlePlugin implements Plugin<Project> {
                 }
             }
             if (config.useLWJGLX) {
+                project.configurations.configureEach {
+                    exclude group: 'org.lwjgl.lwjgl', module: 'lwjgl'
+                    exclude group: 'org.lwjgl.lwjgl', module: 'lwjgl_util'
+                    exclude group: 'org.lwjgl.lwjgl', module: 'lwjgl-platform'
+                }
+
                 String lwjglNatives
 
                 switch (OperatingSystem.current()) {
