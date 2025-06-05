@@ -60,6 +60,8 @@ public class Mod {
 
     public void onPreInit() {}
 
+    public void onLatePreInit() {}
+
     public void onInit() {}
 
     public void onPostInit() {}

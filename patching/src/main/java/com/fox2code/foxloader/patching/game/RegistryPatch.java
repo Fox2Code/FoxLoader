@@ -567,6 +567,9 @@ final class RegistryPatch extends GamePatch {
 
     // Block/Item patching
     private static void patchItem(ClassNode classNode) {
+        TransformerUtils.getMethod(classNode, "setMaxDamage").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "setWearable").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "addDescription").access = ACC_PUBLIC;
         MethodNode init = TransformerUtils.getMethod(classNode, "<init>");
         MethodNode flInit = TransformerUtils.copyMethodNode(init);
         init.access |= ACC_DEPRECATED;
@@ -690,6 +693,14 @@ final class RegistryPatch extends GamePatch {
         TransformerUtils.getField(classNode, "blockName").access = ACC_PROTECTED;
         TransformerUtils.getMethod(classNode, "getBlockName").access |= ACC_FINAL;
         TransformerUtils.getMethod(classNode, "setBlockName").access |= ACC_FINAL;
+        TransformerUtils.getMethod(classNode, "setLightOpacity").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "setResistance").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "setIsIndestructible").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "setBlockUnbreakable").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "setHardness").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "disableStats").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "setWearable").access = ACC_PUBLIC;
+        TransformerUtils.getMethod(classNode, "addDescription").access = ACC_PUBLIC;
         MethodNode init = TransformerUtils.getMethod(classNode, "<init>");
         MethodNode flInit = TransformerUtils.copyMethodNode(init);
         init.access |= ACC_DEPRECATED;

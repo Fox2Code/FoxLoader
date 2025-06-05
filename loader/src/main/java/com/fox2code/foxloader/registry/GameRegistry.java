@@ -447,6 +447,10 @@ public final class GameRegistry {
         public static int generateBlockId(Block block, String id) {
             if (!initialized) throw new IllegalStateException("GameRegistry not initialized");
             if (frozen) throw new IllegalStateException("GameRegistry frozen");
+            if (ModLoader.isConstructingMods()) {
+                // Avoid bad practices that can leads to severe unfixable bugs down the line.
+                throw new IllegalStateException("Cannot register blocks during mods construction");
+            }
             ModContainer modContainer = ModContainer.getActiveModContainer();
             if (modContainer == null) throw new IllegalStateException("No mod container active");
             if (modContainer != FOXLOADER_MOD_CONTAINER) {
@@ -468,6 +472,10 @@ public final class GameRegistry {
         public static int generateItemId(Item item, String id) {
             if (!initialized) throw new IllegalStateException("GameRegistry not initialized");
             if (frozen) throw new IllegalStateException("GameRegistry frozen");
+            if (ModLoader.isConstructingMods()) {
+                // Avoid bad practices that can leads to severe unfixable bugs down the line.
+                throw new IllegalStateException("Cannot register items during mods construction");
+            }
             ModContainer modContainer = ModContainer.getActiveModContainer();
             if (modContainer == null) throw new IllegalStateException("No mod container active");
             if (modContainer != FOXLOADER_MOD_CONTAINER) {

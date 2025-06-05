@@ -59,6 +59,7 @@ public final class ModLoader extends Mod {
     private static final ArrayList<Mod> mods = new ArrayList<>();
     private static boolean areAllModsLoaded = false;
     private static boolean areAllModsFullyLoaded = false;
+    private static boolean constructingMods = false;
     private static Thread gameThread;
 
     static {
@@ -96,6 +97,7 @@ public final class ModLoader extends Mod {
         for (LoadingPlugin loadingPlugin : loadingPlugins) {
             loadingPlugin.preModInitialization();
         }
+        constructingMods = true;
         for (ModContainer modContainer : ModLoaderInit.modContainers.values()) {
             ModContainer.setActiveModContainer(modContainer);
             Mod mod = modContainer.initializeMod();
@@ -103,6 +105,7 @@ public final class ModLoader extends Mod {
                 mods.add(mod);
             }
         }
+        constructingMods = false;
         for (Mod mod : mods) {
             ModContainer.setActiveModContainer(mod.getModContainer());
             FoxLoaderEvents.INSTANCE.registerEvents(mod);
@@ -110,6 +113,10 @@ public final class ModLoader extends Mod {
         for (Mod mod : mods) {
             ModContainer.setActiveModContainer(mod.getModContainer());
             mod.onPreInit();
+        }
+        for (Mod mod : mods) {
+            ModContainer.setActiveModContainer(mod.getModContainer());
+            mod.onLatePreInit();
         }
         ModContainer.setActiveModContainer(null);
         areAllModsLoaded = true;
@@ -200,6 +207,10 @@ public final class ModLoader extends Mod {
 
     public static boolean areAllModsFullyLoaded() {
         return areAllModsFullyLoaded;
+    }
+
+    public static boolean isConstructingMods() {
+        return constructingMods;
     }
 
     public static Thread getGameThread() {
