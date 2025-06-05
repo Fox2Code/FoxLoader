@@ -97,7 +97,12 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
 
     protected ModInfo(File file, String jarPath, Attributes mainAttributes) throws IOException {
         super(file, jarPath);
-        this.id = mainAttributes.getValue(MOD_ID);
+        String id = mainAttributes.getValue(MOD_ID);
+        if (id == null) {
+            throw new IOException(file.getName() +
+                    (jarPath == null ? "" : " -> " + jarPath) + " is not a mod file.");
+        }
+        this.id = id;
         String name = mainAttributes.getValue(MOD_NAME);
         this.name = name != null ? name : this.id;
         String version = mainAttributes.getValue(MOD_VERSION);
