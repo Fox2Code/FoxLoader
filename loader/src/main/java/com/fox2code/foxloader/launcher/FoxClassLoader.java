@@ -109,7 +109,7 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
         } else {
             c = findLoadedClass(name);
             if (c == null) {
-                URL resource = findResource(name.replace('.', '/') + ".class");
+                URL resource = this.findResource(name.replace('.', '/') + ".class");
                 if (resource != null) {
                     synchronized (getClassLoadingLock(name)) {
                         c = findClassImpl(name, resource);
@@ -119,7 +119,7 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
                         c = super.loadClass(name, false);
                     } catch (SecurityException securityException) {
                         throw new ClassNotFoundException(name, securityException);
-                    } catch (ClassNotFoundException e) {
+                    } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
                         synchronized (getClassLoadingLock(name)) {
                             c = findClassImpl(name, null);
                         }
@@ -506,11 +506,14 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
                 cls.startsWith("com.unascribed.ears.") ||
                 cls.startsWith("com.llamalad7.mixinextras.") ||
                 cls.startsWith("com.bawnorton.mixinsquared.") ||
+                cls.startsWith("com.moulberry.mixinconstraints.") ||
                 cls.startsWith("fr.catcore.cursedmixinextensions.") ||
                 cls.startsWith("org.spongepowered.") ||
                 cls.startsWith("org.objectweb.asm.") ||
                 cls.startsWith("com.fox2code.rebuild.") ||
                 cls.startsWith("com.fox2code.foxevents.") ||
+                // We also need to add Java21+ dependencies here to prevent crashes.
+                cls.startsWith("blue.endless.jankson.") ||
                 // Cover an edge case of loading spark in a development environment
                 cls.startsWith("me.lucko.spark.") ||
                 // Special case for JVMDowngrader

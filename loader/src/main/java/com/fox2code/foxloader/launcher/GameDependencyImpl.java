@@ -46,10 +46,12 @@ final class GameDependencyImpl extends DependencyHelper.DependencyImpl {
         return FoxLauncher.DEV_MODE;
     }
 
+    @Override
     public boolean hasClass(String cls) {
         return FoxLauncher.getFoxClassLoader().hasClass(cls);
     }
 
+    @Override
     public void addDependency(File file, DependencyHelper.Dependency dependency, boolean isMinecraft) throws IOException {
         FoxLauncher.filesToLoad.remove(file);
         if (isMinecraft) {
@@ -67,14 +69,17 @@ final class GameDependencyImpl extends DependencyHelper.DependencyImpl {
         }
     }
 
+    @Override
     public boolean isClassLoaderInitialized() {
         return FoxLauncher.getFoxClassLoader() != null;
     }
 
+    @Override
     public void printStackTrace(Throwable throwable) {
         FoxLauncher.printEarlyStackTrace(throwable);
     }
 
+    @Override
     public File checkMCLibraryRoot(File mcLibraries) {
         String mcLibrariesPath;
         switch (Platform.getPlatform()) {
