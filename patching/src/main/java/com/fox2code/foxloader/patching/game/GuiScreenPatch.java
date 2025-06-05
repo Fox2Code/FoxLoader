@@ -28,6 +28,7 @@ import com.fox2code.foxloader.patching.TransformerUtils;
 import org.objectweb.asm.tree.*;
 
 public final class GuiScreenPatch extends GamePatch {
+    private static final String ItemStack = "net/minecraft/common/item/ItemStack";
     private static final String Minecraft = "net/minecraft/client/Minecraft";
     private static final String GuiDebug = "net/minecraft/client/gui/GuiDebug";
     private static final String GuiScreen = "net/minecraft/client/gui/GuiScreen";
@@ -108,6 +109,18 @@ public final class GuiScreenPatch extends GamePatch {
         insnList.add(new MethodInsnNode(INVOKESTATIC, InternalScreenHooks,
                 "onGuiScreenInitHook", "(L" + GuiScreen + ";Ljava/util/List;)V"));
         TransformerUtils.insertToEndOfCode(setWorldAndResolution, insnList);
+        MethodNode getItemInfo = TransformerUtils.getMethod(classNode, "getItemInfo");
+        for (AbstractInsnNode abstractInsnNode : getItemInfo.instructions) {
+            if (abstractInsnNode.getOpcode() == ARETURN && abstractInsnNode.getPrevious().getOpcode() != ACONST_NULL) {
+                InsnList itemDescHook = new InsnList();
+                itemDescHook.add(new VarInsnNode(ALOAD, 0));
+                itemDescHook.add(new VarInsnNode(ALOAD, 1));
+                itemDescHook.add(new MethodInsnNode(INVOKESTATIC, InternalScreenHooks, "onGuiGetItemInfoHook",
+                        "(Ljava/util/List;L" +  GuiScreen + ";L" + ItemStack + ";)Ljava/util/List;", false));
+                getItemInfo.instructions.insertBefore(abstractInsnNode, itemDescHook);
+                break;
+            }
+        }
     }
 
     private void patchGuiContainer(ClassNode classNode) {

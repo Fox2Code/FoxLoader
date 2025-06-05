@@ -24,20 +24,31 @@
 package com.fox2code.foxloader.internal;
 
 import com.fox2code.foxevents.EventHolder;
+import com.fox2code.foxloader.event.client.GuiItemInfoEvent;
 import com.fox2code.foxloader.event.client.GuiScreenInitEvent;
 import net.minecraft.client.gui.GuiElement;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.common.item.ItemStack;
 
 import java.util.List;
 
 public final class InternalScreenHooks {
     private static final EventHolder<GuiScreenInitEvent> GUI_SCREEN_INIT_EVENT =
             EventHolder.getHolderFromEvent(GuiScreenInitEvent.class);
+    private static final EventHolder<GuiItemInfoEvent> GUI_ITEM_INFO_EVENT =
+            EventHolder.getHolderFromEvent(GuiItemInfoEvent.class);
 
     private InternalScreenHooks() {}
 
     public static void onGuiScreenInitHook(GuiScreen guiScreen, List<GuiElement> controlList) {
         if (GUI_SCREEN_INIT_EVENT.isEmpty()) return;
         GUI_SCREEN_INIT_EVENT.callEvent(new GuiScreenInitEvent(guiScreen, controlList));
+    }
+
+    public static List<String> onGuiGetItemInfoHook(List<String> description, GuiScreen guiScreen, ItemStack itemStack) {
+        if (GUI_ITEM_INFO_EVENT.isEmpty()) return description;
+        GuiItemInfoEvent guiItemInfoEvent = new GuiItemInfoEvent(guiScreen, itemStack, description);
+        GUI_ITEM_INFO_EVENT.callEvent(guiItemInfoEvent);
+        return guiItemInfoEvent.getDescription();
     }
 }
