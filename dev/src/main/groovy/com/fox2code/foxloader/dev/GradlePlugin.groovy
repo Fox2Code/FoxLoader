@@ -209,6 +209,11 @@ class GradlePlugin implements Plugin<Project> {
                 }
                 addDependencyToProject(project, dependency)
             }
+            for (DependencyHelper.Dependency dependency : DependencyHelper.commonDependenciesModernJava) {
+                if (javaVersionInt >= dependency.javaSupport) {
+                    addDependencyToProject(project, dependency)
+                }
+            }
             for (String dependencyBundle : config.usedDependencyBundlesList) {
                 for (DependencyHelper.Dependency dependency : DependencyHelper.getDependencyBundle(dependencyBundle)) {
                     addDependencyToProject(project, dependency)
