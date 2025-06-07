@@ -76,13 +76,6 @@ public final class DependencyHelper {
             new Dependency("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:" + BuildConfig.JVM_DOWNGRADER_VERSION,
                     MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader", null, "7bb394e54a1908739f4493eeeb1898aa8bf74f925a9b494cb773e6ce75e2ade1");
 
-    public static final Dependency[] lwjgl2Dependencies = new Dependency[]{
-            new Dependency("org.lwjgl.lwjgl:lwjgl:2.9.3", MAVEN_CENTRAL, "org.lwjgl.LWJGLUtil",
-                    null, "527d509f60132e5b2653c7fc0f8cf299d6f698f4a8013342bef47705dc57ed3f"),
-            new Dependency("org.lwjgl.lwjgl:lwjgl_util:2.9.3", MAVEN_CENTRAL, "org.lwjgl.util.Color",
-                    null, "6f4a261384e1688a3359420efce5275c8693b822a8c6eaa1e20d5cc126a51571"),
-    };
-
     public static final Dependency[] commonDependencies = new Dependency[]{
             new Dependency("org.slf4j:slf4j-api:" + BuildConfig.SLF4J_VERSION, MAVEN_CENTRAL, "org.slf4j.Logger", null, "7b751d952061954d5abfed7181c1f645d336091b679891591d63329c622eb832"),
             new Dependency("org.ow2.asm:asm:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor", null, "876eab6a83daecad5ca67eb9fcabb063c97b5aeb8cf1fca7a989ecde17522051"),
@@ -107,6 +100,13 @@ public final class DependencyHelper {
             new Dependency("com.fox2code:FoxFlexVer:" + BuildConfig.FOX_FLEX_VER_VERSION, FOX2CODE,
                     "com.fox2code.flexver.FlexVer", null, "4cf356d6c05c1a7008d90500945df21e4bac32e3a09309efc012a5a373431c0b"),
             jvmDowngraderCore, jvmDowngraderJavaAPI, // jvmDowngrader has special handling in dev plugin
+    };
+
+    public static final Dependency[] lwjgl2Dependencies = new Dependency[]{
+            new Dependency("org.lwjgl.lwjgl:lwjgl:2.9.3", MAVEN_CENTRAL, "org.lwjgl.LWJGLUtil",
+                    null, "527d509f60132e5b2653c7fc0f8cf299d6f698f4a8013342bef47705dc57ed3f"),
+            new Dependency("org.lwjgl.lwjgl:lwjgl_util:2.9.3", MAVEN_CENTRAL, "org.lwjgl.util.Color",
+                    null, "6f4a261384e1688a3359420efce5275c8693b822a8c6eaa1e20d5cc126a51571"),
     };
 
     public static final Dependency[] commonDependenciesModernJava = new Dependency[]{
