@@ -25,6 +25,7 @@ package com.fox2code.foxloader.event.world;
 
 import com.fox2code.foxevents.Event;
 import net.minecraft.common.block.children.BlockFluid;
+import net.minecraft.common.block.fluid.Fluid;
 import net.minecraft.common.entity.Entity;
 import net.minecraft.common.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,10 @@ public final class LiquidFlowIntoBlockEvent extends WorldChangeEvent.SingleBlock
 
     public BlockFluid getBlockFluid() {
         return this.blockFluid;
+    }
+
+    public Fluid getFluid() {
+        return this.blockFluid.getFluid();
     }
 
     public int getMetadata() {
