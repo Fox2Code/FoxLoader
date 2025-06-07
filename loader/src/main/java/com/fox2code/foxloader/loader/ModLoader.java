@@ -24,7 +24,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxevents.EventHandler;
-import com.fox2code.foxloader.client.gui.GuiButtonCallback;
+import com.fox2code.foxloader.client.gui.GuiButtonCallbackUpdate;
 import com.fox2code.foxloader.client.gui.GuiConfigProvider;
 import com.fox2code.foxloader.client.gui.GuiModMenu;
 import com.fox2code.foxloader.energy.FoxPowerUtils;
@@ -190,7 +190,7 @@ public final class ModLoader extends Mod {
             SidedMetadataAPI.Internal.setActiveMetaData(Collections.emptyMap());
         }
         if (guiScreen instanceof GuiMainMenu || guiScreen instanceof GuiIngameMenu) {
-            initGuiEvent.getControlList().add(new GuiButtonCallback(
+            initGuiEvent.getControlList().add(new GuiButtonCallbackUpdate(
                     500, guiScreen.width - 62, 2, 60, 20, "Mods", () ->
                     Minecraft.getInstance().displayGuiScreen(new GuiModMenu(guiScreen))));
         }

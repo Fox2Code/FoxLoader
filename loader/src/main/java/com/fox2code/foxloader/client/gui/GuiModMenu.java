@@ -39,7 +39,6 @@ import net.minecraft.common.util.i18n.StringTranslate;
 import org.lwjgl.Sys;
 
 public class GuiModMenu extends GuiScreen {
-    private final GuiScreen parent;
     private GuiModMenuContainer modListContainer;
     GuiModMenuDescription modListDescription;
     private GuiSmallButton guiUpdateAll, guiConfigureMod;
@@ -47,7 +46,7 @@ public class GuiModMenu extends GuiScreen {
     private int selectedBackup = 0;
 
     public GuiModMenu(GuiScreen parent) {
-        this.parent = parent;
+        this.parentScreen = parent;
     }
 
     @Override
@@ -85,7 +84,7 @@ public class GuiModMenu extends GuiScreen {
         if (var1.id == 0) {
             Sys.openURL("file://" + ModLoader.getModsFolder().getPath());
         } else if (var1.id == 1) {
-            this.mc.displayGuiScreen(this.parent);
+            this.mc.displayGuiScreen(this.parentScreen);
         } else if (var1.id == 2) {
             UpdateManager.getInstance().doUpdates();
         } else if (var1.id == 3) {
