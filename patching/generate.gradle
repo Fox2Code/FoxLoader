@@ -61,6 +61,7 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
     final String JNA_VERSION = project['jna.version']
     final String KOTLIN_VERSION = project['kotlin.version']
     final String KOTLINX_ATOMICFU_VERSION = project['kotlinx.atomicfu.version']
+    final String KOTLINX_COLLECTIONS_IMMUTABLE_VERSION = project['kotlinx.collections-immutable.version']
     final String KOTLINX_COROUTINES_VERSION = project['kotlinx.coroutines.version']
     final String KOTLINX_DATETIME_VERSION = project['kotlinx.datetime.version']
     final String KOTLINX_IO_VERSION = project['kotlinx.io.version']
@@ -107,6 +108,7 @@ static void generateBuildConfig0(File buildConfigSrc, Project project) {
         printStream.println("    public static final String JNA_VERSION = \"" + JNA_VERSION + "\";")
         printStream.println("    public static final String KOTLIN_VERSION = \"" + KOTLIN_VERSION + "\";")
         printStream.println("    public static final String KOTLINX_ATOMICFU_VERSION = \"" + KOTLINX_ATOMICFU_VERSION + "\";")
+        printStream.println("    public static final String KOTLINX_COLLECTIONS_IMMUTABLE_VERSION = \"" + KOTLINX_COLLECTIONS_IMMUTABLE_VERSION + "\";")
         printStream.println("    public static final String KOTLINX_COROUTINES_VERSION = \"" + KOTLINX_COROUTINES_VERSION + "\";")
         printStream.println("    public static final String KOTLINX_DATETIME_VERSION = \"" + KOTLINX_DATETIME_VERSION + "\";")
         printStream.println("    public static final String KOTLINX_IO_VERSION = \"" + KOTLINX_IO_VERSION + "\";")
