@@ -48,7 +48,7 @@ public class GuiModMenuContainer extends GuiSlotSimple {
 
     public GuiModMenuContainer(GuiModMenu guiModList) {
         super(guiModList.width, guiModList.height,
-                32, guiModList.height - 51, 36, ENTRY_WIDTH);
+                32, guiModList.height - 26, 36, ENTRY_WIDTH);
         this.left = SIDE_OFFSET;
         this.right = ENTRY_WIDTH + SIDE_OFFSET + (CONTENT_MARGIN * 2);
         this.scrollbarOffset = CONTENT_MARGIN;

@@ -23,6 +23,7 @@
  */
 package com.fox2code.foxloader.utils.io;
 
+
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.*;
@@ -44,15 +45,6 @@ public class NetUtils {
         GRADLE_USER_AGENT = String.format("Gradle/8.8 (%s;%s;%s) (%s;%s;%s)",
                 osName, osVersion, osArch, javaVendor, javaVersion, javaVendorVersion);
         DEFAULT_ENCODING = StandardCharsets.UTF_8;
-    }
-
-    public static boolean isValidURL(String url) {
-        try {
-            new URL(url).toURI();
-            return true;
-        } catch (MalformedURLException | URISyntaxException e) {
-            return false;
-        }
     }
 
     @Deprecated

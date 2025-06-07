@@ -33,13 +33,14 @@ import java.util.ArrayList;
 public class GuiModMenuDescription extends GuiSlot {
     private static final int SIDE_PANEL_WIDTH = 240;
     private static final int EXTRA_PADDING = 10;
+    private static final int ACTION_BUTTONS_HEIGHT = 20;
     private final ArrayList<String> description = new ArrayList<>();
     private final FontRenderer fontRenderer;
     private int usedContentHeight = 0;
 
     GuiModMenuDescription(GuiModMenu guiModList) {
         super(guiModList.width, guiModList.height,
-                32, guiModList.height - 51,
+                32 + ACTION_BUTTONS_HEIGHT, guiModList.height - 26,
                 guiModList.getFontRenderer().FONT_HEIGHT,
                 guiModList.width - SIDE_PANEL_WIDTH - EXTRA_PADDING);
         this.left = SIDE_PANEL_WIDTH;

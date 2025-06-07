@@ -1,10 +1,14 @@
 # UI
+mods.title=Mod Menu (%s mods loaded)
 mods.openFolder=Open mods folder
 mods.updateAllMods=Update all mods
 mods.updateMod=Update mod
 mods.updateReIndev=Update ReIndev
 mods.configureMod=Configure mod
-mods.pack=Mods Pack
+mods.configure=Configure
+mods.website=Website
+mods.update=Update
+mods.pack=Mod Pack
 warning.server-controlled-button=Note: This button and it's associated link were provided by the server!
 
 # Config

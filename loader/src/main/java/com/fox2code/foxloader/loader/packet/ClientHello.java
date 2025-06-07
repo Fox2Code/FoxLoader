@@ -86,9 +86,6 @@ public final class ClientHello extends FoxPacket {
             int type = dataInputStream.readUnsignedByte();
             FileInfo fileInfo;
             switch (type) {
-                default: {
-                    throw new RuntimeException("Server is outdated??? (Code: C)");
-                }
                 case 0: {
                     fileInfo = new FileInfo(dataInputStream);
                     break;
@@ -100,6 +97,9 @@ public final class ClientHello extends FoxPacket {
                 case 2: {
                     fileInfo = new ModInfo(dataInputStream);
                     break;
+                }
+                default: {
+                    throw new RuntimeException("Server is outdated??? (Code: C)");
                 }
             }
             this.clientClassPathData.add(fileInfo);
@@ -127,6 +127,7 @@ public final class ClientHello extends FoxPacket {
                 writeStringSafest(dataOutputStream, modInfo.authors, true);
                 writeStringSafest(dataOutputStream, modInfo.iconPath, true);
                 writeStringSafest(dataOutputStream, modInfo.environment, true);
+                writeStringSafest(dataOutputStream, modInfo.website, true);
                 dataOutputStream.writeBoolean(modInfo.unofficial);
                 dataOutputStream.writeLong(modInfo.loadOrderPriority);
             } else if (fileInfo instanceof DependencyFileInfo) {

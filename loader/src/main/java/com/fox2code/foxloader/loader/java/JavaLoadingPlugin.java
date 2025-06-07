@@ -62,7 +62,7 @@ public final class JavaLoadingPlugin extends LoadingPlugin {
                     "A mod designed to bring back the old feel of Minecraft while also extending it, " +
                             "by adding new biomes, blocks, mobs, items, and more!",
                     "Silveros, DasJafss, Fox2Code, icanttellyou, Zero_DSRS_VX, kivattt",
-                    "icon32.png", "any", false, Long.MAX_VALUE, null);
+                    "icon32.png", "any", null, false, Long.MAX_VALUE, null);
         }
         return this.reIndevModInfo;
     }
@@ -92,7 +92,7 @@ public final class JavaLoadingPlugin extends LoadingPlugin {
                     injected.add(new JavaModInfo(spark, null, "spark", "Spark", BuildConfig.SPARK_VERSION,
                             "Spark is a performance profiling plugin/mod for Minecraft clients, servers and proxies.\n\n" +
                                     "Note: This specific version is bundled with FoxLoader",
-                            "Luck", "assets/spark/icon.png", "any", true, 0,
+                            "Luck", "assets/spark/icon.png", "any", "https://spark.lucko.me/", true, 0,
                             "com.fox2code.foxloader.spark.FoxLoaderSparkPlugin"));
                 } catch (IOException e) {
                     ModLoaderInit.getModLoaderLogger().log(Level.WARNING, "Failed to add spark as a ModInfo");

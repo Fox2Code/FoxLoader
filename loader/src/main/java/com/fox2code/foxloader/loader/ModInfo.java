@@ -45,6 +45,7 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
     private static final Attributes.Name MOD_AUTHORS = new Attributes.Name("ModAuthors");
     private static final Attributes.Name MOD_ICON = new Attributes.Name("ModIcon");
     private static final Attributes.Name MOD_ENVIRONMENT = new Attributes.Name("ModEnvironment");
+    private static final Attributes.Name MOD_WEBSITE = new Attributes.Name("ModWebsite");
     private static final Attributes.Name UNOFFICIAL = new Attributes.Name("Unofficial");
     private static final Attributes.Name LOAD_ORDER_PRIORITY = new Attributes.Name("LoadOrderPriority");
 
@@ -56,12 +57,13 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
     @NotNull public final String authors;
     @Nullable public final String iconPath;
     @NotNull public final String environment;
+    @Nullable public final String website;
     public final boolean unofficial;
     public final long loadOrderPriority;
 
     public ModInfo(@NotNull File file, @Nullable String jarPath, @NotNull String id,@Nullable String name,
                    @Nullable String version,@Nullable String description,@Nullable String authors,
-                   @Nullable String iconPath,@Nullable String environment,
+                   @Nullable String iconPath,@Nullable String environment, @Nullable String website,
                    boolean unofficial, long loadOrderPriority) throws IOException {
         super(file, jarPath);
         this.id = Objects.requireNonNull(id);
@@ -77,6 +79,7 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
         this.iconPath = iconPath;
         this.environment = environment != null &&
                 !environment.isEmpty() ? environment : "any";
+        this.website = website;
         this.unofficial = unofficial;
         this.loadOrderPriority = loadOrderPriority;
     }
@@ -91,6 +94,7 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
         this.authors = readStringSafest(dataInputStream, "Unknown");
         this.iconPath = readStringSafest(dataInputStream, null);
         this.environment = readStringSafest(dataInputStream, null);
+        this.website = readStringSafest(dataInputStream, null);
         this.unofficial = dataInputStream.readBoolean();
         this.loadOrderPriority = dataInputStream.readLong();
     }
@@ -122,6 +126,7 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
         String environment = mainAttributes.getValue(MOD_ENVIRONMENT);
         this.environment = environment != null &&
                 !environment.isEmpty() ? environment : "any";
+        this.website = mainAttributes.getValue(MOD_WEBSITE);
         this.unofficial = Boolean.parseBoolean(mainAttributes.getValue(UNOFFICIAL));
         String priorityText = mainAttributes.getValue(LOAD_ORDER_PRIORITY);
         long priority = 0;

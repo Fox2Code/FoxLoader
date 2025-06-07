@@ -54,7 +54,8 @@ public final class JavaModInfo extends ModInfo {
             FOX_LOADER_MOD_INFO = new JavaModInfo(
                     FoxLauncher.foxLoaderFile, null, "foxloader", "FoxLoader", BuildConfig.FOXLOADER_VERSION,
                     "ReIndev mod loader with foxes!!!", "Fox2Code", "assets/foxloader/icon.png",
-                    "any", false, Long.MAX_VALUE, "com.fox2code.foxloader.loader.ModLoader");
+                    "any", "https://github.com/Fox2Code/FoxLoader", false,
+                    Long.MAX_VALUE, "com.fox2code.foxloader.loader.ModLoader");
         } catch (IOException e) {
             throw new IOError(e);
         }
@@ -96,8 +97,9 @@ public final class JavaModInfo extends ModInfo {
     }
 
     JavaModInfo(File file, String jarPath, String id, String name, String version, String description, String authors, String iconPath,
-                        String environment, boolean unofficial, long loadOrderPriority, String main) throws IOException {
-        super(file, jarPath, id, name, version, description, authors, iconPath, environment, unofficial, loadOrderPriority);
+                        String environment, String website, boolean unofficial, long loadOrderPriority, String main) throws IOException {
+        super(file, jarPath, id, name, version, description, authors,
+                iconPath, environment, website, unofficial, loadOrderPriority);
         this.requestedDependencyBundles = Collections.emptyList();
         this.forFoxLoaderVersion = BuildConfig.FOXLOADER_VERSION;
         this.classTransformer = null;
