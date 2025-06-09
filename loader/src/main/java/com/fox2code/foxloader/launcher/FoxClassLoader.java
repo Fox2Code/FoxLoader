@@ -207,7 +207,7 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
                 bytes = mixinInfoPatch.apply(bytes);
             }
             // We need to apply some patches to mixins to make them actually work.
-            if (wrappedExtensions != null && !isTransformExclude(tmpName)) {
+            if (wrappedExtensions != null && (bytes == null || !isTransformExclude(tmpName))) {
                 try {
                     bytes = wrappedExtensions.transformClass(fileInfo, tmpName, bytes);
                 } catch (Exception e) {
