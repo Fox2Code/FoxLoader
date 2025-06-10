@@ -28,6 +28,7 @@ import com.fox2code.foxloader.dependencies.DependencyHelper;
 import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.utils.Platform;
 import com.fox2code.foxloader.utils.StackTraceStringifier;
+import com.fox2code.foxloader.utils.io.CertificateHelper;
 import com.fox2code.foxloader.utils.io.IOUtils;
 
 import javax.swing.*;
@@ -74,6 +75,9 @@ final class InstallerGUI {
     private final String versionName;
 
     public InstallerGUI(InstallerPlatform installerPlatform) {
+        DependencyHelper.DependencyImpl.install(InstallerDependencyHelperImpl.INSTANCE);
+        DependencyHelper.setMCLibraryRoot(new File(Platform.getAppDir("minecraft"), "libraries"));
+        CertificateHelper.initializeSafe();
         this.installerPlatform = installerPlatform;
         this.launcherType = null;
         versionName = DEFAULT_VERSION_NAME;
