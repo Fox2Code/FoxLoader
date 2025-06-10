@@ -135,6 +135,10 @@ class GradlePlugin implements Plugin<Project> {
             }
         }
         project.java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(javaVersionInt)
+            }
+
             sourceCompatibility = javaVersion
             targetCompatibility = javaVersion
 
