@@ -80,6 +80,8 @@ class GradlePlugin implements Plugin<Project> {
         project.apply([plugin: 'maven-publish'])
         project.apply([plugin: 'eclipse'])
         project.apply([plugin: 'idea'])
+        // We need it to properly auto-download java21+ JVMs
+        project.apply([plugin: 'org.gradle.toolchains.foojay-resolver-convention'])
         project.eclipse.classpath.downloadSources = true
         project.idea.module.downloadSources = true
         project.repositories {
