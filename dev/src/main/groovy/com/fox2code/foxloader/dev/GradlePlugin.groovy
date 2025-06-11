@@ -323,6 +323,10 @@ class GradlePlugin implements Plugin<Project> {
                 if (config.modIcon != null) {
                     attributes 'ModIcon': config.modIcon
                 }
+                if (config.modEnvironment != null &&
+                        !config.modEnvironment.isEmpty()) {
+                    attributes 'ModEnvironment': config.modEnvironment
+                }
                 if (config.modWebsite != null &&
                         !config.modWebsite.isEmpty()) {
                     attributes 'ModWebsite': config.modWebsite

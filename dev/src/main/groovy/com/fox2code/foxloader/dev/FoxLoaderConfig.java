@@ -51,6 +51,7 @@ public class FoxLoaderConfig {
     public String modDesc;
     public String modAuthors;
     public String modIcon;
+    public String modEnvironment;
     public String modWebsite;
     public String modClassTransformer;
     public String modLoadingPlugin;
