@@ -127,6 +127,10 @@ public class GuiModMenuContainer extends GuiSlotSimple {
         float color = this.selected == index ? 1F : 0.5F;
         RenderSystem.color(color, color, color, 1F);
         RenderSystem.enableBlend();
+        if ((modDisplayFlags & LoadingPlugin.DISPLAY_FLAG_DISABLED) != 0) {
+            this.drawCustomIcon(iconPosX, iconPosY, 3);
+            iconPosX -= 20;
+        }
         if ((modDisplayFlags & LoadingPlugin.DISPLAY_FLAG_LIBRARY) != 0) {
             this.drawCustomIcon(iconPosX, iconPosY, 2);
             iconPosX -= 20;

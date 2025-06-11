@@ -524,7 +524,19 @@ public final class ModLoaderInit {
         private void register(HashSet<String> loadedBundles) {
             loadDependencyBundlesForMod(loadedBundles, this.modInfo);
             FoxLauncher.getFoxClassLoader().addFileToClassLoader(this.modInfo);
-            modContainers.put(this.modInfo.id, new ModContainer(this.loadingPlugin, this.modInfo));
+            ModContainer modContainer = new ModContainer(this.loadingPlugin, this.modInfo);
+            modContainers.put(this.modInfo.id, modContainer);
+            if ("client".equals(this.modInfo.environment)) {
+                if (!FoxLauncher.isClient()) {
+                    modContainer.markModDisabled();
+                }
+            } else if ("server".equals(this.modInfo.environment)) {
+                if (!FoxLauncher.isServer()) {
+                    modContainer.markModDisabled();
+                }
+            } else if (!"any".equals(this.modInfo.environment)) {
+                modContainer.markModDisabled();
+            }
         }
     }
 

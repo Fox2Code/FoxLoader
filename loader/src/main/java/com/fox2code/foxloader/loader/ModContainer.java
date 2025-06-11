@@ -40,8 +40,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class ModContainer {
-
     private static final FastThreadLocal<ModContainer> activeModContainer = new FastThreadLocal<>();
+    // Don't allow some display flags to be set directly by loading plugins
+    private static final int DISPLAY_FLAGS_PRIVILEGED = (LoadingPlugin.DISPLAY_FLAG_DISABLED);
     // tmp is used to make getModContainer work in constructor.
     static ModContainer tmp;
     private final LoadingPlugin loadingPlugin;
@@ -50,6 +51,7 @@ public final class ModContainer {
     private final org.slf4j.Logger slf4jLogger;
     private final String modId;
     private int modDisplayFlags;
+    private boolean modDisabled;
     private Object configObject;
     Mod mod;
 
@@ -59,7 +61,7 @@ public final class ModContainer {
         this.logger = Logger.getLogger(modInfo.name);
         this.slf4jLogger = org.slf4j.LoggerFactory.getLogger(modInfo.name);
         this.modId = modInfo.id;
-        this.modDisplayFlags = this.loadingPlugin.getModDisplayFlags(this);
+        this.modDisplayFlags = this.loadingPlugin.getModDisplayFlags(this) & ~DISPLAY_FLAGS_PRIVILEGED;
     }
 
     private ModContainer markActive() {
@@ -135,7 +137,9 @@ public final class ModContainer {
     }
 
     void preLoadContainer() throws Exception {
-        this.loadingPlugin.preLoadModContainer(this);
+        if (!this.isModDisabled()) {
+            this.loadingPlugin.preLoadModContainer(this);
+        }
     }
 
     public void onReceiveDataFromClient(@NotNull NetworkManager connection, byte @NotNull [] data) {
@@ -176,6 +180,9 @@ public final class ModContainer {
         if (this == ModLoaderInit.FOX_LOADER_CONTAINER) {
             return this.mod = new ModLoader();
         }
+        if (this.isModDisabled()) {
+            return null;
+        }
         Mod newMod;
         try {
             tmp = this;
@@ -202,7 +209,16 @@ public final class ModContainer {
     }
 
     private AbstractUpdater makeModContainerUpdater() {
-        return this.loadingPlugin.makeModContainerUpdater(this);
+        return this.isModDisabled() ? null : this.loadingPlugin.makeModContainerUpdater(this);
+    }
+
+    public boolean isModDisabled() {
+        return this.modDisabled;
+    }
+
+    void markModDisabled() {
+        this.modDisabled = true;
+        this.modDisplayFlags |= LoadingPlugin.DISPLAY_FLAG_DISABLED;
     }
 
     static void initializeUpdateManager() {

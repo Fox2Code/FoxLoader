@@ -38,6 +38,7 @@ public abstract class LoadingPlugin {
     public static final int DISPLAY_FLAG_LIBRARY      = 0x01;
     public static final int DISPLAY_FLAG_GAME_CONTENT = 0x02;
     public static final int DISPLAY_FLAG_MIXIN        = 0x04;
+    public static final int DISPLAY_FLAG_DISABLED     = 0x08;
     private final String id;
     JavaModInfo javaModInfo;
 
