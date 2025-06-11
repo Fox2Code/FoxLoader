@@ -28,7 +28,7 @@ dependencies {
     downgrade("blue.endless:jankson:${project['jankson.version']}") { transitive = false }
     api "net.fabricmc:sponge-mixin:${project['fabric-mixin.version']}"
     api "io.github.llamalad7:mixinextras-common:${project['mixin-extras.version']}"
-    api "com.bawnorton.mixinsquared:mixinsquared-common:${project['mixin-squared.version']}"
+    api "com.github.bawnorton.mixinsquared:mixinsquared-common:${project['mixin-squared.version']}"
     downgrade("com.moulberry:mixinconstraints:${project['mixin-constraints.version']}") { transitive = false }
     api "com.fox2code:FoxFlexVer:${project['fox-flex-ver.version']}"
     api "com.fox2code.FoxEvents:core:${project['fox-events.version']}"

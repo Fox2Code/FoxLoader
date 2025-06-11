@@ -71,10 +71,10 @@ public final class DependencyHelper {
     // Extra dependencies not included in ReIndev
     public static final Dependency jvmDowngraderCore =
             new Dependency("xyz.wagyourtail.jvmdowngrader:jvmdowngrader:" + BuildConfig.JVM_DOWNGRADER_VERSION,
-                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.ClassDowngrader", null, "67a4af05344288af64d3c2ca6aaca11cb6e6325cd4d5086362a9beec35b9c2ae");
+                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.ClassDowngrader", null, "6f3543575eb970f7e8e0f5e87c16486e3a8db198d391ff525e67a0d15879b0b7");
     public static final Dependency jvmDowngraderJavaAPI =
             new Dependency("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:" + BuildConfig.JVM_DOWNGRADER_VERSION,
-                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader", null, "7bb394e54a1908739f4493eeeb1898aa8bf74f925a9b494cb773e6ce75e2ade1");
+                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader", null, "6bebc6fc4950c7121b5ff76ff1b792bec8dcb9b8d0bb949cb8bfddda59c1e51b");
 
     public static final Dependency[] commonDependencies = new Dependency[]{
             new Dependency("org.slf4j:slf4j-api:" + BuildConfig.SLF4J_VERSION, MAVEN_CENTRAL, "org.slf4j.Logger", null, "7b751d952061954d5abfed7181c1f645d336091b679891591d63329c622eb832"),
@@ -91,8 +91,8 @@ public final class DependencyHelper {
                     "org.spongepowered.asm.mixin.Mixins", null, "1dd2b778ed5283bce6b6b07d9690d86d956b17a7103efafad47073db1599584"),
             new Dependency("io.github.llamalad7:mixinextras-common:" + BuildConfig.MIXIN_EXTRAS_VERSION, MAVEN_CENTRAL,
                     "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "6a2c6f39f285348635ba1e0e914d066fe718c207e220a49012e8b347cb27fbda"),
-            new Dependency("com.bawnorton.mixinsquared:mixinsquared-common:" + BuildConfig.MIXIN_SQUARED_VERSION,
-                    FOX2CODE, "com.bawnorton.mixinsquared.MixinSquaredBootstrap", null, "d80619866e6d8c00bdeeaf6484357c1bbd4006fe0154537e9137213ab82bdaca"),
+            new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:" + BuildConfig.MIXIN_SQUARED_VERSION,
+                    FOX2CODE, "com.bawnorton.mixinsquared.MixinSquaredBootstrap", null, "5ae421a724f2cc9b06ade3da79fb3224e8073fdeac9a35df6f16ae59147a1abb"),
             new Dependency("com.fox2code:ReBuild:" + BuildConfig.REBUILD_VERSION, FOX2CODE,
                     "com.fox2code.rebuild.ClassDataProvider", null, "6bb4ac7ae84ec752e505c4dc885c003e2550baf4c327a5c9f9c44379a756e43d"),
             new Dependency("com.fox2code.FoxEvents:core:" + BuildConfig.FOX_EVENTS_VERSION, FOX2CODE,
