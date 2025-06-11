@@ -40,7 +40,6 @@ dependencies {
     downgrade(project['vineflower.dependency'] as String) {
         transitive = false
     }
-    api 'org.gradle.toolchains:foojay-resolver:0.10.0'
     // Need LWJGL 2 for game decompilation.
     api('org.lwjgl.lwjgl:lwjgl:2.9.3') {
         transitive = false
