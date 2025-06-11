@@ -139,6 +139,9 @@ final class InstallerGUI {
     }
 
     public InstallerGUI(InstallerPlatform installerPlatform, LauncherType launcherType) {
+        DependencyHelper.DependencyImpl.install(InstallerDependencyHelperImpl.INSTANCE);
+        DependencyHelper.setMCLibraryRoot(new File(Platform.getAppDir("minecraft"), "libraries"));
+        CertificateHelper.initializeSafe();
         this.installerPlatform = installerPlatform;
         this.launcherType = launcherType;
         versionName = DEFAULT_VERSION_NAME;
