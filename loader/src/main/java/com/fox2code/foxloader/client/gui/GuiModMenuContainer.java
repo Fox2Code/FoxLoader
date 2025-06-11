@@ -145,8 +145,11 @@ public class GuiModMenuContainer extends GuiSlotSimple {
         RenderSystem.disableBlend();
         RenderSystem.color(1F, 1F, 1F, 1F);
 
-        String name = UpdateManager.getInstance().getUpdateState(modInfo.id).colorPrefix +
-                modInfo.name + " " + modInfo.version;
+        String name = UpdateManager.getInstance()
+                .getUpdateState(modInfo.id).colorPrefix + modInfo.name;
+        if (!ModInfo.VERSION_NOT_APPLICABLE.equals(modInfo.version)) {
+            name += " " + modInfo.version;
+        }
         if (modInfo.unofficial) {
             name += ChatColors.GRAY + " (Unofficial)";
         }

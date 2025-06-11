@@ -31,6 +31,7 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.early.EarlyLoader;
 import com.fox2code.foxloader.loader.java.JavaLoadingPlugin;
 import com.fox2code.foxloader.loader.java.JavaModInfo;
+import com.fox2code.foxloader.loader.resource.ResourceLoadingPlugin;
 import com.fox2code.foxloader.patching.PreLoader;
 import com.fox2code.foxloader.patching.mixin.MixinModLoader;
 import com.fox2code.foxloader.updater.FoxLoaderUpdater;
@@ -300,7 +301,7 @@ public final class ModLoaderInit {
             LoadingPlugin loadingPlugin = Class.forName(javaModInfo.loadingPlugin)
                     .asSubclass(LoadingPlugin.class).newInstance();
             final String loadingPluginId = loadingPlugin.getPluginId();
-            if (loaders.containsKey(loadingPluginId)) {
+            if (loaders.containsKey(loadingPluginId) || "resource".equals(loadingPluginId)) {
                 throw new RuntimeException("Duplicate loader with id " +
                         javaModInfo.id + " between \"" +
                         loaders.get(javaModInfo.id).javaModInfo.file.getName() +
@@ -309,6 +310,7 @@ public final class ModLoaderInit {
             loadingPlugin.javaModInfo = javaModInfo;
             loaders.put(loadingPluginId, loadingPlugin);
         }
+        loaders.put("resource", ResourceLoadingPlugin.RESOURCE_LOADING_PLUGIN); // Allow resource pack loading
         // Load non-foxloader mods
         loaders.remove("java"); // Remove Java plugin when loading mods outside of the java plugin
         fileIterator = files.iterator();

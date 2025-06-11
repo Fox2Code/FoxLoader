@@ -21,41 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.fox2code.foxloader.utils.io;
+package com.fox2code.foxloader.loader.resource;
 
+import com.fox2code.foxloader.loader.ModInfo;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.IOException;
 
-public class URLUtils {
-    public static boolean isValidURL(@Nullable String url) {
-        if (url == null || url.isEmpty()) {
-            return false;
-        }
-        try {
-            new URL(url).toURI();
-            return true;
-        } catch (MalformedURLException | URISyntaxException e) {
-            return false;
-        }
+public final class ResourcePackInfo extends ModInfo {
+    ResourcePackInfo(
+            @NotNull File file, @NotNull String id, @Nullable String name,
+            @Nullable String description, @Nullable String iconPath) throws IOException {
+        super(file, null, id, name, VERSION_NOT_APPLICABLE, description, null, iconPath, "client", null, false, 0);
     }
 
-    public static boolean isValidHttpURL(@Nullable String url) {
-        if (url == null || url.isEmpty()) {
-            return false;
-        }
-        try {
-            String protocol = (new URL(url)).toURI().getScheme();
-            return "http".equals(protocol) || "https".equals(protocol);
-        } catch (URISyntaxException | MalformedURLException var2) {
-            return false;
-        }
-    }
-
-    public static URL getEntryURLOf(File file, String entryPath) throws MalformedURLException {
-        return new URL("jar:" + file.toURI().toURL().toExternalForm() + "!/" + entryPath);
+    @Override
+    public boolean isJavaArchive() {
+        return true; // Force archive to be loaded into the java class loader.
     }
 }

@@ -48,6 +48,7 @@ public class ModInfo extends FileInfo implements IMixinConfigSource {
     private static final Attributes.Name MOD_WEBSITE = new Attributes.Name("ModWebsite");
     private static final Attributes.Name UNOFFICIAL = new Attributes.Name("Unofficial");
     private static final Attributes.Name LOAD_ORDER_PRIORITY = new Attributes.Name("LoadOrderPriority");
+    public static final String VERSION_NOT_APPLICABLE = "N/A";
 
     @NotNull public final String id;
     @NotNull public final String name;

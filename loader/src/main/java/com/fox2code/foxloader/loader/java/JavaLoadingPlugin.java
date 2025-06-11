@@ -45,6 +45,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
+/**
+ * Loading plugin to load most FoxLoader mods, including FoxLoader loading plugins.
+ */
 public final class JavaLoadingPlugin extends LoadingPlugin {
     public static final JavaLoadingPlugin JAVA_LOADING_PLUGIN = new JavaLoadingPlugin();
     private static final boolean DISABLE_SPARK = Boolean.getBoolean("foxloader.disable-spark");

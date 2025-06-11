@@ -554,8 +554,8 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
                 path.startsWith("com/indigo3d/") ||
                 path.startsWith("paulscode/sound/") ||
                 path.startsWith("com/jcraft/") ||
-                // font.txt is a protected game file
-                path.equals("font.txt");
+                // pack.png & font.txt are protected game files
+                path.equals("pack.png") || path.equals("font.txt");
     }
 
     public Collection<FileInfo> loadingClassPath() {
