@@ -600,8 +600,9 @@ public final class TransformerUtils {
     }
 
     public static void tryCreateGetter(ClassNode classNode, FieldNode fieldNode) {
-        tryCreateGetter(classNode, fieldNode, ("Z".equals(fieldNode.desc) ? "is" : "get") +
-                fieldNode.name.substring(0, 1).toUpperCase(Locale.ROOT) + fieldNode.name.substring(1));
+        tryCreateGetter(classNode, fieldNode,
+                (("Z".equals(fieldNode.desc) && !fieldNode.name.startsWith("is")) ? "is" : "get") +
+                        fieldNode.name.substring(0, 1).toUpperCase(Locale.ROOT) + fieldNode.name.substring(1));
     }
 
     public static void tryCreateGetter(ClassNode classNode, FieldNode fieldNode, String getterName) {

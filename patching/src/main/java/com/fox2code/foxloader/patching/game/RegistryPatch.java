@@ -1126,6 +1126,9 @@ final class RegistryPatch extends GamePatch {
     }
 
     private static void patchBlockGeneric(ClassNode classNode, String genericMeta) {
+        if (TransformerUtils.findField(classNode, "isPowered") != null) {
+            TransformerUtils.makeGetterForFields(classNode, "isPowered");
+        }
         ArrayList<MethodNode> initializers = new ArrayList<>(16);
         for (MethodNode methodNode : classNode.methods) {
             if (!methodNode.name.equals("<init>")) continue;
