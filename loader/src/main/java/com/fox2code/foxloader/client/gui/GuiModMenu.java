@@ -167,10 +167,6 @@ public class GuiModMenu extends GuiScreen {
             this.modActionButtons[0].enabled = false;
             buttonCount = 1;
         }
-        if (buttonCount == 1 && this.modActionButtonsTypes[0] == ModActionButtonType.CONFIGURE) {
-            this.modActionButtons[0].displayString =
-                    StringTranslate.getInstance().translateKey("mods.configureMod");
-        }
         int leftMost = 240 - BUTTON_MARGIN;
         int rightMost = this.width + BUTTON_MARGIN - 10;
         int mostPossibleButtons = (rightMost - leftMost) / (50 + (BUTTON_MARGIN * 2));
@@ -192,6 +188,7 @@ public class GuiModMenu extends GuiScreen {
             if (i != 0) {
                 guiButton.xPosition += ((leakingWidth * i) / (buttonCount - 1));
             }
+            this.modActionButtonsTypes[i].updateTitle(guiButton, this.fontRenderer, buttonWidth - 4);
         }
     }
 
@@ -246,6 +243,16 @@ public class GuiModMenu extends GuiScreen {
                     guiModMenu.openModConfigScreen(modContainer);
                 }
             }
+
+            @Override
+            public void updateTitle(GuiButton guiButton, FontRenderer fontRenderer, int buttonWidth) {
+                StringTranslate st = StringTranslate.getInstance();
+                String buttonText = st.translateKey("mods.configureMod");
+                if (fontRenderer.getStringWidth(buttonText) >= buttonWidth) {
+                    buttonText = st.translateKey(this.titleTranslate);
+                }
+                guiButton.displayString = buttonText;
+            }
         }, WEBSITE("mods.website") {
             @Override
             void doAction(ModContainer modContainer, GuiModMenu guiModMenu) {
@@ -263,5 +270,9 @@ public class GuiModMenu extends GuiScreen {
         }
 
         abstract void doAction(ModContainer modContainer, GuiModMenu guiModMenu);
+
+        public void updateTitle(GuiButton guiButton, FontRenderer fontRenderer, int buttonWidth) {
+            guiButton.displayString = StringTranslate.getInstance().translateKey(this.titleTranslate);
+        }
     }
 }
