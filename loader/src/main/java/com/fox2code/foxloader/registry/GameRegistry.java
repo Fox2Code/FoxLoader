@@ -713,19 +713,24 @@ public final class GameRegistry {
         }
 
         public static String strRegIdToItemStrId(String id) {
-            if (id.startsWith("reindev:")) {
-                String name = id.substring(8);
+            String reIndevId = null;
+            if (id.indexOf(':') == -1) {
+                reIndevId = id;
+            } else if (id.startsWith("reindev:")) {
+                reIndevId = id.substring(8);
+            }
 
+            if (reIndevId != null) {
                 for(int i = 0; i < INITIAL_TRANSLATED_BLOCK_ID; ++i) {
                     Item item;
                     if ((item = Items.ITEMS_LIST[i]) != null && item != FALLBACK_ITEM &&
-                            (item.getItemName().replace("item.", "").equals(name) ||
-                                    item.getItemName().equals(name) || item.isItemBlock() &&
-                                    item.getItemName().replace("tile.", "").equals(name))) {
+                            (item.getItemName().replace("item.", "").equals(reIndevId) ||
+                                    item.getItemName().equals(reIndevId) || item.isItemBlock() &&
+                                    item.getItemName().replace("tile.", "").equals(reIndevId))) {
                         return "" + item.itemID;
                     }
                 }
-            } else if (id.indexOf(':') != -1) {
+            } else {
                 RegistryEntry registryEntry = registryEntries.get(id);
                 if (registryEntry != null) return "" + registryEntry.realId;
             }
@@ -733,14 +738,19 @@ public final class GameRegistry {
         }
 
         public static String strRegIdToBlockStrId(String id) {
-            if (id.startsWith("reindev:")) {
-                String name = id.substring(8);
+            String reIndevId = null;
+            if (id.indexOf(':') == -1) {
+                reIndevId = id;
+            } else if (id.startsWith("reindev:")) {
+                reIndevId = id.substring(8);
+            }
 
+            if (reIndevId != null) {
                 for(int i = 0; i < PatchConstants.ORIGINAL_BLOCK_LIMIT; ++i) {
                     Block block;
                     if ((block = Blocks.BLOCKS_LIST[i]) != null && block != FALLBACK_BLOCK &&
-                            (block.getBlockName().replace("tile.", "").equals(name) ||
-                                    block.getBlockName().equals(name))) {
+                            (block.getBlockName().replace("tile.", "").equals(reIndevId) ||
+                                    block.getBlockName().equals(reIndevId))) {
                         return "" + block.blockID;
                     }
                 }
