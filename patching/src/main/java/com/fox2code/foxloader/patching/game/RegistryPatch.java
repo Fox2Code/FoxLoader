@@ -93,7 +93,8 @@ final class RegistryPatch extends GamePatch {
     private static final String GameRegistry = "com/fox2code/foxloader/registry/GameRegistry";
     private static final String GameRegistry$Internal = "com/fox2code/foxloader/registry/GameRegistry$Internal";
     private static final String ModContainer = "com/fox2code/foxloader/loader/ModContainer";
-    private static final String CreativeTab = "com/fox2code/foxloader/client/CreativeTab";
+    private static final String CreativeTab = "net/minecraft/client/gui/creative/CreativeTab";
+    private static final String CreativeTabs = "net/minecraft/client/gui/creative/CreativeTabs";
 
     RegistryPatch() {
         super(ALL_CLASSES);
@@ -276,7 +277,7 @@ final class RegistryPatch extends GamePatch {
         MethodNode getRegisterFLTab = new MethodNode(ASM_API,
                 ACC_PUBLIC, "getRegisterFLTab", "()L" + CreativeTab + ";", null, null);
         getRegisterFLTab.instructions.add(new FieldInsnNode(
-                GETSTATIC, CreativeTab, creativeTab, "L" + CreativeTab + ";"));
+                GETSTATIC, CreativeTabs, creativeTab, "L" + CreativeTab + ";"));
         getRegisterFLTab.instructions.add(new InsnNode(ARETURN));
         classNode.methods.add(getRegisterFLTab);
     }

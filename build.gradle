@@ -246,7 +246,7 @@ static ZipEntry partialCopy(ZipEntry zipEntry) {
 }
 
 String slimHash = project['reindev.slimSHA256Sum'] as String
-if (slimURL == "null") {
+if (slimURL == "null" || (clientFile.exists() && serverFile.exists() && !slimFile.exists())) {
     if (slimFile.exists()) {
         byte[] fileData = Files.readAllBytes(slimFile.toPath())
         byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)

@@ -23,7 +23,6 @@
  */
 package com.fox2code.foxloader.registry;
 
-import com.fox2code.foxloader.client.CreativeTab;
 import com.fox2code.foxloader.energy.FoxPowerCableTileEntity;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.ModContainer;
@@ -37,6 +36,7 @@ import com.fox2code.foxloader.patching.PatchConstants;
 import com.fox2code.foxloader.registry.missing.MissingBlock;
 import com.fox2code.foxloader.registry.missing.MissingItem;
 import com.fox2code.foxloader.registry.missing.MissingItemBlock;
+import net.minecraft.client.gui.creative.CreativeTab;
 import net.minecraft.common.block.Block;
 import net.minecraft.common.block.Blocks;
 import net.minecraft.common.block.tileentity.TileEntity;
@@ -312,7 +312,7 @@ public final class GameRegistry {
             Item item = Items.ITEMS_LIST[i];
             CreativeTab creativeTab;
             if (item != null && (creativeTab = item.getRegisterFLTab()) != null) {
-                creativeTab.addToCreativeTab(item);
+                creativeTab.add(item);
             }
         }
         for (int i = 0; i < Blocks.BLOCKS_LIST.length; i++) {
