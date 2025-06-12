@@ -36,7 +36,8 @@ public final class EntityRegistry {
     public static final int INITIAL_ENTITY_ID = 256;
     private static final int MAX_ENTITY_ID = 1024;
     private static final int[] networkMappingIn = new int[MAX_ENTITY_ID];
-    private static final HashSet<String> registeredEntities = new HashSet<>();
+    private static final Set<String> registryEntitiesTypeNamesIdsVanilla = EntityList.getEntityTypeNames();
+    private static final HashSet<String> registeredEntities = new HashSet<>(registryEntitiesTypeNamesIdsVanilla);
     private static final Set<String> registryEntitiesTypeNamesIdsRaw = Collections.unmodifiableSet(registeredEntities);
     private static Set<String> registryEntitiesTypeNamesIds = registryEntitiesTypeNamesIdsRaw;
     static final LinkedHashMap<String, RegistryEntry> entityEntries = new LinkedHashMap<>();
@@ -50,6 +51,13 @@ public final class EntityRegistry {
 
     public static Entity createEntityRemote(int id, World world) {
         return EntityList.createEntity(networkMappingIn[id], world);
+    }
+
+    public static Set<String> getCommandCompletionEntityIDs() {
+        if (registryEntitiesTypeNamesIds == null || registryEntitiesTypeNamesIds.isEmpty()) {
+            throw new IllegalStateException("Not initialized yet!");
+        }
+        return registryEntitiesTypeNamesIds;
     }
 
     public static final class Internal {
@@ -96,7 +104,7 @@ public final class EntityRegistry {
                     networkMappingIn[i] = i;
                 }
             } else {
-                registryEntitiesTypeNamesIds = Collections.emptySet();
+                registryEntitiesTypeNamesIds = registryEntitiesTypeNamesIdsVanilla;
                 Arrays.fill(networkMappingIn, -1);
                 for (int i = 0; i < INITIAL_ENTITY_ID; i++) {
                     networkMappingIn[i] = i;
@@ -106,8 +114,9 @@ public final class EntityRegistry {
 
         static ServerRegistry initializeEntityMappingsEx(ServerRegistry serverRegistry, boolean localWorld) {
             if (!localWorld) {
-                registryEntitiesTypeNamesIds =
-                        Collections.unmodifiableSet(serverRegistry.registryEntries.keySet());
+                HashSet<String> hashSet = new HashSet<>(registryEntitiesTypeNamesIdsVanilla);
+                hashSet.addAll(serverRegistry.registryEntries.keySet());
+                registryEntitiesTypeNamesIds = Collections.unmodifiableSet(hashSet);
             }
             LinkedHashMap<String, RegistryEntry> toInjectEntityEntries =
                     localWorld ? new LinkedHashMap<>(serverRegistry.entityEntries) : null;

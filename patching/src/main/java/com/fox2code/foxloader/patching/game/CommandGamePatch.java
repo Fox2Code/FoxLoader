@@ -24,6 +24,7 @@
 package com.fox2code.foxloader.patching.game;
 
 import com.fox2code.foxloader.patching.TransformerUtils;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 final class CommandGamePatch extends GamePatch {
@@ -32,28 +33,42 @@ final class CommandGamePatch extends GamePatch {
     private static final String ServerPlayerCommandHandler = "net/minecraft/server/command/ServerPlayerCommandHandler";
     private static final String CommandRegistry$Internal = "com/fox2code/foxloader/registry/CommandRegistry$Internal";
     private static final String GameRegistry = "com/fox2code/foxloader/registry/GameRegistry";
+    private static final String EntityRegistry = "com/fox2code/foxloader/registry/EntityRegistry";
     private static final String CommandCompletionRegistry$Item =
             "net/minecraft/common/command/completion/CommandCompletionRegistry$Type$1";
+    private static final String CommandCompletionRegistry$Entity =
+            "net/minecraft/common/command/completion/CommandCompletionRegistry$Type$2";
 
     CommandGamePatch() {
         super(new String[]{PlayerCommandHandler, ClientPlayerCommandHandler, ServerPlayerCommandHandler,
-                CommandCompletionRegistry$Item});
+                CommandCompletionRegistry$Item, CommandCompletionRegistry$Entity});
     }
 
     @Override
     public ClassNode transform(ClassNode classNode) {
-        if (ClientPlayerCommandHandler.equals(classNode.name) ||
-                ServerPlayerCommandHandler.equals(classNode.name)) {
-            MethodNode init = TransformerUtils.getMethod(classNode, "<init>");
-            TransformerUtils.insertToEndOfCode(init,
-                    new MethodInsnNode(INVOKESTATIC, CommandRegistry$Internal, "register", "()V", false));
-            TransformerUtils.bringSelfCallToEndOfCode(init, "reloadCommandCompletions");
-        } else if (PlayerCommandHandler.equals(classNode.name)) {
-            MethodNode init = TransformerUtils.getMethod(classNode, "reloadCommands");
-            TransformerUtils.insertToEndOfCode(init,
-                    new MethodInsnNode(INVOKESTATIC, CommandRegistry$Internal, "register", "()V", false));
-        } else if (CommandCompletionRegistry$Item.equals(classNode.name)) {
-            patchCommandCompletionRegistry$Item(classNode);
+        switch (classNode.name) {
+            case ClientPlayerCommandHandler:
+            case ServerPlayerCommandHandler: {
+                MethodNode init = TransformerUtils.getMethod(classNode, "<init>");
+                TransformerUtils.insertToEndOfCode(init,
+                        new MethodInsnNode(INVOKESTATIC, CommandRegistry$Internal, "register", "()V", false));
+                TransformerUtils.bringSelfCallToEndOfCode(init, "reloadCommandCompletions");
+                break;
+            }
+            case PlayerCommandHandler: {
+                MethodNode init = TransformerUtils.getMethod(classNode, "reloadCommands");
+                TransformerUtils.insertToEndOfCode(init,
+                        new MethodInsnNode(INVOKESTATIC, CommandRegistry$Internal, "register", "()V", false));
+                break;
+            }
+            case CommandCompletionRegistry$Item: {
+                patchCommandCompletionRegistry$Item(classNode);
+                break;
+            }
+            case CommandCompletionRegistry$Entity: {
+                patchCommandCompletionRegistry$Entity(classNode);
+                break;
+            }
         }
         return classNode;
     }
@@ -111,5 +126,18 @@ final class CommandGamePatch extends GamePatch {
                 "Ljava/lang/String;", null, codeStart, codeEnd, 2));
         classNode.methods.remove(complete);
         classNode.methods.add(newComplete);
+    }
+
+    private static void patchCommandCompletionRegistry$Entity(ClassNode classNode) {
+        MethodNode complete = TransformerUtils.getMethod(classNode, "complete");
+        for (AbstractInsnNode abstractInsnNode : complete.instructions) {
+            if (abstractInsnNode.getOpcode() == Opcodes.INVOKESTATIC) {
+                MethodInsnNode methodInsnNode = (MethodInsnNode) abstractInsnNode;
+                if ("getEntityTypeNames".equals(methodInsnNode.name)) {
+                    methodInsnNode.owner = EntityRegistry;
+                    methodInsnNode.name = "getCommandCompletionEntityIDs";
+                }
+            }
+        }
     }
 }

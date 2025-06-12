@@ -264,7 +264,6 @@ public final class GameRegistry {
                     if (realId < INITIAL_ENTITY_ID)
                         throw new IOException("Invalid non-loader id: " + realId);
                     EntityRegistry.entityEntries.put(registryEntry.name, registryEntry);
-                    registryEntriesItemIds[registryEntry.realId - INITIAL_TRANSLATED_BLOCK_ID] = registryEntry;
                     initialEntityID = Math.max(initialEntityID, realId);
                 }
                 // Allow to load new game content without conflicting with item ids
