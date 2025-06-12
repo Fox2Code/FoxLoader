@@ -32,7 +32,7 @@ public final class BlockRenderManager {
     private static final int FL_MAX_RENDER_TYPES = 1024;
     private static final int FL_MAX_ID = FL_INITIAL_ID + FL_MAX_RENDER_TYPES - 1;
     private static final BlockRender[] blockRenders = new BlockRender[FL_MAX_RENDER_TYPES];
-    private static int nextID = FL_INITIAL_ID;
+    private static int nextID = 0;
 
     private BlockRenderManager() {}
 
@@ -49,7 +49,7 @@ public final class BlockRenderManager {
                 throw new IllegalStateException("Max number of renders registered!");
             }
             blockRenders[newAssignedID] = blockRender;
-            blockRender.assignedID = newAssignedID;
+            blockRender.assignedID = newAssignedID + FL_INITIAL_ID;
         }
     }
 
