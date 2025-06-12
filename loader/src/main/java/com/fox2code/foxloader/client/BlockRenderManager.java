@@ -44,12 +44,12 @@ public final class BlockRenderManager {
             if (blockRender.assignedID != -1) {
                 return;
             }
-            int newAssignedID = nextID++;
-            if (newAssignedID >= FL_MAX_ID) {
+            int newAssignedIndex = nextID++;
+            if (newAssignedIndex >= FL_MAX_RENDER_TYPES) {
                 throw new IllegalStateException("Max number of renders registered!");
             }
-            blockRenders[newAssignedID] = blockRender;
-            blockRender.assignedID = newAssignedID + FL_INITIAL_ID;
+            blockRenders[newAssignedIndex] = blockRender;
+            blockRender.assignedID = newAssignedIndex + FL_INITIAL_ID;
         }
     }
 
