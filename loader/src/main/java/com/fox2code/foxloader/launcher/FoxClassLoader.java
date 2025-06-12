@@ -268,16 +268,18 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
     public void injectMissingFileInfo(FileInfo fileInfo) {
         fileInfo.assertLocalFile();
         final String urlStr = fileInfo.source.toString();
-        boolean inCls = false;
-        for (URL url : this.getURLs()) {
-            if (url.toString().equals(urlStr)) {
-                inCls = true;
-                break;
+        boolean inCls = FoxLauncher.foxLoaderFile == fileInfo.file;
+        if (!inCls) {
+            for (URL url : this.getURLs()) {
+                if (url.toString().equals(urlStr)) {
+                    inCls = true;
+                    break;
+                }
             }
-        }
-        if (!inCls && this.reIndevURL != null &&
-                this.reIndevURL.toString().equals(urlStr)) {
-            inCls = true;
+            if (!inCls && this.reIndevURL != null &&
+                    this.reIndevURL.toString().equals(urlStr)) {
+                inCls = true;
+            }
         }
         if (inCls) {
             this.fileInfoCache.putIfAbsent(urlStr, fileInfo);
