@@ -25,6 +25,7 @@ package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxevents.Event;
 import com.fox2code.foxevents.EventCallback;
+import com.fox2code.foxloader.config.ConfigIO;
 import net.minecraft.common.networking.NetworkManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +57,10 @@ public class Mod {
 
     @Nullable public final Object getConfigObject() {
         return this.getModContainer().getConfigObject();
+    }
+
+    public final void saveConfigObject() {
+        ConfigIO.writeConfiguration(this.getModContainer(), this.getConfigObject());
     }
 
     public void onPreInit() {}

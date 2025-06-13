@@ -154,7 +154,7 @@ public class GuiModMenu extends GuiScreen {
         if (UpdateManager.getInstance().canUpdate(modContainer.getModId())) {
             this.addModButtonAction(ModActionButtonType.UPDATE);
         }
-        if (configObject instanceof GuiConfigProvider ||
+        if (configObject instanceof GuiConfigProviderConfigObject ||
                 (configObject != null && !(configObject instanceof NoConfigObject))) {
             this.addModButtonAction(ModActionButtonType.CONFIGURE);
         }
@@ -236,9 +236,10 @@ public class GuiModMenu extends GuiScreen {
             @Override
             void doAction(ModContainer modContainer, GuiModMenu guiModMenu) {
                 Object configObject = modContainer.getConfigObject();
-                if (configObject instanceof GuiConfigProvider) {
+                if (configObject instanceof GuiConfigProviderConfigObject) {
                     Minecraft.getInstance().displayGuiScreen(
-                            ((GuiConfigProvider) configObject).provideConfigScreen(guiModMenu));
+                            ((GuiConfigProviderConfigObject) configObject)
+                                    .provideConfigScreen(guiModMenu));
                 } else if (!(configObject instanceof NoConfigObject)) {
                     guiModMenu.openModConfigScreen(modContainer);
                 }

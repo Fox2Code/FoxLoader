@@ -27,6 +27,6 @@ import com.fox2code.foxloader.config.NoConfigObject;
 import net.minecraft.client.gui.GuiScreen;
 
 @FunctionalInterface
-public interface GuiConfigProvider extends NoConfigObject {
+public interface GuiConfigProvider extends NoConfigObject, GuiConfigProviderConfigObject {
     GuiScreen provideConfigScreen(GuiScreen parent);
 }
