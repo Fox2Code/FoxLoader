@@ -21,11 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.fox2code.foxloader.client.gui;
+package com.fox2code.foxloader.internal;
 
-import net.minecraft.client.gui.GuiScreen;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
-@FunctionalInterface
-public interface GuiConfigProviderConfigObject {
-    GuiScreen provideConfigScreen(GuiScreen parent);
+public class InternalHotfixesHooks {
+    public static void loadProperties(Properties properties, InputStream inputStream) throws IOException {
+        properties.load(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+    }
+
+    public static void storeProperties(Properties properties, OutputStream outputStream, String comment) throws IOException {
+        properties.store(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), comment);
+    }
 }
