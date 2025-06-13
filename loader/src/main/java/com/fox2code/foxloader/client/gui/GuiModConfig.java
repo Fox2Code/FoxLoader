@@ -51,6 +51,26 @@ final class GuiModConfig extends GuiScreen {
                 rootInstance.getClass(), modContainer).rootConfigMenu, rootInstance, rootInstance);
     }
 
+    public GuiModConfig(GuiScreen parentScreen, ModContainer modContainer, Object rootInstance, String path) {
+        ConfigStructure configStructure = ConfigStructure.parseFromClass(rootInstance.getClass(), modContainer);
+        ConfigMenu configMenu = configStructure.getInstanceConfigMenu(path);
+        if (configMenu == null) {
+            throw new IllegalArgumentException(
+                    "Config object: \"" + configStructure.getConfigClassName() +
+                    "\" does not have a config menu for \"" + path + "\"");
+        }
+        Object curInstance = configStructure.getInstanceConfigKey(rootInstance, path);
+        if (curInstance == null) {
+            throw new IllegalArgumentException(
+                    "Cannot open a config menu for a null object.");
+        }
+        this.parentScreen = parentScreen;
+        this.modContainer = modContainer;
+        this.configMenu = configMenu;
+        this.rootInstance = rootInstance;
+        this.curInstance = curInstance;
+    }
+
     private GuiModConfig(GuiScreen parentScreen, ModContainer modContainer, ConfigMenu configMenu,
                          Object rootInstance, Object curInstance) {
         this.parentScreen = parentScreen;

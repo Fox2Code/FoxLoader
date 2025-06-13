@@ -202,6 +202,21 @@ public final class ConfigStructure {
         this.modId = modId;
     }
 
+    public ConfigMenu getInstanceConfigMenu(String path) {
+        ConfigKey configKey = this.configKeyMap.get(path);
+        return configKey == null ? null : configKey.configMenu;
+    }
+
+    public Object getInstanceConfigKey(Object configObject, String path) {
+        Objects.requireNonNull(configObject);
+        this.cls.cast(configObject);
+        if (path.isEmpty()) {
+            return configObject;
+        }
+        ConfigKey configKey = this.configKeyMap.get(path);
+        return Internal.getInstanceConfigKeyImpl(configObject, configKey);
+    }
+
     public void loadJsonConfig(ObjectElement jsonObject, Object config) {
         this.cls.cast(config); // Verify input type
         for (ConfigKey configKey : this.configKeyMap.values()) {
@@ -313,6 +328,10 @@ public final class ConfigStructure {
                 }
             }
         }
+    }
+
+    public String getConfigClassName() {
+        return this.cls.getName();
     }
 
     public static class Internal {
