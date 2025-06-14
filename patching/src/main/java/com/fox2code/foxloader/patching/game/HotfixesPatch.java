@@ -23,50 +23,21 @@
  */
 package com.fox2code.foxloader.patching.game;
 
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 /**
  * Theses are just hotfixes for the game, dedicated to fixing ReIndev bugs and crashes.
  */
 final class HotfixesPatch extends GamePatch {
-    private static final String PropertyManager = "net/minecraft/server/util/PropertyManager";
-    private static final String Properties = "java/util/Properties";
     private static final String InternalHotfixesHooks = "com/fox2code/foxloader/internal/InternalHotfixesHooks";
-    static final boolean USE_HOTFIXES = true;
+    static final boolean USE_HOTFIXES = false;
 
     HotfixesPatch() {
-        super(new String[]{PropertyManager});
+        super(new String[]{});
     }
 
     @Override
     public ClassNode transform(ClassNode classNode) {
-        if (PropertyManager.equals(classNode.name)) {
-            patchPropertyManager(classNode);
-        }
         return classNode;
-    }
-
-    private static void patchPropertyManager(ClassNode classNode) {
-        for (MethodNode methodNode : classNode.methods) {
-            for (AbstractInsnNode abstractInsnNode : methodNode.instructions) {
-                if (abstractInsnNode.getOpcode() == Opcodes.INVOKEVIRTUAL) {
-                    MethodInsnNode methodInsnNode = (MethodInsnNode) abstractInsnNode;
-                    if (Properties.equals(methodInsnNode.owner)) {
-                        if ("load".equals(methodInsnNode.name) &&
-                                "(Ljava/io/InputStream;)V".equals(methodInsnNode.desc)) {
-                            methodNode.instructions.set(methodInsnNode, new MethodInsnNode(
-                                    Opcodes.INVOKESTATIC, InternalHotfixesHooks, "loadProperties",
-                                    "(L" + Properties + ";Ljava/io/InputStream;)V"));
-                        } else if ("store".equals(methodInsnNode.name) &&
-                                "(Ljava/io/OutputStream;Ljava/lang/String;)V".equals(methodInsnNode.desc)) {
-                            methodNode.instructions.set(methodInsnNode, new MethodInsnNode(
-                                    Opcodes.INVOKESTATIC, InternalHotfixesHooks, "storeProperties",
-                                    "(L" + Properties + ";Ljava/io/OutputStream;Ljava/lang/String;)V"));
-                        }
-                    }
-                }
-            }
-        }
     }
 }

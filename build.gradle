@@ -245,8 +245,12 @@ static ZipEntry partialCopy(ZipEntry zipEntry) {
     return newZipEntry
 }
 
+static boolean existNotEmpty(File file) {
+    return file.exists() && file.length() != 0
+}
+
 String slimHash = project['reindev.slimSHA256Sum'] as String
-if (slimURL == "null" || (clientFile.exists() && serverFile.exists() && !slimFile.exists())) {
+if (slimURL == "null" || (clientFile.exists() && serverFile.exists() && !existNotEmpty(slimFile))) {
     if (slimFile.exists()) {
         byte[] fileData = Files.readAllBytes(slimFile.toPath())
         byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
