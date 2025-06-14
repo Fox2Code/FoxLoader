@@ -29,8 +29,8 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 final class CertificateHelperPatch extends GamePatch {
-    private static final String CertificateHelperRD = "net/minecraft/client/networking/CertificateHelper";
-    private static final String CertificateHelperRD$ = "net/minecraft/client/networking/CertificateHelper$";
+    private static final String CertificateHelperRD = "net/minecraft/common/networking/CertificateHelper";
+    private static final String CertificateHelperRD$ = "net/minecraft/common/networking/CertificateHelper$";
     private static final String CertificateHelperFL = "com/fox2code/foxloader/utils/io/CertificateHelper";
 
     CertificateHelperPatch() {
