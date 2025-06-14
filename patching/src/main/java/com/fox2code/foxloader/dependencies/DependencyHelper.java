@@ -142,7 +142,7 @@ public final class DependencyHelper {
             new Dependency("org.jetbrains.kotlin:kotlin-stdlib:" + BuildConfig.KOTLIN_VERSION,
                     MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "263bdc679e1f62012db7b091796279b6d71cf36f4797a98ff1ace05835f201c8"),
             new Dependency("org.jetbrains.kotlinx:atomicfu-jvm:" + BuildConfig.KOTLINX_ATOMICFU_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "2b68464170070a8b085d8a7224c7c002dbd65ea14e1f8b97a9605115a252f7fb"),
+                    MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "39576ec46b83412ff7a2909d24cccbba90400e91f9aa67b250309bc0872ecf52"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:" + BuildConfig.KOTLINX_COLLECTIONS_IMMUTABLE_VERSION,
                     MAVEN_CENTRAL, "kotlinx.collections.immutable.ImmutableCollection", null, "d767014ad0c9a27d27d26fd38e7afa030aee0d141338f108781ff02ecf2fdab5"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:" + BuildConfig.KOTLINX_COROUTINES_VERSION,
