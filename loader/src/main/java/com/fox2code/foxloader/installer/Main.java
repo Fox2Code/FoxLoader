@@ -23,6 +23,7 @@
  */
 package com.fox2code.foxloader.installer;
 
+import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.launcher.LauncherType;
 import com.fox2code.foxloader.launcher.ServerMain;
 import com.fox2code.foxloader.utils.SourceUtil;
@@ -37,6 +38,10 @@ import java.util.Locale;
 public class Main {
     static final File currentInstallerFile = SourceUtil.getSourceFile(Main.class);
     public static void main(String[] args) throws Throwable {
+        if (FoxLauncher.class.getClassLoader().getResource("META-INF/FL-SHA-256") != null) {
+            System.out.println("This jar file has been erroneously tampered with!");
+            return;
+        }
         if (args.length == 0 && GraphicsEnvironment.isHeadless()) {
             ServerMain.main(new String[]{"nogui"});
             return;

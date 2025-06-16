@@ -366,6 +366,10 @@ final class InstallerGUI {
                                     "com.fox2code.foxloader.launcher.ServerMain")
                             .getBytes(StandardCharsets.UTF_8)), zipOutputStream);
                     zipOutputStream.closeEntry();
+                    // Insert the original FoxLoader jar hash in the server jar file.
+                    zipOutputStream.putNextEntry(new ZipEntry("META-INF/FL-SHA-256"));
+                    zipOutputStream.write(IOUtils.sha256Of(Main.currentInstallerFile));
+                    zipOutputStream.closeEntry();
                 } else {
                     zipOutputStream.putNextEntry(zipEntry);
                     IOUtils.copy(zipInputStream, zipOutputStream);

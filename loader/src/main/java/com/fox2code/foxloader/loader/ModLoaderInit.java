@@ -36,6 +36,7 @@ import com.fox2code.foxloader.patching.PreLoader;
 import com.fox2code.foxloader.patching.mixin.MixinModLoader;
 import com.fox2code.foxloader.updater.FoxLoaderUpdater;
 import com.fox2code.foxloader.utils.Platform;
+import com.fox2code.foxloader.utils.io.IOUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.client.Minecraft;
@@ -46,6 +47,8 @@ import xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -65,6 +68,8 @@ public final class ModLoaderInit {
     static final File config = new File(FoxLauncher.getGameDir(), "config");
     static final ModContainer FOX_LOADER_CONTAINER = new ModContainer(
             JavaLoadingPlugin.JAVA_LOADING_PLUGIN, JavaModInfo.FOX_LOADER_MOD_INFO);
+    // When extracting the server jar, the FoxLoader SHA-256 is altered.
+    public static final String FOXLOADER_TRUE_SHA_256;
     static final LinkedHashMap<String, ModContainer> modContainers = new LinkedHashMap<>();
     private static final Collection<ModContainer> modContainnersCollection =
             Collections.unmodifiableCollection(modContainers.values());
@@ -75,6 +80,16 @@ public final class ModLoaderInit {
         ((LoadingPlugin) JavaLoadingPlugin.JAVA_LOADING_PLUGIN).javaModInfo = JavaModInfo.FOX_LOADER_MOD_INFO;
         FoxLauncher.getFoxClassLoader().injectMissingFileInfo(JavaModInfo.FOX_LOADER_MOD_INFO);
         assertValidModInfo(JavaModInfo.FOX_LOADER_MOD_INFO, true);
+        String trueSha256 = JavaModInfo.FOX_LOADER_MOD_INFO.sha256;
+        try (InputStream inputStream = FoxLauncher.class.getClassLoader().getResourceAsStream("META-INF/FL-SHA-256")) {
+            if (inputStream != null) {
+                if (FoxLauncher.isClient()) {
+                    throw new RuntimeException("This jar file has been erroneously tampered with.");
+                }
+                trueSha256 = new BigInteger(1, IOUtils.readAllBytes(inputStream)).toString(16);
+            }
+        } catch (IOException ignored) {}
+        FOXLOADER_TRUE_SHA_256 = trueSha256;
     }
 
     public static @NotNull Logger getModLoaderLogger() {
