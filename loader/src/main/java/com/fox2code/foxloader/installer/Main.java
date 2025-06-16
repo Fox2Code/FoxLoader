@@ -89,8 +89,10 @@ public class Main {
                         Files.copy(currentInstallerFile.toPath(), newName.toPath());
                     }
                     installerGUI.extractMMCInstance("fox" + installerName);
+                    installerGUI.extractServer("fox" + installerName);
                 } else {
                     installerGUI.extractMMCInstance();
+                    installerGUI.extractServer();
                 }
                 return;
             }

@@ -344,13 +344,20 @@ final class InstallerGUI {
     }
 
     public void extractServer() {
+        String fileName = Main.currentInstallerFile.getName();
+        if (fileName.endsWith("-installer.jar")) {
+            fileName = fileName.replace("-installer.jar", ".jar");
+        }
+        this.extractServer(fileName);
+    }
+
+    public void extractServer(String baseFileName) {
         if (this.checkInstaller(true)) {
             return;
         }
 
-        String fileName = Main.currentInstallerFile.getName();
         File serverDest = new File(Main.currentInstallerFile.getParentFile(),
-                fileName.substring(0, fileName.length() - 4) + "-server.jar");
+                baseFileName.substring(0, baseFileName.length() - 4) + "-server.jar");
         try (ZipInputStream zipInputStream = new ZipInputStream(
                 Files.newInputStream(Main.currentInstallerFile.toPath()));
              ZipOutputStream zipOutputStream = new ZipOutputStream(
