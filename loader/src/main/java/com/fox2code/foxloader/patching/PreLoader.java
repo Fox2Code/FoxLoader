@@ -27,9 +27,11 @@ import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.dependencies.DependencyHelper;
 import com.fox2code.foxloader.launcher.FileInfo;
 import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.loader.ModLoaderInit;
 import com.fox2code.foxloader.patching.game.GamePatches;
 import com.fox2code.foxloader.patching.mixin.MixinModLoader;
 import com.fox2code.foxloader.utils.Platform;
+import com.fox2code.foxloader.utils.io.IOUtils;
 import com.fox2code.rebuild.ClassDataProvider;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.transformer.IMixinTransformer;
@@ -43,15 +45,21 @@ import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Objects;
 
 public final class PreLoader {
+    private static final File coremods = new File(FoxLauncher.getGameDir(), "coremods");
     private static final File tmpRoot = new File(FoxLauncher.getGameDir(), ".foxloader");
     private static final File tmpDir = new File(tmpRoot,
             File.separator + "internal" + File.separator + "patched");
     private static final File patchedFile = new File(tmpDir,
             "ReIndev-v" + BuildConfig.REINDEV_VERSION + "-fl" + BuildConfig.FOXLOADER_VERSION + ".jar");
+    private static final File patchedHash = new File(tmpDir,
+            "ReIndev-v" + BuildConfig.REINDEV_VERSION + "-fl" + BuildConfig.FOXLOADER_VERSION + ".hash");
     private static File devPatchedFile = null;
     // Use reference to allow memory to be freed on demand
     private static Reference<ClassDataProvider> classDataProviderReference;
@@ -70,16 +78,55 @@ public final class PreLoader {
         IMixinTransformer mixinTransformer = MixinModLoader.initializeMixin(FoxLauncher.isClient());
         FoxLauncher.getFoxClassLoader().installWrappedExtensions(
                 patchingLoaderExtensions = new PatchingLoaderExtensions(mixinTransformer));
+        LinkedList<File> coreMods = new LinkedList<>();
+        if (coremods.isDirectory() || coremods.mkdirs()) {
+            coreMods.addAll(Arrays.asList(Objects.requireNonNull(coremods.listFiles(
+                    (dir, name) -> name.endsWith(".zip") || name.endsWith(".jar")))));
+        }
         if (!FoxLauncher.DEVELOPING_FOXLOADER && !FoxLauncher.DEV_MODE) {
+            PreLoaderMetaJarHash preLoaderMetaJarHash = new PreLoaderMetaJarHash();
+            preLoaderMetaJarHash.addString(BuildConfig.REINDEV_VERSION);
+            preLoaderMetaJarHash.addString(ModLoaderInit.FOXLOADER_TRUE_SHA_256);
             try {
-                if (!patchedFile.exists()) {
+                LinkedList<FileInfo> coreModsInfos = new LinkedList<>();
+                for (File coreMod : coreMods) {
+                    FileInfo fileInfo = new FileInfo(coreMod);
+                    coreModsInfos.add(fileInfo);
+                    preLoaderMetaJarHash.addString(fileInfo.sha256);
+                }
+                preLoaderMetaJarHash.freeze();
+                final String currentHash = preLoaderMetaJarHash.getHash();
+                String previousHashAndSize = "";
+                String jarSize = "";
+                if (patchedFile.exists() && patchedHash.exists()) {
+                    try {
+                        previousHashAndSize = new String(Files.readAllBytes(
+                                patchedHash.toPath()), StandardCharsets.UTF_8);
+                        jarSize = String.format("%08X", patchedFile.length());
+                    } catch (Exception ignored) {}
+                }
+
+                if (jarSize.isEmpty() || !previousHashAndSize.equals(currentHash + jarSize)) {
+                    if (tmpDir.isDirectory()) {
+                        for (File child : Objects.requireNonNull(tmpDir.listFiles())) {
+                            IOUtils.deleteFile(child);
+                        }
+                    }
                     File file = DependencyHelper.loadDependencyAsFile(DependencyHelper.reIndevDependencySlim);
-                    GamePatches.patchSlimJar(file, patchedFile);
+                    GamePatches.patchSlimJarWithCoreMods(file, coreMods, patchedFile);
+                    jarSize = String.format("%08X", patchedFile.length());
+                    Files.write(patchedHash.toPath(), (currentHash + jarSize).getBytes(StandardCharsets.UTF_8));
                 }
                 FoxLauncher.getFoxClassLoader().setPatchedSlimInfo(new FileInfo(patchedFile));
+                for (FileInfo coreMod : coreModsInfos) {
+                    FoxLauncher.getFoxClassLoader().addFileToClassLoader(coreMod);
+                }
             } catch (IOException e) {
                 throw new RuntimeException("Failed to patch ReIndev", e);
             }
+        } else if (!coreMods.isEmpty()) {
+            ModLoaderInit.getModLoaderLogger().warning(
+                    "Core mods are not supported inside a development environment!");
         }
     }
 

@@ -105,4 +105,10 @@ public class IOUtils {
         }
         return hash;
     }
+
+    public static void deleteFile(File file) throws IOException {
+        if (!file.exists()) return;
+        if (file.isDirectory()) throw new IOException("\"" + file.getPath() + "\" is a directory");
+        if (!file.delete()) throw new IOException("Failed to delete \"" + file.getPath() + "\"");
+    }
 }

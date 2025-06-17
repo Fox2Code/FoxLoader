@@ -24,6 +24,7 @@
 package com.fox2code.foxloader.patching.game;
 
 import com.fox2code.foxloader.patching.TransformerUtils;
+import com.fox2code.foxloader.utils.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
@@ -33,6 +34,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Function;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -115,7 +117,7 @@ public final class GamePatches {
         }
         boolean failedRename = false;
         try {
-            patchSlimJarImpl(slimJar, patchedJar, true);
+            patchSlimJarImpl(slimJar, null, patchedJar, true);
         } finally {
             if (!patchedJar.renameTo(patchedJar)) {
                 failedRename = true;
@@ -127,10 +129,20 @@ public final class GamePatches {
     }
 
     public static void patchSlimJar(File slimJar, File patchedJar) throws IOException {
-        patchSlimJarImpl(slimJar, patchedJar, false);
+        patchSlimJarImpl(slimJar, null, patchedJar, false);
     }
 
-    private static void patchSlimJarImpl(File slimJar, File patchedJar, boolean check) throws IOException {
+    public static void patchSlimJarWithCoreMods(File slimJar, List<File> coreMods, File patchedJar) throws IOException {
+        if (coreMods == null || coreMods.isEmpty()) {
+            patchSlimJar(slimJar, patchedJar);
+            return;
+        }
+        try (JarSourceSet jarSourceSet = new JarSourceSet(coreMods)) {
+            patchSlimJarImpl(slimJar, jarSourceSet, patchedJar, false);
+        }
+    }
+
+    private static void patchSlimJarImpl(File slimJar,JarSourceSet jarSourceSet, File patchedJar, boolean check) throws IOException {
         HashSet<String> classesToPatch = new HashSet<>(gameClassPatches.keySet());
         try(ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(slimJar.toPath()));
             ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(patchedJar.toPath()))) {
@@ -139,27 +151,18 @@ public final class GamePatches {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(131072);
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 String path = zipEntry.getName();
-                if (path.endsWith(".class")) {
-                    byteArrayOutputStream.reset();
-                    copy(zipInputStream, byteArrayOutputStream);
-                    ClassReader classReader = new ClassReader(byteArrayOutputStream.toByteArray());
-                    ClassNode classNode = new ClassNode();
-                    classReader.accept(classNode, ClassReader.SKIP_FRAMES);
-                    classesToPatch.remove(classNode.name);
-                    classNode = patchClassNode(classNode);
-                    if (classNode != null) {
-                        zipOutputStream.putNextEntry(new ZipEntry(zipEntry.getName()));
-                        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                        classNode.accept(classWriter);
-                        byte[] compiled = classWriter.toByteArray();
-                        zipOutputStream.write(compiled);
-                        zipOutputStream.closeEntry();
-                        if (check) TransformerUtils.checkBytecodeValidity(compiled);
-                    }
-                } else {
-                    zipOutputStream.putNextEntry(new ZipEntry(zipEntry.getName()));
-                    copy(zipInputStream, zipOutputStream);
-                    zipOutputStream.closeEntry();
+                InputStream jarSourceInputStream = jarSourceSet != null ?
+                        jarSourceSet.getInputStreamParsed(path) : null;
+                patchAndInsert(byteArrayOutputStream, classesToPatch, zipOutputStream,
+                        jarSourceInputStream == null ? zipInputStream : jarSourceInputStream,
+                        path, check, jarSourceInputStream != null);
+            }
+            if (jarSourceSet != null) {
+                while ((zipEntry = jarSourceSet.nextExtraZipEntry()) != null) {
+                    String path = zipEntry.getName();
+                    InputStream inputStream = jarSourceSet.getInputStreamOfCurrentEntry();
+                    patchAndInsert(byteArrayOutputStream, classesToPatch, zipOutputStream,
+                            inputStream, path, check, true);
                 }
             }
             zipOutputStream.finish();
@@ -169,13 +172,104 @@ public final class GamePatches {
         }
     }
 
-    // Utils port for game patches
-    static void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
-        byte[] byteChunk = new byte[4096];
-        int n;
+    private static void patchAndInsert(
+            ByteArrayOutputStream byteArrayOutputStream, HashSet<String> classesToPatch,
+            ZipOutputStream zipOutputStream, InputStream inputStream,
+            String path, boolean check, boolean closeInput) throws IOException {
+        if (path.endsWith(".class")) {
+            byteArrayOutputStream.reset();
+            IOUtils.copy(inputStream, byteArrayOutputStream);
+            if (closeInput) {
+                inputStream.close();
+            }
+            ClassReader classReader = new ClassReader(byteArrayOutputStream.toByteArray());
+            ClassNode classNode = new ClassNode();
+            classReader.accept(classNode, ClassReader.SKIP_FRAMES);
+            classesToPatch.remove(classNode.name);
+            classNode = patchClassNode(classNode);
+            if (classNode != null) {
+                zipOutputStream.putNextEntry(new ZipEntry(path));
+                ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+                classNode.accept(classWriter);
+                byte[] compiled = classWriter.toByteArray();
+                zipOutputStream.write(compiled);
+                zipOutputStream.closeEntry();
+                if (check) TransformerUtils.checkBytecodeValidity(compiled);
+            }
+        } else {
+            zipOutputStream.putNextEntry(new ZipEntry(path));
+            IOUtils.copy(inputStream, zipOutputStream);
+            if (closeInput) {
+                inputStream.close();
+            }
+            zipOutputStream.closeEntry();
+        }
+    }
 
-        while ((n = inputStream.read(byteChunk)) > 0) {
-            outputStream.write(byteChunk, 0, n);
+    private static final class JarSourceSet implements Closeable {
+        private final List<ZipFile> zipFiles;
+        private final HashSet<String> parsedFiles;
+        private final Iterator<ZipFile> zipFileIterator;
+        private ZipFile currentZipFile;
+        private Enumeration<? extends ZipEntry> zipEntryEnumeration;
+        private ZipEntry currentZipEntry;
+
+        private JarSourceSet(List<File> files) throws IOException {
+            this.zipFiles = new ArrayList<>();
+            try {
+                for (File file : files) {
+                    this.zipFiles.add(new ZipFile(file));
+                }
+            } catch (IOException ioe) {
+                try {
+                    this.close();
+                } catch (IOException ignored) {}
+                throw ioe;
+            }
+            this.parsedFiles = new HashSet<>();
+            this.zipFileIterator = this.zipFiles.iterator();
+        }
+
+        public InputStream getInputStreamParsed(String path) throws IOException {
+            this.parsedFiles.add(path);
+            for (ZipFile zipFile : this.zipFiles) {
+                ZipEntry zipEntry = zipFile.getEntry(path);
+                if (zipEntry != null) {
+                    return zipFile.getInputStream(zipEntry);
+                }
+            }
+            return null;
+        }
+
+        public ZipEntry nextExtraZipEntry() {
+            while (true) {
+                while (this.zipEntryEnumeration == null ||
+                        !this.zipEntryEnumeration.hasMoreElements()) {
+                    if (!this.zipFileIterator.hasNext()) {
+                        return null;
+                    }
+                    this.currentZipFile = this.zipFileIterator.next();
+                    this.zipEntryEnumeration = this.currentZipFile.entries();
+                }
+                while (this.zipEntryEnumeration.hasMoreElements()) {
+                    ZipEntry zipEntry = this.zipEntryEnumeration.nextElement();
+                    if (this.parsedFiles.add(zipEntry.getName())) {
+                        return this.currentZipEntry = zipEntry;
+                    }
+                }
+            }
+        }
+
+        public InputStream getInputStreamOfCurrentEntry() throws IOException {
+            return this.currentZipFile.getInputStream(this.currentZipEntry);
+        }
+
+        @Override
+        public void close() throws IOException {
+            for (ZipFile zipFile : this.zipFiles) {
+                zipFile.close();
+            }
+            this.zipFiles.clear();
         }
     }
 }
