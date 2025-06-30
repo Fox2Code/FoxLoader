@@ -84,7 +84,7 @@ public final class DependencyHelper {
             new Dependency("org.ow2.asm:asm-commons:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter", null, "3301a1c1cb4c59fcc5292648dac1d7c5aed4c0f067dfbe88873b8cdfe77404f4"),
             new Dependency("org.ow2.asm:asm-util:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter", null, "8ba0460ecb28fd0e2980e5f3ef3433a513a457bc077f81a53bdc75b587a08d15"),
             GSON_DEPENDENCY, new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files", null, "972139718abc8a4893fa78cba8cf7b2c903f35c97aaf44fa3031b0669948b480"),
-            new Dependency("it.unimi.dsi:fastutil-core:" + BuildConfig.FASTUTIL_VERSION, MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair", null, "379a73e00790fc865318acc0550e2e8d108934758295df18bce6719bd0038c6d"),
+            new Dependency("it.unimi.dsi:fastutil-core:" + BuildConfig.FASTUTIL_VERSION, MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair", null, "ec7c5adb94faa6294bb5b1aebddf51926066fd781b919b480f68d55b5c7bafa1"),
             new Dependency("com.unascribed:ears-api:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.api.features.EarsFeatures", null, "6482fe4f9473c1b49e0513684e95647a95dca289528b5fdcad3347c193500871"),
             new Dependency("com.unascribed:ears-common:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.common.EarsCommon", null, "8ec4fb89e30901abf1f9d35c5ed5ac4d0d57d212dc4f4260566b33fbc826ca0d"),
             new Dependency("net.fabricmc:sponge-mixin:" + BuildConfig.FABRIC_MIXIN_VERSION, FABRIC_MC,
@@ -115,12 +115,12 @@ public final class DependencyHelper {
                     "3816dd5705f4d6e097fca9ddce79baa105931baacd5e4c0912fdb5f1c8c091e3", 21),
             new Dependency("com.moulberry:mixinconstraints:" + BuildConfig.MIXIN_CONSTRAINTS_VERSION,
                     MAVEN_CENTRAL, "com.moulberry.mixinconstraints.MixinConstraints", null,
-                    "942b311295c144eb4bc4accc7164d6779ebfcc5856359ff9664128b0a95f6046", 21),
+                    "756a8b5d17306a03fe5453767269b7623fb4436c41e0649ec1ca9b203f82f75c", 17),
     };
 
     public static final Dependency sparkDependency =
             new Dependency(BuildConfig.SPARK_DEPENDENCY, MODRINTH, "me.lucko.spark.common.SparkPlugin",
-                    null, "1e25b3ca4b7278ff3fdc4f7baa5692d30c2ac8be80b7eae9e1c4edb09f74b753");
+                    null, "a5dc1f41dcaeebdea6e99408226e17b5d4cdcacf3d759e9335821858de058b8a");
 
     public static final Dependency vineFlower = new Dependency(
             BuildConfig.VINEFLOWER_DEPENDENCY, MAVEN_CENTRAL,
@@ -138,29 +138,29 @@ public final class DependencyHelper {
 
     public static final Dependency[] kotlinDependencyBundle = new Dependency[]{
             new Dependency("org.jetbrains.kotlin:kotlin-reflect:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "bcd75a36ca4ad8e06117214ed807f8dea2fe61a71e07f91ca14f4335024b8463"),
+                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "230d91c2e410e3cfca3a4dc73d255455f62ff52aac091a33397a6e30bde91bf7"),
             new Dependency("org.jetbrains.kotlin:kotlin-stdlib:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "263bdc679e1f62012db7b091796279b6d71cf36f4797a98ff1ace05835f201c8"),
+                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "65d12d85a3b865c160db9147851712a64b10dadd68b22eea22a95bf8a8670dca"),
             new Dependency("org.jetbrains.kotlinx:atomicfu-jvm:" + BuildConfig.KOTLINX_ATOMICFU_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "39576ec46b83412ff7a2909d24cccbba90400e91f9aa67b250309bc0872ecf52"),
+                    MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "97cd462f8e8ab92571ab8805070e4450c52cb1ad63c224208f71a10943a01e46"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:" + BuildConfig.KOTLINX_COLLECTIONS_IMMUTABLE_VERSION,
                     MAVEN_CENTRAL, "kotlinx.collections.immutable.ImmutableCollection", null, "d767014ad0c9a27d27d26fd38e7afa030aee0d141338f108781ff02ecf2fdab5"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:" + BuildConfig.KOTLINX_COROUTINES_VERSION,
                     MAVEN_CENTRAL, "kotlinx.coroutines.CoroutineDispatcher", null, "5ca175b38df331fd64155b35cd8cae1251fa9ee369709b36d42e0a288ccce3fd"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-datetime-jvm:" + BuildConfig.KOTLINX_DATETIME_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.datetime.DateTimeUnit", null, "102764921129e1e44a74f408b7a0b8dac6d1892c6042e0e48f8bdbbbf78c6d2e"),
+                    MAVEN_CENTRAL, "kotlinx.datetime.DateTimeUnit", null, "56d7d4d86372cb3da402c8b66f226b9283182810a667a09ca0e522b4ff992087"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-io-bytestring-jvm:" + BuildConfig.KOTLINX_IO_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.io.bytestring.ByteString", null, "ea38a66b0ff46ed82dded9e81d2dce70e5fbe03bd6cc52b4fc8869381dea7b7d"),
+                    MAVEN_CENTRAL, "kotlinx.io.bytestring.ByteString", null, "3da805e9da2ff3cb119f744dcd11de6a18e32a5b933518f17418ba5795cfa775"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-io-core-jvm:" + BuildConfig.KOTLINX_IO_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.io.Buffer", null, "6ededc9be4d878aea80c7dd609f91bfc47fcd3d36cc91fd0f3f328fbd6656c8f"),
+                    MAVEN_CENTRAL, "kotlinx.io.Buffer", null, "610770cc855edf1c57d9fcd7c69fd040af57adaf8834505f91805de680783d13"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-metadata-jvm:" + BuildConfig.KOTLINX_METADATA_VERSION,
                     MAVEN_CENTRAL, "kotlinx.metadata.KmClass", null, "d42f4bac60b81c4fdcef1c666aed4181d00401e5e696e496f44935fe32fea58f"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.serialization.cbor.Cbor", null, "604c4130ca7a0e979a449cf550087a5c2c586485e8af01dcf24b03b7b287306d"),
+                    MAVEN_CENTRAL, "kotlinx.serialization.cbor.Cbor", null, "e45f32f0d80e1164593cfcf9f1907ae39871084c6aa08e49acc2e8e22e1d93ce"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.serialization.KSerializer", null, "3565b6d4d789bf70683c45566944287fc1d8dc75c23d98bd87d01059cc76f2b3"),
+                    MAVEN_CENTRAL, "kotlinx.serialization.KSerializer", null, "1f0afa172110e45a7231ef1b44ae8fd84c1ebaff96f3fc3ad68ef8c48120b59c"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.serialization.json.Json", null, "8769e5647557e3700919c32d508f5c5dad53c5d8234cd10846354fbcff14aa24"),
+                    MAVEN_CENTRAL, "kotlinx.serialization.json.Json", null, "d94cc34cae39246a1af74fda63f9c4812ce12216ef641d5fa3bbbb539a6922d8"),
     };
 
     public static final Dependency[] jnaDependencyBundle = new Dependency[]{
