@@ -33,10 +33,19 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 
 public class BasicNetworkTest {
+    private static final FileInfo fileInfoLocal;
+
+    static {
+        try {
+            fileInfoLocal = new FileInfo(SourceUtil.getSourceFile(DependencyHelper.class));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to initialize FileInfo", e);
+        }
+    }
+
     @Test
     public void testFileInfoEncodingMatch() throws IOException {
         byte[] hashCache = new byte[32];
-        FileInfo fileInfoLocal = new FileInfo(SourceUtil.getSourceFile(DependencyHelper.class));
         Assertions.assertFalse(fileInfoLocal.isRemote());
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ClientHello.flWriteFileInfo(new DataOutputStream(byteArrayOutputStream), hashCache, fileInfoLocal);
@@ -45,5 +54,17 @@ public class BasicNetworkTest {
         Assertions.assertTrue(parsedFileInfo.isRemote());
         Assertions.assertEquals(0, byteArrayInputStream.available());
         Assertions.assertEquals(fileInfoLocal.sha256, parsedFileInfo.sha256);
+    }
+
+    @Test
+    public void testClientHelloEncodingMatch() throws IOException {
+        ClientHello origClientHello = new ClientHello(fileInfoLocal);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        origClientHello.writeData(new DataOutputStream(byteArrayOutputStream));
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        ClientHello parsedClientHello = new ClientHello(fileInfoLocal);
+        parsedClientHello.readData(new DataInputStream(byteArrayInputStream));
+        Assertions.assertEquals(0, byteArrayInputStream.available());
+        Assertions.assertEquals(origClientHello.getFoxLoaderVersion(), parsedClientHello.getFoxLoaderVersion());
     }
 }

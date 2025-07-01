@@ -77,7 +77,12 @@ public final class ModLoaderInit {
 
     static {
         ((LoadingPlugin) JavaLoadingPlugin.JAVA_LOADING_PLUGIN).javaModInfo = JavaModInfo.FOX_LOADER_MOD_INFO;
-        FoxLauncher.getFoxClassLoader().injectMissingFileInfo(JavaModInfo.FOX_LOADER_MOD_INFO);
+        FoxClassLoader foxClassLoader = FoxLauncher.getFoxClassLoader();
+        if (foxClassLoader != null) {
+            foxClassLoader.injectMissingFileInfo(JavaModInfo.FOX_LOADER_MOD_INFO);
+        } else {
+            FoxLauncher.notifyTestingMode();
+        }
         assertValidModInfo(JavaModInfo.FOX_LOADER_MOD_INFO, true);
         String trueSha256 = JavaModInfo.FOX_LOADER_MOD_INFO.sha256;
         try (InputStream inputStream = FoxLauncher.class.getClassLoader().getResourceAsStream("META-INF/FL-SHA-256")) {
@@ -111,6 +116,9 @@ public final class ModLoaderInit {
     }
 
     public static void launchModdedClient(String[] args) throws Exception {
+        if (FoxLauncher.isTestingMode()) {
+            throw new IllegalStateException("Cannot start FoxLoader in testing mode!");
+        }
         getModLoaderLogger().info("Launching FoxLoader " + BuildConfig.FOXLOADER_VERSION + " client");
         isClientDevModeImpl = args.length < 2 || args[1].length() < 2;
         commonPreInitialize(true);
@@ -123,6 +131,9 @@ public final class ModLoaderInit {
     }
 
     public static void launchModdedServer(String[] args) throws Exception {
+        if (FoxLauncher.isTestingMode()) {
+            throw new IllegalStateException("Cannot start FoxLoader in testing mode!");
+        }
         getModLoaderLogger().info("Launching FoxLoader " + BuildConfig.FOXLOADER_VERSION + " server");
         commonPreInitialize(false);
         try {

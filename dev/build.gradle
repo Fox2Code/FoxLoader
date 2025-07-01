@@ -34,6 +34,7 @@ dependencies {
     api 'com.google.code.gson:gson:2.10.1'
     api "org.ow2.asm:asm-util:${ASM_VERSION}"
     api "org.ow2.asm:asm-commons:${ASM_VERSION}"
+    api "com.fox2code:ReBuild:${project['rebuild.version']}"
     final String JVM_DOWNGRADER_VERSION = project['jvm-downgrader.version']
     // implementation "xyz.wagyourtail.jvmdowngrader:jvmdowngrader:${JVM_DOWNGRADER_VERSION}"
     // implementation "xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:${JVM_DOWNGRADER_VERSION}:downgraded-8"

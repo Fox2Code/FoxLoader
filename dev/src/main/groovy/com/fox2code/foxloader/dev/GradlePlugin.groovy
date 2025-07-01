@@ -505,7 +505,7 @@ class GradlePlugin implements Plugin<Project> {
             injectPom(pomFox, "net.silveros", "reindev-fl", versionFox)
             if (!jarFox.exists()) {
                 System.out.println("Patching ReIndev")
-                PatchBridge.patch(jar, jarFox, false)
+                PatchBridge.patchComputeFrames(jar, jarFox)
             }
             if (config.decompileSources) {
                 decompile(project, foxLoaderCache, config, versionFox, jarFox)

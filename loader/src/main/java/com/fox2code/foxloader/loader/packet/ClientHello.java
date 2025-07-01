@@ -36,8 +36,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Collections;
 
 public final class ClientHello extends FoxPacket {
     public static final int CLIENT_HELLO_VERSION = 0;
@@ -60,6 +62,15 @@ public final class ClientHello extends FoxPacket {
         this.serverRegistryVersion = ServerRegistry.SERVER_REGISTRY_VERSION;
         this.foxLoaderVersion = BuildConfig.FOXLOADER_VERSION;
         this.clientClassPathData = new ArrayList<>(FoxLauncher.getFoxClassLoader().loadingClassPath());
+    }
+
+    public ClientHello(FileInfo fileInfo) {
+        super(0, true);
+        Objects.requireNonNull(fileInfo, "fileInfo");
+        this.clientHelloVersion = CLIENT_HELLO_VERSION;
+        this.serverRegistryVersion = ServerRegistry.SERVER_REGISTRY_VERSION;
+        this.foxLoaderVersion = BuildConfig.FOXLOADER_VERSION;
+        this.clientClassPathData = new ArrayList<>(Arrays.asList(fileInfo, fileInfo));
     }
 
     public int getClientHelloVersion() {
@@ -117,6 +128,7 @@ public final class ClientHello extends FoxPacket {
     public void writeData(DataOutputStream dataOutputStream) throws IOException {
         dataOutputStream.writeInt(CLIENT_HELLO_VERSION);
         dataOutputStream.writeInt(this.serverRegistryVersion);
+        Packet.writeString(this.foxLoaderVersion, dataOutputStream);
         dataOutputStream.writeShort(this.clientClassPathData.size());
         byte[] hashCache = new byte[32];
         for (FileInfo fileInfo : this.clientClassPathData) {

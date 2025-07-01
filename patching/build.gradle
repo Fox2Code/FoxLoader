@@ -13,6 +13,11 @@ jar {
     }
 }
 
+dependencies {
+    runtimeOnly "com.fox2code:ReBuild:${project['rebuild.version']}"
+    compileOnly "com.fox2code:ReBuild:${project['rebuild.version']}"
+}
+
 File slimFile = new File(project.rootProject.rootDir, "loader" + File.separator +
         "libs" + File.separator + project['reindev.slimJar'])
 File patchedFile = new File(project.rootProject.rootDir, "loader" + File.separator +

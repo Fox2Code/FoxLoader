@@ -54,4 +54,8 @@ public final class PatchBridge {
             GamePatches.patchSlimJar(input, output);
         }
     }
+
+    public static void patchComputeFrames(File input, File output) throws IOException {
+        GamePatches.patchSlimJarComputeFrames(input, output);
+    }
 }

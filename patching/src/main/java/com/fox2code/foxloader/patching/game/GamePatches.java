@@ -25,11 +25,14 @@ package com.fox2code.foxloader.patching.game;
 
 import com.fox2code.foxloader.patching.TransformerUtils;
 import com.fox2code.foxloader.utils.io.IOUtils;
+import com.fox2code.rebuild.ClassDataProvider;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Function;
@@ -43,6 +46,11 @@ public final class GamePatches {
     private static final ArrayList<GamePatch> globalGamePatches = new ArrayList<>();
     private static final HashMap<String, ArrayList<GamePatch>> gameClassPatches = new HashMap<>();
     private static final Function<String, ArrayList<GamePatch>> provider = k -> new ArrayList<>();
+    private static final Function<ClassNode, byte[]> classNodeToBytesDefault = classNode -> {
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        classNode.accept(classWriter);
+        return classWriter.toByteArray();
+    };
     private static void addGamePatch(GamePatch gamePatch) {
         if (gamePatch.targets == null) {
             globalGamePatches.add(gamePatch);
@@ -117,7 +125,7 @@ public final class GamePatches {
         }
         boolean failedRename = false;
         try {
-            patchSlimJarImpl(slimJar, null, patchedJar, true);
+            patchSlimJarImpl(slimJar, null, patchedJar, true, true);
         } finally {
             if (!patchedJar.renameTo(patchedJar)) {
                 failedRename = true;
@@ -129,7 +137,11 @@ public final class GamePatches {
     }
 
     public static void patchSlimJar(File slimJar, File patchedJar) throws IOException {
-        patchSlimJarImpl(slimJar, null, patchedJar, false);
+        patchSlimJarImpl(slimJar, null, patchedJar, false, false);
+    }
+
+    public static void patchSlimJarComputeFrames(File slimJar, File patchedJar) throws IOException {
+        patchSlimJarImpl(slimJar, null, patchedJar, false, true);
     }
 
     public static void patchSlimJarWithCoreMods(File slimJar, List<File> coreMods, File patchedJar) throws IOException {
@@ -138,11 +150,16 @@ public final class GamePatches {
             return;
         }
         try (JarSourceSet jarSourceSet = new JarSourceSet(coreMods)) {
-            patchSlimJarImpl(slimJar, jarSourceSet, patchedJar, false);
+            patchSlimJarImpl(slimJar, jarSourceSet, patchedJar, false, false);
         }
     }
 
-    private static void patchSlimJarImpl(File slimJar,JarSourceSet jarSourceSet, File patchedJar, boolean check) throws IOException {
+    private static void patchSlimJarImpl(File slimJar,JarSourceSet jarSourceSet, File patchedJar,
+                                         boolean check, boolean computeFrames) throws IOException {
+        Function<ClassNode, byte[]> classNodeToBytes = classNodeToBytesDefault;
+        if (computeFrames) {
+            classNodeToBytes = ReBuildHelper.makeBasicFrameComputeWithJar(slimJar);
+        } else throw new RuntimeException("NO!");
         HashSet<String> classesToPatch = new HashSet<>(gameClassPatches.keySet());
         try(ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(slimJar.toPath()));
             ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(patchedJar.toPath()))) {
@@ -153,7 +170,7 @@ public final class GamePatches {
                 String path = zipEntry.getName();
                 InputStream jarSourceInputStream = jarSourceSet != null ?
                         jarSourceSet.getInputStreamParsed(path) : null;
-                patchAndInsert(byteArrayOutputStream, classesToPatch, zipOutputStream,
+                patchAndInsert(byteArrayOutputStream, classNodeToBytes, classesToPatch, zipOutputStream,
                         jarSourceInputStream == null ? zipInputStream : jarSourceInputStream,
                         path, check, jarSourceInputStream != null);
             }
@@ -161,7 +178,7 @@ public final class GamePatches {
                 while ((zipEntry = jarSourceSet.nextExtraZipEntry()) != null) {
                     String path = zipEntry.getName();
                     InputStream inputStream = jarSourceSet.getInputStreamOfCurrentEntry();
-                    patchAndInsert(byteArrayOutputStream, classesToPatch, zipOutputStream,
+                    patchAndInsert(byteArrayOutputStream, classNodeToBytes, classesToPatch, zipOutputStream,
                             inputStream, path, check, true);
                 }
             }
@@ -173,7 +190,9 @@ public final class GamePatches {
     }
 
     private static void patchAndInsert(
-            ByteArrayOutputStream byteArrayOutputStream, HashSet<String> classesToPatch,
+            ByteArrayOutputStream byteArrayOutputStream,
+            Function<ClassNode, byte[]> classNodeToBytes,
+            HashSet<String> classesToPatch,
             ZipOutputStream zipOutputStream, InputStream inputStream,
             String path, boolean check, boolean closeInput) throws IOException {
         if (path.endsWith(".class")) {
@@ -189,9 +208,7 @@ public final class GamePatches {
             classNode = patchClassNode(classNode);
             if (classNode != null) {
                 zipOutputStream.putNextEntry(new ZipEntry(path));
-                ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-                classNode.accept(classWriter);
-                byte[] compiled = classWriter.toByteArray();
+                byte[] compiled = classNodeToBytes.apply(classNode);
                 zipOutputStream.write(compiled);
                 zipOutputStream.closeEntry();
                 if (check) TransformerUtils.checkBytecodeValidity(compiled);
@@ -270,6 +287,18 @@ public final class GamePatches {
                 zipFile.close();
             }
             this.zipFiles.clear();
+        }
+    }
+
+    private static class ReBuildHelper {
+        public static Function<ClassNode, byte[]> makeBasicFrameComputeWithJar(File jarFile) throws IOException {
+            final ClassDataProvider classDataProvider = new ClassDataProvider(
+                    new URLClassLoader(new URL[]{jarFile.toURI().toURL()}));
+            return classNode -> {
+                ClassWriter classWriter = classDataProvider.newClassWriter();
+                classNode.accept(classWriter);
+                return classWriter.toByteArray();
+            };
         }
     }
 }

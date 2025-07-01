@@ -94,6 +94,7 @@ public final class FoxLauncher {
     public static String initialUsername;
     public static String initialSessionId;
     private static boolean hasLogger = false;
+    private static boolean testingMode = false;
 
     public static void markWronglyInstalled() {
         if (foxClassLoader == null) wronglyInstalled = true;
@@ -308,6 +309,9 @@ public final class FoxLauncher {
     }
 
     static void runClientWithArgs(String[] args) throws Throwable {
+        if (testingMode) {
+            throw new IllegalStateException("Cannot start FoxLoader in testing mode!");
+        }
         CertificateHelper.install();
         Thread.currentThread().setContextClassLoader(foxClassLoader);
         MethodHandles.lookup().unreflect(
@@ -316,6 +320,9 @@ public final class FoxLauncher {
     }
 
     static void runServerWithArgs(String[] args) throws Throwable {
+        if (testingMode) {
+            throw new IllegalStateException("Cannot start FoxLoader in testing mode!");
+        }
         CertificateHelper.install();
         Thread.currentThread().setContextClassLoader(foxClassLoader);
         MethodHandles.lookup().unreflect(
@@ -339,6 +346,10 @@ public final class FoxLauncher {
         return environmentType == EnvironmentType.SERVER;
     }
 
+    public static boolean isTestingMode() {
+        return testingMode;
+    }
+
     public static EnvironmentType getEnvironmentType() {
         return environmentType;
     }
@@ -349,5 +360,13 @@ public final class FoxLauncher {
 
     public static void printEarlyStackTrace(Throwable t) {
         t.printStackTrace(hasLogger ? System.err : System.out);
+    }
+
+    public static void notifyTestingMode() {
+        if (foxClassLoader == null && environmentType == null) {
+            testingMode = true;
+        } else {
+            throw new IllegalStateException("Cannot notify testing mode outside of unit tests!");
+        }
     }
 }
