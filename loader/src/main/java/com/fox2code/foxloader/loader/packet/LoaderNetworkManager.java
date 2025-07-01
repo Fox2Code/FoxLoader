@@ -80,7 +80,7 @@ public final class LoaderNetworkManager {
             dataOutputStream.writeByte(foxPacket.id);
             foxPacket.writeData(dataOutputStream);
         } catch (IOException ignored) {}
-        networkPlayer.addToSendQueue(new Packet250PluginMessage("foxLoader", byteArrayOutputStream.toByteArray()));
+        networkPlayer.addToSendQueue(new Packet250PluginMessage("foxloader", byteArrayOutputStream.toByteArray()));
     }
 
     public static void executeServerPacketData(NetworkManager networkConnection, byte[] data) {
@@ -115,8 +115,8 @@ public final class LoaderNetworkManager {
                 case 0: {
                     ServerHello serverHello = new ServerHello();
                     serverHello.readData(dataInputStream);
-                    sendClientPacketData(networkConnection, new ClientHello()
-                            .setClientHelloVersion(serverHello.getClientHelloVersion()));
+                    sendClientPacketData(networkConnection,
+                            new ClientHello(serverHello.getClientHelloVersion()));
                     break;
                 }
                 case 1: {

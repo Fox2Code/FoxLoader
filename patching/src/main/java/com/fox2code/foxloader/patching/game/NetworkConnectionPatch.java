@@ -156,7 +156,9 @@ final class NetworkConnectionPatch extends GamePatch {
     private static ClassNode transformNetworkManager(ClassNode classNode) {
         classNode.access |= Opcodes.ACC_FINAL;
         classNode.fields.add(new FieldNode(0, "hasFoxLoader", "Z", null, false));
-        classNode.fields.add(new FieldNode(ACC_PUBLIC, "flHelloHandler", "Ljava/lang/Object;", null, null));
+        FieldNode flHelloHandler = new FieldNode(ACC_PUBLIC, "flHelloHandler", "Ljava/lang/Object;", null, null);
+        classNode.fields.add(flHelloHandler);
+        // getNetHandler
         MethodNode getNetHandler = new MethodNode(ACC_PUBLIC,
                 "getNetHandler", "()L" + NetHandler + ";", null, null);
         getNetHandler.instructions.add(new VarInsnNode(ALOAD, 0));
@@ -164,13 +166,37 @@ final class NetworkConnectionPatch extends GamePatch {
                 NetworkManager, "netHandler", "L" + NetHandler + ";"));
         getNetHandler.instructions.add(new InsnNode(ARETURN));
         TransformerUtils.addMethodBefore(classNode, "setNetHandler", getNetHandler);
+        // hasFoxLoader
         MethodNode hasFoxLoader = new MethodNode(ACC_PUBLIC,
                 "hasFoxLoader", "()Z", null, null);
         hasFoxLoader.instructions.add(new VarInsnNode(ALOAD, 0));
         hasFoxLoader.instructions.add(new FieldInsnNode(GETFIELD,
                 NetworkManager, "hasFoxLoader", "Z"));
         hasFoxLoader.instructions.add(new InsnNode(IRETURN));
+        TransformerUtils.setThisParameterName(classNode, hasFoxLoader);
         classNode.methods.add(hasFoxLoader);
+        // flWaitingForClientHello
+        MethodNode waitingForClientHello = new MethodNode(ACC_PUBLIC,
+                "flWaitingForClientHello", "()Z", null, null);
+        waitingForClientHello.instructions.add(new VarInsnNode(ALOAD, 0));
+        waitingForClientHello.instructions.add(new FieldInsnNode(GETFIELD,
+                NetworkManager, "hasFoxLoader", "Z"));
+        LabelNode wSkip = new LabelNode();
+        waitingForClientHello.instructions.add(new JumpInsnNode(IFEQ, wSkip));
+        waitingForClientHello.instructions.add(new VarInsnNode(ALOAD, 0));
+        waitingForClientHello.instructions.add(new FieldInsnNode(GETFIELD,
+                NetworkManager, flHelloHandler.name, flHelloHandler.desc));
+        waitingForClientHello.instructions.add(new JumpInsnNode(IFNONNULL, wSkip));
+        waitingForClientHello.instructions.add(new InsnNode(ICONST_1));
+        LabelNode wEnd = new LabelNode();
+        waitingForClientHello.instructions.add(new JumpInsnNode(GOTO, wEnd));
+        waitingForClientHello.instructions.add(wSkip);
+        waitingForClientHello.instructions.add(new InsnNode(ICONST_0));
+        waitingForClientHello.instructions.add(wEnd);
+        waitingForClientHello.instructions.add(new InsnNode(IRETURN));
+        TransformerUtils.setThisParameterName(classNode, waitingForClientHello);
+        classNode.methods.add(waitingForClientHello);
+        // getEntityPlayer
         MethodNode getEntityPlayer = new MethodNode(ACC_PUBLIC,
                 "getEntityPlayer", "()L" + EntityPlayer + ";", null, null);
         getEntityPlayer.instructions.add(new VarInsnNode(ALOAD, 0));
@@ -180,6 +206,7 @@ final class NetworkConnectionPatch extends GamePatch {
                 NetHandler, "getEntityPlayer", "()L" + EntityPlayer + ";"));
         getEntityPlayer.instructions.add(new InsnNode(ARETURN));
         classNode.methods.add(getEntityPlayer);
+        // Network error hook
         MethodNode onNetworkError = TransformerUtils.getMethod(classNode, "onNetworkError");
         AbstractInsnNode firstCodeInsn = TransformerUtils.nextCodeInsn(onNetworkError.instructions.getFirst());
         InsnList insnList = new InsnList();
@@ -555,6 +582,32 @@ final class NetworkConnectionPatch extends GamePatch {
                 disconnectMethodNode.instructions.insert(start, foxLoaderJoinMessage);
             }
         } else if (login) {
+            MethodNode tryLogin = TransformerUtils.getMethod(classNode, "tryLogin");
+            AbstractInsnNode authenticated = null;
+            for (AbstractInsnNode abstractInsnNode : tryLogin.instructions) {
+                if (abstractInsnNode.getOpcode() == Opcodes.GETFIELD &&
+                        ((FieldInsnNode) abstractInsnNode).name.equals("authenticated")) {
+                    authenticated = abstractInsnNode;
+                    break;
+                }
+            }
+            Objects.requireNonNull(authenticated, "authenticated");
+            InsnList checkWaitForClientHello = new InsnList();
+            LabelNode wSkip = new LabelNode();
+            checkWaitForClientHello.add(new JumpInsnNode(IFEQ, wSkip));
+            checkWaitForClientHello.add(new VarInsnNode(ALOAD, 0));
+            checkWaitForClientHello.add(new FieldInsnNode(GETFIELD,
+                    NetLoginHandler, networkManagerField.name, networkManagerField.desc));
+            checkWaitForClientHello.add(new MethodInsnNode(INVOKEVIRTUAL,
+                    NetworkManager, "flWaitingForClientHello", "()Z"));
+            checkWaitForClientHello.add(new JumpInsnNode(IFNE, wSkip));
+            checkWaitForClientHello.add(new InsnNode(ICONST_1));
+            LabelNode wEnd = new LabelNode();
+            checkWaitForClientHello.add(new JumpInsnNode(GOTO, wEnd));
+            checkWaitForClientHello.add(wSkip);
+            checkWaitForClientHello.add(new InsnNode(ICONST_0));
+            checkWaitForClientHello.add(wEnd);
+            tryLogin.instructions.insert(authenticated, checkWaitForClientHello);
             MethodNode handleClientProtocol = TransformerUtils.getMethod(classNode, "handleClientProtocol");
             boolean afterCst = false, didPatch = false;
             for (AbstractInsnNode abstractInsnNode : handleClientProtocol.instructions) {

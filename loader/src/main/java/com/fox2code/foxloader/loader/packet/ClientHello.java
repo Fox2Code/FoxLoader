@@ -50,12 +50,15 @@ public final class ClientHello extends FoxPacket {
         this.clientHelloVersion = CLIENT_HELLO_VERSION;
         this.serverRegistryVersion = ServerRegistry.SERVER_REGISTRY_VERSION;
         this.foxLoaderVersion = BuildConfig.FOXLOADER_VERSION;
-        this.clientClassPathData = new ArrayList<>(FoxLauncher.getFoxClassLoader().loadingClassPath());
+        this.clientClassPathData = new ArrayList<>();
     }
 
-    public ClientHello setClientHelloVersion(int clientHelloVersion) {
+    public ClientHello(int clientHelloVersion) {
+        super(0, true);
         this.clientHelloVersion = Math.min(clientHelloVersion, CLIENT_HELLO_VERSION);
-        return this;
+        this.serverRegistryVersion = ServerRegistry.SERVER_REGISTRY_VERSION;
+        this.foxLoaderVersion = BuildConfig.FOXLOADER_VERSION;
+        this.clientClassPathData = new ArrayList<>(FoxLauncher.getFoxClassLoader().loadingClassPath());
     }
 
     public int getClientHelloVersion() {
