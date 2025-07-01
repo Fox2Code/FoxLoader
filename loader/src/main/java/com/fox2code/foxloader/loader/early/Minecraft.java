@@ -26,10 +26,12 @@ package com.fox2code.foxloader.loader.early;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import net.minecraft.common.CoreConstants;
 import net.minecraft.common.ICoreAccess;
+import net.minecraft.common.entity.Entity;
 import net.minecraft.common.entity.player.PlayerInteractionHandler;
 import net.minecraft.common.util.logging.LogAgent;
 
 import java.io.File;
+import java.util.List;
 
 final class Minecraft implements ICoreAccess {
     @Override
@@ -55,4 +57,7 @@ final class Minecraft implements ICoreAccess {
             return EarlyLoader.EARLY_LOG_AGENT;
         }
     }
+
+    @Override
+    public void appendAllLoadedEntities(List<Entity> list) {}
 }
