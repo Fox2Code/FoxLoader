@@ -36,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
@@ -80,7 +79,7 @@ public final class ResourceLoadingPlugin extends LoadingPlugin {
             if (zipFile.getEntry("pack.png") != null) {
                 packIcon = URLUtils.getEntryURLOf(mod, "pack.png");
             }
-            sha256 = new BigInteger(1, IOUtils.sha256Of(mod)).toString(16);
+            sha256 = IOUtils.toHex(IOUtils.sha256Of(mod));
         } catch (IOException ioe) {
             return null;
         }

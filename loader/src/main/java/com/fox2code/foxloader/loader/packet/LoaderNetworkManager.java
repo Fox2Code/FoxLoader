@@ -28,6 +28,8 @@ import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.ModLoaderInit;
 import com.fox2code.foxloader.network.SidedMetadataAPI;
 import com.fox2code.foxloader.registry.GameRegistry;
+import com.fox2code.foxloader.server.NetworkKickHelper;
+import com.fox2code.foxloader.utils.io.IOUtils;
 import net.minecraft.common.networking.NetworkManager;
 import net.minecraft.common.networking.Packet250PluginMessage;
 import net.minecraft.common.networking.Packet255KickDisconnect;
@@ -52,7 +54,7 @@ public final class LoaderNetworkManager {
             }
             //noinspection SwitchStatementWithTooFewBranches
             switch (packetId) {
-                case 1:
+                case 0:
                     if (networkConnection.flHelloHandler != null ||
                             !(networkConnection.getNetHandler() instanceof NetLoginHandler)) {
                         if (strictNetworking) {
@@ -66,7 +68,13 @@ public final class LoaderNetworkManager {
                     networkConnection.flHelloHandler = clientHello;
                     break;
             }
-        } catch (IOException ignored) {}
+        } catch (Exception e) {
+            ModLoaderInit.getModLoaderLogger().log(Level.WARNING, "Failed to read FoxLoader packet", e);
+            if (FoxLauncher.DEVELOPING_FOXLOADER) {
+                ModLoaderInit.getModLoaderLogger().info("Packet dump: " + IOUtils.toHex(data));
+            }
+            NetworkKickHelper.kickPlayer(networkConnection, "Server failed to read FoxLoader packet!");
+        }
     }
 
     public static void sendClientPacketData(NetworkManager networkPlayer, FoxPacket foxPacket) {

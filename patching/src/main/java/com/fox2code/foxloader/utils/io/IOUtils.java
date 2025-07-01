@@ -111,4 +111,12 @@ public class IOUtils {
         if (file.isDirectory()) throw new IOException("\"" + file.getPath() + "\" is a directory");
         if (!file.delete()) throw new IOException("Failed to delete \"" + file.getPath() + "\"");
     }
+
+    public static String toHex(byte[] data) {
+        StringBuilder sb = new StringBuilder(data.length * 2);
+        for (byte b : data) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
 }

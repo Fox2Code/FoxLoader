@@ -84,6 +84,7 @@ subprojects {
     configurations {
         include
         compileOnly.extendsFrom(include)
+        testCompileOnly.extendsFrom(include)
     }
 
     dependencies {
@@ -191,6 +192,13 @@ subprojects {
     }
 }
 
+static String toHex(byte[] data) {
+    StringBuilder sb = new StringBuilder(data.length * 2);
+    for (byte b : data) {
+        sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
+}
 
 // We need to download client and server to be able to compile the project.
 // Let's do that there really quick.
@@ -199,7 +207,7 @@ static void downloadIfNeeded(URL url, File file, String hash) {
     if (file.exists()) {
         byte[] localData = Files.readAllBytes(file.toPath())
         byte[] localHash = MessageDigest.getInstance("SHA-256").digest(localData)
-        String hashString = new BigInteger(1, localHash).toString(16)
+        String hashString = toHex(localHash)
         if (hashString == hash) return
         if (!file.delete()) {
             throw new IOException("Failed to delete corrupted file: " + file.getName())
@@ -222,7 +230,7 @@ static void downloadIfNeeded(URL url, File file, String hash) {
     }
     byte[] fileData = Files.readAllBytes(file.toPath())
     byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
-    String hashString = new BigInteger(1, fileHash).toString(16)
+    String hashString = toHex(fileHash)
     if (hash != hashString) {
         throw new IOException("Excpeted HASH: " + hash + " got " + hashString)
     }
@@ -254,7 +262,7 @@ if (slimURL == "null" || (clientFile.exists() && serverFile.exists() && !existNo
     if (slimFile.exists()) {
         byte[] fileData = Files.readAllBytes(slimFile.toPath())
         byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
-        String hashString = new BigInteger(1, fileHash).toString(16)
+        String hashString = toHex(fileHash)
         if (slimHash != hashString) {
             throw new IOException("Excpeted HASH: " + slimHash + " got " + hashString)
         }
@@ -297,7 +305,7 @@ if (slimURL == "null" || (clientFile.exists() && serverFile.exists() && !existNo
         slimOutputStream.close()
         byte[] fileData = Files.readAllBytes(slimFile.toPath())
         byte[] fileHash = MessageDigest.getInstance("SHA-256").digest(fileData)
-        String hashString = new BigInteger(1, fileHash).toString(16)
+        String hashString = toHex(fileHash)
         if (slimHash != hashString) {
             throw new IOException("Excpeted HASH: " + slimHash + " got " + hashString)
         }

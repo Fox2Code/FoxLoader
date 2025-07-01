@@ -27,10 +27,8 @@ import com.fox2code.foxloader.utils.SourceUtil;
 import com.fox2code.foxloader.utils.io.IOUtils;
 
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -59,12 +57,12 @@ public class FileInfo {
         if (jarPath != null) {
             this.source = new URL("jar:" + file.toURI().toURL() + "!/" + this.jarPath);
             this.bSha256 = IOUtils.sha256Of(this.source);
-            this.sha256 = new BigInteger(1, this.bSha256).toString(16);
+            this.sha256 = IOUtils.toHex(this.bSha256);
             this.fileName = this.jarPath.substring(this.jarPath.lastIndexOf('/') + 1);
         } else {
             this.source = file.toURI().toURL();
             this.bSha256 = file.isDirectory() ? emptyHash : IOUtils.sha256Of(file);
-            this.sha256 = new BigInteger(1, this.bSha256).toString(16);
+            this.sha256 = IOUtils.toHex(this.bSha256);
             this.fileName = file.getName();
         }
         this.codeSource = new CodeSourceWithFileInfo(this.source, this);
@@ -80,13 +78,11 @@ public class FileInfo {
         this.jarPath = readStringSafest(dataInputStream, null);
         this.source = null;
         this.bSha256 = new byte[32];
-        if (dataInputStream.read(this.bSha256) != 32) {
-            throw new EOFException();
-        }
-        this.sha256 = new BigInteger(1, this.bSha256).toString(16);
+        dataInputStream.readFully(this.bSha256);
+        this.sha256 = IOUtils.toHex(this.bSha256);
         this.fileName = readStringSafest(dataInputStream, null);
         this.codeSource = null;
-        this.isJavaArchive0 = this.isJavaArchive();
+        this.isJavaArchive0 = false;
     }
 
     public static String readStringSafest(DataInputStream dataInputStream, String fallback) throws IOException {

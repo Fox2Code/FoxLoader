@@ -48,7 +48,6 @@ import xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -86,7 +85,7 @@ public final class ModLoaderInit {
                 if (FoxLauncher.isClient()) {
                     throw new RuntimeException("This jar file has been erroneously tampered with.");
                 }
-                trueSha256 = new BigInteger(1, IOUtils.readAllBytes(inputStream)).toString(16);
+                trueSha256 = IOUtils.toHex(IOUtils.readAllBytes(inputStream));
             }
         } catch (IOException ignored) {}
         FOXLOADER_TRUE_SHA_256 = trueSha256;

@@ -29,6 +29,7 @@ import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.launcher.FileInfo;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.ModInfo;
+import com.fox2code.foxloader.loader.ModLoaderInit;
 import net.minecraft.common.networking.Packet;
 
 import java.io.DataInputStream;
@@ -86,27 +87,30 @@ public final class ClientHello extends FoxPacket {
         this.clientClassPathData.clear();
         int fileCount = dataInputStream.readUnsignedShort();
         while (fileCount-->0) {
-            int type = dataInputStream.readUnsignedByte();
-            FileInfo fileInfo;
-            switch (type) {
-                case 0: {
-                    fileInfo = new FileInfo(dataInputStream);
-                    break;
-                }
-                case 1: {
-                    fileInfo = new DependencyFileInfo(dataInputStream);
-                    break;
-                }
-                case 2: {
-                    fileInfo = new ModInfo(dataInputStream);
-                    break;
-                }
-                default: {
-                    throw new RuntimeException("Server is outdated??? (Code: C)");
-                }
-            }
-            this.clientClassPathData.add(fileInfo);
+            this.clientClassPathData.add(flReadFileInfo(dataInputStream));
         }
+    }
+
+    public static FileInfo flReadFileInfo(DataInputStream dataInputStream) throws IOException {
+        int type = dataInputStream.readUnsignedByte();
+        if (FoxLauncher.DEVELOPING_FOXLOADER) {
+            ModLoaderInit.getModLoaderLogger().info("FileInfo type: " + type);
+        }
+        switch (type) {
+            case 0: {
+                return new FileInfo(dataInputStream);
+            }
+            case 1: {
+                return new DependencyFileInfo(dataInputStream);
+            }
+            case 2: {
+                return new ModInfo(dataInputStream);
+            }
+            default: {
+                throw new RuntimeException("Invalid type: " + type + ", Server is outdated???");
+            }
+        }
+
     }
 
     @Override
@@ -116,44 +120,48 @@ public final class ClientHello extends FoxPacket {
         dataOutputStream.writeShort(this.clientClassPathData.size());
         byte[] hashCache = new byte[32];
         for (FileInfo fileInfo : this.clientClassPathData) {
-            if (fileInfo instanceof ModInfo) {
-                ModInfo modInfo = (ModInfo) fileInfo;
-                dataOutputStream.writeByte(2);
-                writeStringSafest(dataOutputStream, modInfo.jarPath, true);
-                fileInfo.emitSha256(hashCache);
-                dataOutputStream.write(hashCache);
-                writeStringSafest(dataOutputStream, modInfo.fileName, true);
-                writeStringSafest(dataOutputStream, modInfo.id, false);
-                writeStringSafest(dataOutputStream, modInfo.name, true);
-                writeStringSafest(dataOutputStream, modInfo.version, true);
-                writeStringSafest(dataOutputStream, modInfo.description, true);
-                writeStringSafest(dataOutputStream, modInfo.authors, true);
-                writeStringSafest(dataOutputStream, modInfo.iconPath, true);
-                writeStringSafest(dataOutputStream, modInfo.environment, true);
-                writeStringSafest(dataOutputStream, modInfo.website, true);
-                dataOutputStream.writeBoolean(modInfo.unofficial);
-                dataOutputStream.writeLong(modInfo.loadOrderPriority);
-            } else if (fileInfo instanceof DependencyFileInfo) {
-                DependencyHelper.Dependency dependency =
-                        ((DependencyFileInfo) fileInfo).getDependency();
-                dataOutputStream.writeByte(1);
-                writeStringSafest(dataOutputStream, fileInfo.jarPath, true);
-                fileInfo.emitSha256(hashCache);
-                dataOutputStream.write(hashCache);
-                writeStringSafest(dataOutputStream, fileInfo.fileName, true);
-                writeStringSafest(dataOutputStream, dependency.name, true);
-                writeStringSafest(dataOutputStream, dependency.repository, true);
-                writeStringSafest(dataOutputStream, dependency.classCheck, true);
-                writeStringSafest(dataOutputStream, dependency.fallbackUrl, true);
-                writeStringSafest(dataOutputStream, dependency.sha256Sum, false);
-                dataOutputStream.writeShort(dependency.javaSupport);
-            } else  {
-                dataOutputStream.writeByte(0);
-                writeStringSafest(dataOutputStream, fileInfo.jarPath, true);
-                fileInfo.emitSha256(hashCache);
-                dataOutputStream.write(hashCache);
-                writeStringSafest(dataOutputStream, fileInfo.fileName, true);
-            }
+            flWriteFileInfo(dataOutputStream, hashCache, fileInfo);
+        }
+    }
+
+    public static void flWriteFileInfo(DataOutputStream dataOutputStream, byte[] hashCache, FileInfo fileInfo) throws IOException {
+        if (fileInfo instanceof ModInfo) {
+            ModInfo modInfo = (ModInfo) fileInfo;
+            dataOutputStream.writeByte(2);
+            writeStringSafest(dataOutputStream, modInfo.jarPath, true);
+            fileInfo.emitSha256(hashCache);
+            dataOutputStream.write(hashCache);
+            writeStringSafest(dataOutputStream, modInfo.fileName, true);
+            writeStringSafest(dataOutputStream, modInfo.id, false);
+            writeStringSafest(dataOutputStream, modInfo.name, true);
+            writeStringSafest(dataOutputStream, modInfo.version, true);
+            writeStringSafest(dataOutputStream, modInfo.description, true);
+            writeStringSafest(dataOutputStream, modInfo.authors, true);
+            writeStringSafest(dataOutputStream, modInfo.iconPath, true);
+            writeStringSafest(dataOutputStream, modInfo.environment, true);
+            writeStringSafest(dataOutputStream, modInfo.website, true);
+            dataOutputStream.writeBoolean(modInfo.unofficial);
+            dataOutputStream.writeLong(modInfo.loadOrderPriority);
+        } else if (fileInfo instanceof DependencyFileInfo) {
+            DependencyHelper.Dependency dependency =
+                    ((DependencyFileInfo) fileInfo).getDependency();
+            dataOutputStream.writeByte(1);
+            writeStringSafest(dataOutputStream, fileInfo.jarPath, true);
+            fileInfo.emitSha256(hashCache);
+            dataOutputStream.write(hashCache);
+            writeStringSafest(dataOutputStream, fileInfo.fileName, true);
+            writeStringSafest(dataOutputStream, dependency.name, true);
+            writeStringSafest(dataOutputStream, dependency.repository, true);
+            writeStringSafest(dataOutputStream, dependency.classCheck, true);
+            writeStringSafest(dataOutputStream, dependency.fallbackUrl, true);
+            writeStringSafest(dataOutputStream, dependency.sha256Sum, false);
+            dataOutputStream.writeShort(dependency.javaSupport);
+        } else  {
+            dataOutputStream.writeByte(0);
+            writeStringSafest(dataOutputStream, fileInfo.jarPath, true);
+            fileInfo.emitSha256(hashCache);
+            dataOutputStream.write(hashCache);
+            writeStringSafest(dataOutputStream, fileInfo.fileName, true);
         }
     }
 

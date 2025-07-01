@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.net.*;
 import java.nio.file.Files;
 import java.util.*;
@@ -58,7 +57,7 @@ public final class DependencyHelper {
 
     public static final Dependency jansi = new Dependency(
             "org.fusesource.jansi:jansi:" + BuildConfig.JANSI_VERSION, MAVEN_CENTRAL,
-            "org.fusesource.jansi.AnsiConsole", null, "b7b8b003a90ea491579b62f5118828e45112914c65589b00faa49d6ec785839");
+            "org.fusesource.jansi.AnsiConsole", null, "0b7b8b003a90ea491579b62f5118828e45112914c65589b00faa49d6ec785839");
 
     private static final Dependency annotations =
             new Dependency("org.jetbrains:annotations:24.1.0", MAVEN_CENTRAL,
@@ -88,7 +87,7 @@ public final class DependencyHelper {
             new Dependency("com.unascribed:ears-api:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.api.features.EarsFeatures", null, "6482fe4f9473c1b49e0513684e95647a95dca289528b5fdcad3347c193500871"),
             new Dependency("com.unascribed:ears-common:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.common.EarsCommon", null, "8ec4fb89e30901abf1f9d35c5ed5ac4d0d57d212dc4f4260566b33fbc826ca0d"),
             new Dependency("net.fabricmc:sponge-mixin:" + BuildConfig.FABRIC_MIXIN_VERSION, FABRIC_MC,
-                    "org.spongepowered.asm.mixin.Mixins", null, "1dd2b778ed5283bce6b6b07d9690d86d956b17a7103efafad47073db1599584"),
+                    "org.spongepowered.asm.mixin.Mixins", null, "01dd2b778ed5283bce6b6b07d9690d86d956b17a7103efafad47073db1599584"),
             new Dependency("io.github.llamalad7:mixinextras-common:" + BuildConfig.MIXIN_EXTRAS_VERSION, MAVEN_CENTRAL,
                     "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "6a2c6f39f285348635ba1e0e914d066fe718c207e220a49012e8b347cb27fbda"),
             new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:" + BuildConfig.MIXIN_SQUARED_VERSION,
@@ -269,7 +268,7 @@ public final class DependencyHelper {
             if (dependency != foxLoader && DependencyImpl.CURRENT_IMPL.isDevelopingFoxLoader()) {
                 String realSha256 = null;
                 try {
-                    realSha256 = new BigInteger(1, IOUtils.sha256Of(file)).toString(16);
+                    realSha256 = IOUtils.toHex(IOUtils.sha256Of(file));
                 } catch (IOException e) {
                     DependencyImpl.CURRENT_IMPL.printStackTrace(e);
                 }
@@ -385,7 +384,7 @@ public final class DependencyHelper {
         if (dependency.sha256Sum == null || !file.exists()) return false;
         String hashString;
         try {
-            hashString = new BigInteger(1, IOUtils.sha256Of(file)).toString(16);
+            hashString = IOUtils.toHex(IOUtils.sha256Of(file));
         } catch (IOException e) {
             hashString = "";
         }
