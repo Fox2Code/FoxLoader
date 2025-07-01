@@ -159,7 +159,7 @@ public final class GamePatches {
         Function<ClassNode, byte[]> classNodeToBytes = classNodeToBytesDefault;
         if (computeFrames) {
             classNodeToBytes = ReBuildHelper.makeBasicFrameComputeWithJar(slimJar);
-        } else throw new RuntimeException("NO!");
+        }
         HashSet<String> classesToPatch = new HashSet<>(gameClassPatches.keySet());
         try(ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(slimJar.toPath()));
             ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(patchedJar.toPath()))) {
