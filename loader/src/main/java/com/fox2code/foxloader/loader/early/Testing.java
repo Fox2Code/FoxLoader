@@ -23,28 +23,39 @@
  */
 package com.fox2code.foxloader.loader.early;
 
-import com.fox2code.foxloader.launcher.FoxLauncher;
-import net.minecraft.common.CoreConstants;
+import net.minecraft.common.ICoreAccess;
+import net.minecraft.common.entity.Entity;
+import net.minecraft.common.entity.player.PlayerInteractionHandler;
 import net.minecraft.common.util.logging.LogAgent;
 
-/**
- * Initialize a ICoreAccess early to allow game code to work properly during pre-initialization.
- */
-public final class EarlyLoader {
-    static final LogAgent EARLY_LOG_AGENT = new LogAgent("EARLY", null);
-    private EarlyLoader() { throw new AssertionError(); }
+import java.io.File;
+import java.util.List;
 
-    public static void earlyLoad() {
-        if (CoreConstants.CORE != null) return;
-        if (FoxLauncher.isClient()) {
-            CoreConstants.CORE = new Minecraft();
-        } else {
-            CoreConstants.CORE = new MinecraftServer();
-        }
+final class Testing implements ICoreAccess {
+    static final LogAgent TESTING_LOG_AGENT = new LogAgent("TESTING", null);
+
+    @Override
+    public File getMinecraftDir() {
+        throw new IllegalStateException("getMinecraftDir() is not available in testing mode");
     }
 
-    public static void onTestingMode() {
-        if (CoreConstants.CORE != null) return;
-        CoreConstants.CORE = new Testing();
+    @Override
+    public PlayerInteractionHandler getPlayerInteractionHandler() {
+        throw new IllegalStateException("getPlayerInteractionHandler() is not available in testing mode");
+    }
+
+    @Override
+    public void tickSprint(int i) {
+        throw new IllegalStateException("tickSprint() is not available in testing mode");
+    }
+
+    @Override
+    public LogAgent getLogger() {
+        return TESTING_LOG_AGENT;
+    }
+
+    @Override
+    public void appendAllLoadedEntities(List<Entity> list) {
+        throw new IllegalStateException("appendAllLoadedEntities() is not available in testing mode");
     }
 }

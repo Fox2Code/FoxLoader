@@ -24,6 +24,7 @@
 package com.fox2code.foxloader.launcher;
 
 import com.fox2code.foxloader.dependencies.DependencyHelper;
+import com.fox2code.foxloader.loader.early.EarlyLoader;
 import com.fox2code.foxloader.utils.Platform;
 import com.fox2code.foxloader.utils.SourceUtil;
 import com.fox2code.foxloader.utils.io.CertificateHelper;
@@ -364,7 +365,11 @@ public final class FoxLauncher {
 
     public static void notifyTestingMode() {
         if (foxClassLoader == null && environmentType == null) {
-            testingMode = true;
+            // We usually can't call loader classes from launch, but testing mode is an exception.
+            if (!testingMode) {
+                testingMode = true;
+                EarlyLoader.onTestingMode();
+            }
         } else {
             throw new IllegalStateException("Cannot notify testing mode outside of unit tests!");
         }

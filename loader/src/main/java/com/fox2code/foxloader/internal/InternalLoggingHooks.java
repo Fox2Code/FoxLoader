@@ -47,6 +47,7 @@ public final class InternalLoggingHooks {
         Logger logger = logAgent.getLogger();
         logger.setUseParentHandlers(false);
         logger.addHandler(CONSOLE_HANDLER);
+        if (FoxLauncher.isTestingMode()) return;
         FoxLauncher.installLoggerHelperOn(logger);
         if (logAgent.logFile == null || !restoreVanillaLogging) return;
         try {
