@@ -486,6 +486,14 @@ public final class TransformerUtils {
         return abstractInsnNode;
     }
 
+    public static AbstractInsnNode getFirstCodeInsn(InsnList insnList) {
+        AbstractInsnNode abstractInsnNode = insnList.getFirst();
+        if (abstractInsnNode.getOpcode() == -1) {
+            abstractInsnNode = nextCodeInsn(abstractInsnNode);
+        }
+        return Objects.requireNonNull(abstractInsnNode);
+    }
+
     public static void insertToBeginningOfCode(MethodNode methodNode, AbstractInsnNode abstractInsnNode) {
         InsnList insnList = new InsnList();
         insnList.add(abstractInsnNode);

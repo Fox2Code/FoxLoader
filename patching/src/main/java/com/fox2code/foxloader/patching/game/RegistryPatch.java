@@ -87,6 +87,7 @@ final class RegistryPatch extends GamePatch {
     private static final String ChunkBlockMap = "net/minecraft/common/world/chunk/ChunkBlockMap";
     private static final String Material = "net/minecraft/common/block/data/Material";
     private static final String Packet = "net/minecraft/common/networking/Packet";
+    private static final String StatList = "net/minecraft/common/stats/StatList";
     private static final String RenderItem = "net/minecraft/client/renderer/entity/RenderItem";
     private static final String GuiConnecting = "net/minecraft/client/gui/GuiConnecting";
     private static final String Minecraft = "net/minecraft/client/Minecraft";
@@ -848,6 +849,27 @@ final class RegistryPatch extends GamePatch {
                 GameRegistry, "getRegisteringMod", "(L" + Block + ";)L" + ModContainer + ";"));
         getRegisteringModInsns.add(new InsnNode(ARETURN));
         classNode.methods.add(getRegisteringMod);
+        // harvestBlock fix
+        MethodNode harvestBlock = TransformerUtils.getMethod(classNode, "harvestBlock");
+        AbstractInsnNode addStat = null;
+        for (AbstractInsnNode abstractInsnNode : harvestBlock.instructions) {
+            if (abstractInsnNode.getOpcode() == INVOKEVIRTUAL &&
+                    ((MethodInsnNode) abstractInsnNode).name.equals("addStat")) {
+                addStat = abstractInsnNode;
+                break;
+            }
+        }
+        Objects.requireNonNull(addStat, "addStat");
+        InsnList prependHarvestBlock = new InsnList();
+        prependHarvestBlock.add(new VarInsnNode(ALOAD, 0));
+        prependHarvestBlock.add(new FieldInsnNode(GETFIELD, Block, "blockID", "I"));
+        prependHarvestBlock.add(new FieldInsnNode(GETSTATIC, StatList,
+                "BLOCKS_MINED", "[Lnet/minecraft/common/stats/StatCrafting;"));
+        prependHarvestBlock.add(new InsnNode(ARRAYLENGTH));
+        LabelNode skipStatIncrease = new LabelNode();
+        prependHarvestBlock.add(new JumpInsnNode(IF_ICMPGE, skipStatIncrease));
+        TransformerUtils.insertToBeginningOfCode(harvestBlock, prependHarvestBlock);
+        harvestBlock.instructions.insert(addStat, skipStatIncrease);
         // getRegisterFLTab
         injectGetRegisterFLTab(classNode, "MISCELLANEOUS");
     }
