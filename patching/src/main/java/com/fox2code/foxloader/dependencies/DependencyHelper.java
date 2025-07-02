@@ -87,7 +87,7 @@ public final class DependencyHelper {
             new Dependency("com.unascribed:ears-api:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.api.features.EarsFeatures", null, "6482fe4f9473c1b49e0513684e95647a95dca289528b5fdcad3347c193500871"),
             new Dependency("com.unascribed:ears-common:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.common.EarsCommon", null, "8ec4fb89e30901abf1f9d35c5ed5ac4d0d57d212dc4f4260566b33fbc826ca0d"),
             new Dependency("net.fabricmc:sponge-mixin:" + BuildConfig.FABRIC_MIXIN_VERSION, FABRIC_MC,
-                    "org.spongepowered.asm.mixin.Mixins", null, "01dd2b778ed5283bce6b6b07d9690d86d956b17a7103efafad47073db1599584"),
+                    "org.spongepowered.asm.mixin.Mixins", null, "349b6fb8b953ac0089ee75a8c9f75003f0ce17632424c95e86701e02d5512c21"),
             new Dependency("io.github.llamalad7:mixinextras-common:" + BuildConfig.MIXIN_EXTRAS_VERSION, MAVEN_CENTRAL,
                     "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "6a2c6f39f285348635ba1e0e914d066fe718c207e220a49012e8b347cb27fbda"),
             new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:" + BuildConfig.MIXIN_SQUARED_VERSION,
@@ -119,7 +119,7 @@ public final class DependencyHelper {
 
     public static final Dependency sparkDependency =
             new Dependency(BuildConfig.SPARK_DEPENDENCY, MODRINTH, "me.lucko.spark.common.SparkPlugin",
-                    null, "a5dc1f41dcaeebdea6e99408226e17b5d4cdcacf3d759e9335821858de058b8a");
+                    null, "66d6c264962d6895933bc89287aeac31287ceb085d06bb63b59db8d0b743adaf");
 
     public static final Dependency vineFlower = new Dependency(
             BuildConfig.VINEFLOWER_DEPENDENCY, MAVEN_CENTRAL,
