@@ -25,6 +25,9 @@ package com.fox2code.foxloader.dev;
 
 import com.fox2code.foxloader.dependencies.DependencyHelper;
 import com.fox2code.foxloader.launcher.BuildConfig;
+import org.gradle.api.Project;
+import org.gradle.api.tasks.TaskProvider;
+import org.gradle.jvm.tasks.Jar;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -90,6 +93,32 @@ public class FoxLoaderConfig {
             stringJoiner.add(dependencyBundle);
         }
         return stringJoiner.toString();
+    }
+
+    // Special jar task replacement for complex build scripts
+    Jar jarTaskToUse;
+    TaskProvider<Jar> jarTaskToUseProvider;
+
+    public final void useJarTask(Jar jarTaskToUse) {
+        this.checkConfigMutable();
+        this.jarTaskToUse = jarTaskToUse;
+        this.jarTaskToUseProvider = null;
+    }
+
+    public final void useJarTask(TaskProvider<Jar> jarTaskToUseProvider) {
+        this.checkConfigMutable();
+        this.jarTaskToUse = null;
+        this.jarTaskToUseProvider = jarTaskToUseProvider;
+    }
+
+    final Jar getJarTaskToUse(Project project) {
+        if (this.jarTaskToUse != null) {
+            return this.jarTaskToUse;
+        }
+        if (this.jarTaskToUseProvider != null) {
+            return this.jarTaskToUseProvider.get();
+        }
+        return (Jar) project.getTasks().named("jar").get();
     }
 
     // For testing only

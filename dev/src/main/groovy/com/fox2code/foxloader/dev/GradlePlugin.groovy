@@ -293,7 +293,8 @@ class GradlePlugin implements Plugin<Project> {
             if (config.modVersion == null && project.version != null) {
                 config.modVersion = project.version.toString()
             }
-            (project.getTasks().named("jar").get() as Jar).manifest {
+            Jar jarTask = config.getJarTaskToUse(project)
+            jarTask.manifest {
                 attributes 'For-FoxLoader-Version': BuildConfig.FOXLOADER_VERSION
                 attributes 'For-ReIndev-Version': BuildConfig.REINDEV_VERSION
                 if (!config.usedDependencyBundles.isEmpty()) {
@@ -343,7 +344,6 @@ class GradlePlugin implements Plugin<Project> {
                     attributes 'Unofficial': 'true'
                 }
             }
-            Jar jarTask = ((Jar) project.getTasks().named("jar").get())
             File mod = jarTask.getArchiveFile().get().getAsFile()
             JsonElement savedUsername = foxLoaderJsonData.get("username")
             String username = config.username
@@ -452,7 +452,7 @@ class GradlePlugin implements Plugin<Project> {
         }
         String owner = path.substring(0, i)
         String repo = path.substring(i + 1)
-        Jar jar = (project.getTasks().named("jar").get() as Jar)
+        Jar jar = config.getJarTaskToUse(project)
         String modWebsite = config.modWebsite
         if (modWebsite == null) {
             modWebsite = service.websitePrefix + path
