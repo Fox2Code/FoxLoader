@@ -208,9 +208,19 @@ public final class GamePatches {
             classNode = patchClassNode(classNode);
             if (classNode != null) {
                 zipOutputStream.putNextEntry(new ZipEntry(path));
-                byte[] compiled = classNodeToBytes.apply(classNode);
+                byte[] compiled;
+                RuntimeException delayedException = null;
+                try {
+                    compiled = classNodeToBytes.apply(classNode);
+                } catch (RuntimeException delayed) {
+                    delayedException = delayed;
+                    ClassWriter classWriter = new ClassWriter(0);
+                    classNode.accept(classWriter);
+                    compiled = classWriter.toByteArray();
+                }
                 zipOutputStream.write(compiled);
                 zipOutputStream.closeEntry();
+                if (delayedException != null) throw delayedException;
                 if (check) TransformerUtils.checkBytecodeValidity(compiled);
             }
         } else {
