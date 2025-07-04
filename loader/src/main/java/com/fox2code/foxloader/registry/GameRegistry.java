@@ -311,6 +311,7 @@ public final class GameRegistry {
             Item item = Items.ITEMS_LIST[i];
             CreativeTab creativeTab;
             if (item != null && (creativeTab = item.getRegisterFLTab()) != null) {
+                creativeTab.getGlobalItemList(); // Force build tab to avoid it being empty.
                 creativeTab.add(item);
             }
         }

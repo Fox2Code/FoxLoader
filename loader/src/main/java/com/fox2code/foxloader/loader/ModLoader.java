@@ -30,7 +30,6 @@ import com.fox2code.foxloader.client.gui.GuiModMenu;
 import com.fox2code.foxloader.energy.FoxPowerUtils;
 import com.fox2code.foxloader.event.FoxLoaderEvents;
 import com.fox2code.foxloader.event.client.GuiScreenInitEvent;
-import com.fox2code.foxloader.event.interaction.PlayerAttackEntityEvent;
 import com.fox2code.foxloader.event.lifecycle.LifecycleStartEvent;
 import com.fox2code.foxloader.internal.InternalTranslateHooks;
 import com.fox2code.foxloader.launcher.FoxLauncher;
