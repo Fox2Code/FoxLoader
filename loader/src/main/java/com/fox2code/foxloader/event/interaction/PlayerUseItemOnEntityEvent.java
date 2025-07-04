@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Event.DelegateEvent
-public final class PlayerUseItemOnEntityEvent extends PlayerUseItem {
+public final class PlayerUseItemOnEntityEvent extends PlayerUseItemEvent {
     private final Entity target;
 
     public PlayerUseItemOnEntityEvent(@NotNull EntityPlayer entityPlayer, @Nullable ItemStack heldItem,@NotNull Entity target) {

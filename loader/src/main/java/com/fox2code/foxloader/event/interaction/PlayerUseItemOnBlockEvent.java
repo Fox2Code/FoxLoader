@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Event.DelegateEvent
-public final class PlayerUseItemOnBlockEvent extends PlayerUseItem {
+public final class PlayerUseItemOnBlockEvent extends PlayerUseItemEvent {
     private final int x, y, z, facing;
     private final float xOffset, yOffset, zOffset;
 

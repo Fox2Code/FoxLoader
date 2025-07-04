@@ -31,10 +31,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Event.DelegateEvent
-public abstract class PlayerUseItem extends PlayerEvent implements Event.Cancellable {
+public abstract class PlayerUseItemEvent extends PlayerEvent implements Event.Cancellable {
     private final ItemStack heldItem;
 
-    public PlayerUseItem(@NotNull EntityPlayer entityPlayer, @Nullable ItemStack heldItem) {
+    public PlayerUseItemEvent(@NotNull EntityPlayer entityPlayer, @Nullable ItemStack heldItem) {
         super(entityPlayer);
         this.heldItem = heldItem;
     }

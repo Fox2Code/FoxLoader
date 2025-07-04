@@ -31,6 +31,7 @@ import net.minecraft.common.block.container.Container;
 import net.minecraft.common.block.container.Slot;
 import net.minecraft.common.entity.Entity;
 import net.minecraft.common.entity.player.EntityPlayer;
+import net.minecraft.common.entity.player.InventoryPlayer;
 import net.minecraft.common.item.ItemStack;
 import net.minecraft.common.networking.Packet103SetSlot;
 import net.minecraft.common.util.math.Vec3D;
@@ -77,6 +78,7 @@ public final class InternalInteractionHooks {
         PlayerBreakBlockEvent playerStartBreakBlockEvent = new PlayerBreakBlockEvent(
                 entityPlayer, x, y, z, entityPlayer.inventory.getCurrentItem());
         PLAYER_BREAK_BLOCK_EVENT.callEvent(playerStartBreakBlockEvent);
+        updateSlotItemIfCancelled(playerStartBreakBlockEvent);
         return playerStartBreakBlockEvent.isCancelled();
     }
 
@@ -93,6 +95,7 @@ public final class InternalInteractionHooks {
         PlayerUseItemOnAirEvent playerUseItemOnAirEvent =
                 new PlayerUseItemOnAirEvent(player, itemStack);
         PLAYER_USE_ITEM_ON_AIR_EVENT.callEvent(playerUseItemOnAirEvent);
+        updateSlotItemIfCancelled(playerUseItemOnAirEvent);
         return playerUseItemOnAirEvent.isCancelled();
     }
 
@@ -103,6 +106,7 @@ public final class InternalInteractionHooks {
         PlayerUseItemOnBlockEvent playerUseItemOnBlockEvent = new PlayerUseItemOnBlockEvent(
                 player, itemstack, x, y, z, facing, xVec, yVec, zVec);
         PLAYER_USE_ITEM_ON_BLOCK_EVENT.callEvent(playerUseItemOnBlockEvent);
+        updateSlotItemIfCancelled(playerUseItemOnBlockEvent);
         return playerUseItemOnBlockEvent.isCancelled();
     }
 
@@ -111,6 +115,7 @@ public final class InternalInteractionHooks {
         PlayerUseItemOnEntityEvent playerUseItemOnEntityEvent =
                 new PlayerUseItemOnEntityEvent(player, player.inventory.getCurrentItem(), target);
         PLAYER_USE_ITEM_ON_ENTITY_EVENT.callEvent(playerUseItemOnEntityEvent);
+        updateSlotItemIfCancelled(playerUseItemOnEntityEvent);
         return playerUseItemOnEntityEvent.isCancelled();
     }
 
@@ -148,7 +153,7 @@ public final class InternalInteractionHooks {
                 slotId < container.slots.size() && (slot = container.getSlot(slotId)) != null &&
                 (slotStack = slot.getStack()) != null) {
             PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                    player, slotStack, slotId, mouseButton == 0 ? 64 : 1, false);
+                    player, slotStack, slotId, mouseButton == 0 ? 64 : 1, false, false);
             PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
             updateSlotItemIfCancelled(playerDropItemEvent);
             return playerDropItemEvent.isCancelled();
@@ -159,7 +164,7 @@ public final class InternalInteractionHooks {
     public static boolean onDropCurrentItem(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 1, false);
+                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 1, false, true);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -168,7 +173,7 @@ public final class InternalInteractionHooks {
     public static boolean onDropCurrentItemStack(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 64, false);
+                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 64, false, true);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -177,7 +182,7 @@ public final class InternalInteractionHooks {
     public static boolean onDropCursorItem(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCursorStack(), -999, 1, false);
+                player, player.inventory.getCursorStack(), -999, 1, false, false);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -186,7 +191,7 @@ public final class InternalInteractionHooks {
     public static boolean onDropCursorItemStack(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCursorStack(), -999, 64, false);
+                player, player.inventory.getCursorStack(), -999, 64, false, false);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -195,19 +200,51 @@ public final class InternalInteractionHooks {
     public static boolean onDropCreativeItemStack(EntityPlayer player, ItemStack itemStack) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, itemStack, -999, 64, true);
+                player, itemStack, -999, 64, true, false);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
     }
 
+    private static void updateSlotItemIfCancelled(PlayerUseItemEvent playerUseItemEvent) {
+        if (playerUseItemEvent.isCancelled() && playerUseItemEvent.getHeldItem() != null) {
+            updateHotbarSlotItem(playerUseItemEvent.getEntityPlayer(), playerUseItemEvent.getHeldItem(),
+                    playerUseItemEvent.getEntityPlayer().inventory.currentItem);
+        }
+    }
+
+    private static void updateSlotItemIfCancelled(PlayerBreakBlockEvent playerBreakBlockEvent) {
+        if (playerBreakBlockEvent.isCancelled()) {
+            InventoryPlayer inventoryPlayer = playerBreakBlockEvent.getEntitySource().inventory;
+            updateHotbarSlotItem(playerBreakBlockEvent.getEntitySource(),
+                    inventoryPlayer.getCurrentItem(), inventoryPlayer.currentItem);
+        }
+    }
+
     private static void updateSlotItemIfCancelled(PlayerDropItemEvent playerDropItemEvent) {
-        int slotId = playerDropItemEvent.getSlotId();
-        EntityPlayer entityPlayer = playerDropItemEvent.getEntityPlayer();
-        if (playerDropItemEvent.isCancelled() && entityPlayer instanceof EntityPlayerMP) {
+        if (playerDropItemEvent.isCancelled()) {
+            if (playerDropItemEvent.isHotbar()) {
+                updateHotbarSlotItem(playerDropItemEvent.getEntityPlayer(),
+                        playerDropItemEvent.getItemToDrop(), playerDropItemEvent.getSlotId());
+            } else {
+                updateSlotItem(playerDropItemEvent.getEntityPlayer(),
+                        playerDropItemEvent.getItemToDrop(), playerDropItemEvent.getSlotId());
+            }
+        }
+    }
+
+    private static void updateSlotItem(EntityPlayer entityPlayer, ItemStack itemStack, int slotId) {
+        if (entityPlayer instanceof EntityPlayerMP) {
             ((EntityPlayerMP) entityPlayer).playerNetServerHandler.sendPacket(slotId == -999 ?
                     new Packet103SetSlot(-1, -1, entityPlayer.inventory.getCursorStack()) :
-                    new Packet103SetSlot(((EntityPlayerMP) entityPlayer).currentWindowId,
-                            slotId, playerDropItemEvent.getItemToDrop()));
+                    new Packet103SetSlot(((EntityPlayerMP) entityPlayer).currentWindowId, slotId, itemStack));
+        }
+    }
+
+    private static void updateHotbarSlotItem(EntityPlayer entityPlayer, ItemStack itemStack, int slotId) {
+        if (entityPlayer instanceof EntityPlayerMP) {
+            ((EntityPlayerMP) entityPlayer).playerNetServerHandler.sendPacket(slotId == -999 ?
+                    new Packet103SetSlot(-1, -1, entityPlayer.inventory.getCursorStack()) :
+                    new Packet103SetSlot(0, slotId < 36 ? 36 + slotId : slotId, itemStack));
         }
     }
 }

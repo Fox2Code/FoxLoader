@@ -34,15 +34,16 @@ import java.util.Objects;
 public final class PlayerDropItemEvent extends PlayerEvent implements Event.Cancellable {
     private final ItemStack itemToDrop;
     private final int slotId, maxAmountToDrop;
-    private final boolean creative;
+    private final boolean creative, hotbar;
 
     public PlayerDropItemEvent(@NotNull EntityPlayer entityPlayer, @NotNull ItemStack itemToDrop,
-                               int slotId, int maxAmountToDrop, boolean creative) {
+                               int slotId, int maxAmountToDrop, boolean creative, boolean hotbar) {
         super(entityPlayer);
         this.itemToDrop = Objects.requireNonNull(itemToDrop);
         this.slotId = slotId;
         this.maxAmountToDrop = maxAmountToDrop;
         this.creative = creative;
+        this.hotbar = hotbar;
     }
 
     public @NotNull ItemStack getItemToDrop() {
@@ -63,5 +64,9 @@ public final class PlayerDropItemEvent extends PlayerEvent implements Event.Canc
 
     public boolean isCreative() {
         return this.creative;
+    }
+
+    public boolean isHotbar() {
+        return this.hotbar;
     }
 }
