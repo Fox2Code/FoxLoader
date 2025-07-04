@@ -30,7 +30,7 @@ import com.fox2code.foxloader.client.gui.GuiModMenu;
 import com.fox2code.foxloader.energy.FoxPowerUtils;
 import com.fox2code.foxloader.event.FoxLoaderEvents;
 import com.fox2code.foxloader.event.client.GuiScreenInitEvent;
-import com.fox2code.foxloader.event.inventory.PlayerDropItemEvent;
+import com.fox2code.foxloader.event.interaction.PlayerAttackEntityEvent;
 import com.fox2code.foxloader.event.lifecycle.LifecycleStartEvent;
 import com.fox2code.foxloader.internal.InternalTranslateHooks;
 import com.fox2code.foxloader.launcher.FoxLauncher;
@@ -200,15 +200,6 @@ public final class ModLoader extends Mod {
     @EventHandler
     public void onLifecycle(LifecycleStartEvent lifecycleStartEvent) {
         FoxPowerUtils.updateMaxSinkPriorityValue();
-    }
-
-    @EventHandler
-    public void onItemDrop(PlayerDropItemEvent dropItemEvent) {
-        this.getLogger().info(dropItemEvent.getItemToDrop().getItemName() +
-                " -> " + dropItemEvent.getMaxAmountToDrop());
-        if (!dropItemEvent.getEntityPlayer().worldObj.isRemote) {
-            dropItemEvent.setCancelled(true);
-        }
     }
 
     public static boolean areAllModsLoaded() {
