@@ -34,13 +34,13 @@ import org.jetbrains.annotations.Nullable;
 public final class PlayerAttackEntityEvent extends PlayerEvent implements Event.Cancellable {
     private final ItemStack heldItem;
     private final Entity target;
-    private boolean useExtraKockback;
+    private boolean useExtraKnockback;
 
     public PlayerAttackEntityEvent(@NotNull EntityPlayer entityPlayer, @Nullable ItemStack heldItem, @NotNull Entity target) {
         super(entityPlayer);
         this.heldItem = heldItem;
         this.target = target;
-        this.useExtraKockback = target.isSprinting();
+        this.useExtraKnockback = target.isSprinting();
     }
 
     @Nullable public ItemStack getHeldItem() {
@@ -51,11 +51,11 @@ public final class PlayerAttackEntityEvent extends PlayerEvent implements Event.
         return this.target;
     }
 
-    public boolean getUseExtraKockback() {
-        return this.useExtraKockback;
+    public boolean getUseExtraKnockback() {
+        return this.useExtraKnockback;
     }
 
-    public void setUseExtraKockback(boolean useExtraKockback) {
-        this.useExtraKockback = useExtraKockback;
+    public void setUseExtraKnockback(boolean useExtraKockback) {
+        this.useExtraKnockback = useExtraKockback;
     }
 }

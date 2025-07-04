@@ -120,7 +120,7 @@ public final class InternalInteractionHooks {
                 new PlayerAttackEntityEvent(player, player.inventory.getCurrentItem(), target);
         PLAYER_ATTACK_ENTITY_EVENT.callEvent(playerAttackEntityEvent);
         player.setSprinting(!playerAttackEntityEvent.isCancelled() &&
-                playerAttackEntityEvent.getUseExtraKockback());
+                playerAttackEntityEvent.getUseExtraKnockback());
         return playerAttackEntityEvent.isCancelled();
     }
 
