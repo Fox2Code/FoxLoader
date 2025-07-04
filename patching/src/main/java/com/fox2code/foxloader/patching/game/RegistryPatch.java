@@ -561,9 +561,13 @@ final class RegistryPatch extends GamePatch {
         AbstractInsnNode nextFixID = jump.label;
         TransformerUtils.removeInstructionsInRange(renderItemEntity.instructions, prevFixID, nextFixID);
         InsnList toBlockId = new InsnList();
+        toBlockId.add(new VarInsnNode(ILOAD, iStore.var));
+        LabelNode notABlock = new LabelNode();
+        toBlockId.add(new JumpInsnNode(IFEQ, notABlock));
         toBlockId.add(new VarInsnNode(ILOAD, 7));
         toBlockId.add(new MethodInsnNode(INVOKESTATIC, GameRegistry, "convertItemIdToBlockId", "(I)I"));
         toBlockId.add(new VarInsnNode(ISTORE, 7));
+        toBlockId.add(notABlock);
         renderItemEntity.instructions.insert(prevFixID, toBlockId);
     }
 

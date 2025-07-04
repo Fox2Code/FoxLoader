@@ -44,6 +44,7 @@ import net.minecraft.common.item.Item;
 import net.minecraft.common.item.ItemStack;
 import net.minecraft.common.item.Items;
 import net.minecraft.common.item.block.ItemBlock;
+import net.minecraft.common.item.children.ItemRecord;
 import net.minecraft.common.networking.NetworkManager;
 import net.minecraft.common.networking.Packet250PluginMessage;
 
@@ -367,7 +368,8 @@ public final class GameRegistry {
 
     public static boolean isItemBlock(int itemId) {
         return itemId <= MAXIMUM_TRANSLATED_BLOCK_ID &&
-                (itemId >= INITIAL_TRANSLATED_BLOCK_ID || (itemId <= 255 || (itemId >= 1000)));
+                (itemId >= INITIAL_TRANSLATED_BLOCK_ID || (itemId <= 255 ||
+                        (itemId >= 1000 && !(Items.ITEMS_LIST[itemId] instanceof ItemRecord))));
     }
 
     public static boolean isMissingItemStack(ItemStack itemStack) {
