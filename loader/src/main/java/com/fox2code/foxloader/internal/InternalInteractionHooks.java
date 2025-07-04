@@ -25,11 +25,17 @@ package com.fox2code.foxloader.internal;
 
 import com.fox2code.foxevents.EventHolder;
 import com.fox2code.foxloader.event.interaction.*;
+import com.fox2code.foxloader.event.inventory.PlayerClickSlotEvent;
+import com.fox2code.foxloader.event.inventory.PlayerDropItemEvent;
+import net.minecraft.common.block.container.Container;
+import net.minecraft.common.block.container.Slot;
 import net.minecraft.common.entity.Entity;
 import net.minecraft.common.entity.player.EntityPlayer;
 import net.minecraft.common.item.ItemStack;
+import net.minecraft.common.networking.Packet103SetSlot;
 import net.minecraft.common.util.math.Vec3D;
 import net.minecraft.common.world.World;
+import net.minecraft.server.entity.player.EntityPlayerMP;
 
 /**
  * Internal hook for player network event and interactions.
@@ -51,6 +57,10 @@ public final class InternalInteractionHooks {
             EventHolder.getHolderFromEvent(PlayerUseItemOnEntityEvent.class);
     private static final EventHolder<PlayerAttackEntityEvent> PLAYER_ATTACK_ENTITY_EVENT =
             EventHolder.getHolderFromEvent(PlayerAttackEntityEvent.class);
+    private static final EventHolder<PlayerClickSlotEvent> PLAYER_CLICK_SLOT_EVENT =
+            EventHolder.getHolderFromEvent(PlayerClickSlotEvent.class);
+    private static final EventHolder<PlayerDropItemEvent> PLAYER_DROP_ITEM_EVENT =
+            EventHolder.getHolderFromEvent(PlayerDropItemEvent.class);
 
     public static boolean sendPlayerStartBreakBlockEvent(
             EntityPlayer entityPlayer, int x, int y, int z, int facing) {
@@ -110,5 +120,92 @@ public final class InternalInteractionHooks {
                 new PlayerAttackEntityEvent(player, player.inventory.getCurrentItem(), target);
         PLAYER_ATTACK_ENTITY_EVENT.callEvent(playerAttackEntityEvent);
         return playerAttackEntityEvent.isCancelled();
+    }
+
+    public static boolean onHandleClickSlot(Container container, int slotId, int mouseButton,
+                                            int transferType, EntityPlayer player) {
+        if (!PLAYER_CLICK_SLOT_EVENT.isEmpty()) {
+            PlayerClickSlotEvent playerClickSlotEvent = new PlayerClickSlotEvent(
+                    container, slotId, mouseButton, transferType, player);
+            PLAYER_CLICK_SLOT_EVENT.callEvent(playerClickSlotEvent);
+            if (playerClickSlotEvent.isCancelled()) {
+                return true;
+            }
+        }
+        // Handle dropping manually there.
+        if (PLAYER_DROP_ITEM_EVENT.isEmpty()) {
+            return false;
+        }
+        if ((transferType == 0 || transferType == 1) && (mouseButton == 0 || mouseButton == 1) &&
+                slotId == -999 && player.inventory.getCursorStack() != null) {
+            return mouseButton == 0 ? onDropCursorItemStack(player) : onDropCursorItem(player);
+        }
+        Slot slot;
+        ItemStack slotStack;
+        if (transferType == 3 && (mouseButton == 0 || mouseButton == 1) && slotId >= 0 &&
+                slotId < container.slots.size() && (slot = container.getSlot(slotId)) != null &&
+                (slotStack = slot.getStack()) != null) {
+            PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
+                    player, slotStack, slotId, mouseButton == 0 ? 64 : 1, false);
+            PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
+            updateSlotItemIfCancelled(playerDropItemEvent);
+            return playerDropItemEvent.isCancelled();
+        }
+        return false;
+    }
+
+    public static boolean onDropCurrentItem(EntityPlayer player) {
+        if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
+                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 1, false);
+        PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
+        updateSlotItemIfCancelled(playerDropItemEvent);
+        return playerDropItemEvent.isCancelled();
+    }
+
+    public static boolean onDropCurrentItemStack(EntityPlayer player) {
+        if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
+                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 64, false);
+        PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
+        updateSlotItemIfCancelled(playerDropItemEvent);
+        return playerDropItemEvent.isCancelled();
+    }
+
+    public static boolean onDropCursorItem(EntityPlayer player) {
+        if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
+                player, player.inventory.getCursorStack(), -999, 1, false);
+        PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
+        updateSlotItemIfCancelled(playerDropItemEvent);
+        return playerDropItemEvent.isCancelled();
+    }
+
+    public static boolean onDropCursorItemStack(EntityPlayer player) {
+        if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
+                player, player.inventory.getCursorStack(), -999, 64, false);
+        PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
+        updateSlotItemIfCancelled(playerDropItemEvent);
+        return playerDropItemEvent.isCancelled();
+    }
+
+    public static boolean onDropCreativeItemStack(EntityPlayer player, ItemStack itemStack) {
+        if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
+                player, itemStack, -999, 64, true);
+        PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
+        return playerDropItemEvent.isCancelled();
+    }
+
+    private static void updateSlotItemIfCancelled(PlayerDropItemEvent playerDropItemEvent) {
+        int slotId = playerDropItemEvent.getSlotId();
+        EntityPlayer entityPlayer = playerDropItemEvent.getEntityPlayer();
+        if (playerDropItemEvent.isCancelled() && entityPlayer instanceof EntityPlayerMP) {
+            ((EntityPlayerMP) entityPlayer).playerNetServerHandler.sendPacket(slotId == -999 ?
+                    new Packet103SetSlot(-1, -1, entityPlayer.inventory.getCursorStack()) :
+                    new Packet103SetSlot(((EntityPlayerMP) entityPlayer).currentWindowId,
+                            slotId, playerDropItemEvent.getItemToDrop()));
+        }
     }
 }

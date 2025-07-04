@@ -24,8 +24,11 @@
 package com.fox2code.foxloader.patching.game;
 
 import com.fox2code.foxloader.patching.TransformerUtils;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
+
+import java.util.Objects;
 
 final class PlayerInteractionsPatch extends GamePatch {
     private static final String World = "net/minecraft/common/world/World";
@@ -34,18 +37,22 @@ final class PlayerInteractionsPatch extends GamePatch {
     private static final String Entity = "net/minecraft/common/entity/Entity";
     private static final String EntityPlayer = "net/minecraft/common/entity/player/EntityPlayer";
     private static final String EntityPlayerMP = "net/minecraft/server/entity/player/EntityPlayerMP";
+    private static final String Container = "net/minecraft/common/block/container/Container";
     private static final String Minecraft = "net/minecraft/client/Minecraft";
+    private static final String GuiContainerCreative = "net/minecraft/client/gui/GuiContainerCreative";
     private static final String EntityPlayerSP = "net/minecraft/client/player/EntityPlayerSP";
     private static final String PlayerControllerClient = "net/minecraft/client/player/PlayerController";
     private static final String PlayerControllerTest = "net/minecraft/client/player/PlayerControllerTest";
     private static final String PlayerControllerMP = "net/minecraft/client/player/PlayerControllerMP";
     private static final String PlayerControllerSP = "net/minecraft/client/player/PlayerControllerSP";
     private static final String PlayerControllerServer = "net/minecraft/server/entity/player/PlayerController";
+    private static final String NetServerHandler = "net/minecraft/server/networking/NetServerHandler";
     private static final String InternalInteractionHooks = "com/fox2code/foxloader/internal/InternalInteractionHooks";
     private static final String NetworkBlockUpdateHelper = "com/fox2code/foxloader/server/NetworkBlockUpdateHelper";
 
     PlayerInteractionsPatch() {
-        super(new String[]{EntityPlayer, PlayerControllerClient, PlayerControllerTest,
+        super(new String[]{EntityPlayer, Container, GuiContainerCreative, NetServerHandler,
+                PlayerControllerClient, PlayerControllerTest,
                 PlayerControllerMP, PlayerControllerSP, PlayerControllerServer});
     }
 
@@ -53,6 +60,12 @@ final class PlayerInteractionsPatch extends GamePatch {
     public ClassNode transform(ClassNode classNode) {
         if (EntityPlayer.equals(classNode.name)) {
             patchEntityPlayer(classNode);
+        } else if (Container.equals(classNode.name)) {
+            patchContainer(classNode);
+        } else if (GuiContainerCreative.equals(classNode.name)) {
+            patchGuiContainerCreative(classNode);
+        } else if (NetServerHandler.equals(classNode.name)) {
+            patchNetServerHandler(classNode);
         } else if (PlayerControllerMP.equals(classNode.name) ||
                 PlayerControllerSP.equals(classNode.name) ||
                 PlayerControllerTest.equals(classNode.name)) {
@@ -68,6 +81,103 @@ final class PlayerInteractionsPatch extends GamePatch {
                 "(L" + Entity + ";)V", "sendPlayerUseItemOnEntityEvent", false);
         hookMethodForInteraction(classNode, "attackTargetEntityWithCurrentItem",
                 "(L" + Entity + ";)V", "sendPlayerAttackEntityEvent", false);
+        hookMethodForInteraction(classNode, "dropCurrentItem",
+                "()V", "onDropCurrentItem", false);
+        hookMethodForInteraction(classNode, "dropCurrentItemStack",
+                "()V", "onDropCurrentItemStack", false);
+    }
+
+    private static void patchContainer(ClassNode classNode) {
+        hookMethodForInteraction(classNode, "handleClickSlot",
+                "(IIIL" + EntityPlayer + ";)L" + ItemStack + ";", "onHandleClickSlot", false);
+        MethodNode onCraftGuiClosed = TransformerUtils.getMethod(classNode, "onCraftGuiClosed");
+        AbstractInsnNode loadPlayer = null, setCursorStack = null;
+        for (AbstractInsnNode abstractInsnNode : onCraftGuiClosed.instructions) {
+            if (abstractInsnNode.getOpcode() == ALOAD && setCursorStack == null &&
+                    ((VarInsnNode) abstractInsnNode).var == 1) {
+                loadPlayer = abstractInsnNode;
+            }
+            if (abstractInsnNode.getOpcode() == INVOKEVIRTUAL &&
+                    ((MethodInsnNode)abstractInsnNode).name.equals("setCursorStack")) {
+                setCursorStack = abstractInsnNode;
+            }
+        }
+        Objects.requireNonNull(loadPlayer);
+        Objects.requireNonNull(setCursorStack);
+        LabelNode labelNode = TransformerUtils.getLabelNodeAfter(onCraftGuiClosed.instructions, setCursorStack);
+        InsnList prepend = new InsnList();
+        prepend.add(new VarInsnNode(ALOAD, 1));
+        prepend.add(new MethodInsnNode(INVOKESTATIC, InternalInteractionHooks,
+                "onDropCursorItemStack", "(L" + EntityPlayer + ";)Z"));
+        prepend.add(new JumpInsnNode(IFNE, labelNode));
+        onCraftGuiClosed.instructions.insertBefore(loadPlayer, prepend);
+    }
+
+    private void patchGuiContainerCreative(ClassNode classNode) {
+        MethodNode sendClickSlot = TransformerUtils.getMethod(classNode, "sendClickSlot");
+        AbstractInsnNode load0BeforeDrop = null, dropPlayerItem = null, sendCreativeSlotUpdate = null;
+        VarInsnNode varLoadAfterLoad0 = null;
+        for (AbstractInsnNode abstractInsnNode : sendClickSlot.instructions) {
+            if (abstractInsnNode.getOpcode() == Opcodes.ALOAD) {
+                if (((VarInsnNode) abstractInsnNode).var == 0 && dropPlayerItem == null) {
+                    load0BeforeDrop = abstractInsnNode;
+                } else if (((VarInsnNode) abstractInsnNode).var != 0 &&
+                        dropPlayerItem != null && varLoadAfterLoad0 == null) {
+                    varLoadAfterLoad0 = (VarInsnNode) abstractInsnNode;
+                }
+            } else if (abstractInsnNode.getOpcode() == INVOKEVIRTUAL) {
+                MethodInsnNode methodInsnNode = (MethodInsnNode) abstractInsnNode;
+                if (methodInsnNode.name.equals("dropPlayerItem")) {
+                    if (dropPlayerItem != null) throw new RuntimeException("More complex code?");
+                    dropPlayerItem = abstractInsnNode;
+                } else if (dropPlayerItem != null && methodInsnNode.name.equals("sendCreativeSlotUpdate")) {
+                    sendCreativeSlotUpdate = methodInsnNode;
+                    break;
+                }
+            }
+        }
+        Objects.requireNonNull(sendCreativeSlotUpdate, "sendCreativeSlotUpdate");
+        Objects.requireNonNull(varLoadAfterLoad0, "varLoadAfterLoad0");
+        LabelNode labelNode = TransformerUtils.getLabelNodeAfter(sendClickSlot.instructions, sendCreativeSlotUpdate);
+        InsnList prepend = new InsnList();
+        getPlayer(classNode, prepend, false);
+        prepend.add(new VarInsnNode(ALOAD, varLoadAfterLoad0.var));
+        prepend.add(new MethodInsnNode(INVOKESTATIC, InternalInteractionHooks,
+                "onDropCreativeItemStack", "(L" + EntityPlayer + ";L" + ItemStack + ";)Z"));
+        prepend.add(new JumpInsnNode(IFNE, labelNode));
+        sendClickSlot.instructions.insertBefore(load0BeforeDrop, prepend);
+    }
+
+    private static void patchNetServerHandler(ClassNode classNode) {
+        MethodNode handleCreativeSetSlot = TransformerUtils.getMethod(classNode, "handleCreativeSetSlot");
+        VarInsnNode dropALoad0 = null, lastALoad = null;
+        AbstractInsnNode dropPlayerItem = null;
+        for (AbstractInsnNode abstractInsnNode : handleCreativeSetSlot.instructions) {
+            if (abstractInsnNode.getOpcode() == ALOAD) {
+                VarInsnNode varInsnNode = (VarInsnNode) abstractInsnNode;
+                if (varInsnNode.var == 0) {
+                    dropALoad0 = varInsnNode;
+                } else {
+                    lastALoad = varInsnNode;
+                }
+            }
+            if (abstractInsnNode.getOpcode() == INVOKEVIRTUAL &&
+                    ((MethodInsnNode) abstractInsnNode).name.equals("dropPlayerItem")) {
+                dropPlayerItem = abstractInsnNode;
+                break;
+            }
+        }
+        Objects.requireNonNull(dropALoad0, "dropALoad0");
+        Objects.requireNonNull(lastALoad, "lastALoad");
+        Objects.requireNonNull(dropPlayerItem, "dropPlayerItem");
+        LabelNode labelNode = TransformerUtils.getLabelNodeAfter(handleCreativeSetSlot.instructions, dropPlayerItem);
+        InsnList prepend = new InsnList();
+        getPlayer(classNode, prepend, true);
+        prepend.add(new VarInsnNode(ALOAD, lastALoad.var));
+        prepend.add(new MethodInsnNode(INVOKESTATIC, InternalInteractionHooks,
+                "onDropCreativeItemStack", "(L" + EntityPlayer + ";L" + ItemStack + ";)Z"));
+        prepend.add(new JumpInsnNode(IFNE, labelNode));
+        handleCreativeSetSlot.instructions.insertBefore(dropALoad0, prepend);
     }
 
     private static void patchClientPlayerControllers(ClassNode classNode) {
@@ -96,8 +206,9 @@ final class PlayerInteractionsPatch extends GamePatch {
             ClassNode classNode, String methodToHook, String methodDesc, String helperMethod, boolean rmLastArg) {
         boolean startWithPlayer = methodDesc.startsWith("(L" + EntityPlayer + ";");
         boolean server = PlayerControllerServer.equals(classNode.name);
-        String helperMethodDesc = startWithPlayer ? methodDesc :
-                methodDesc.replace("(", "(L" + EntityPlayer + ";");
+        boolean addSelf = Container.equals(classNode.name);
+        String helperMethodDesc = addSelf ? methodDesc.replace("(", "(L" + classNode.name + ";") :
+                (startWithPlayer ? methodDesc : methodDesc.replace("(", "(L" + EntityPlayer + ";"));
         helperMethodDesc = helperMethodDesc.substring(0,
                 helperMethodDesc.indexOf(')') + (rmLastArg ? -1 : 0)) + ")Z";
         Type methodDescType = Type.getMethodType(methodDesc);
@@ -111,7 +222,8 @@ final class PlayerInteractionsPatch extends GamePatch {
             }
             methodNode = new MethodNode(ACC_PUBLIC, methodToHook, methodDesc, null, null);
             InsnList insnList = methodNode.instructions;
-            if (!startWithPlayer) getPlayer(classNode, insnList, false);
+            if (addSelf) insnList.add(new VarInsnNode(ALOAD, 0));
+            else if (!startWithPlayer) getPlayer(classNode, insnList, false);
             getAllArguments(insnList, arguments, rmLastArg);
             insnList.add(new MethodInsnNode(INVOKESTATIC, InternalInteractionHooks, helperMethod, helperMethodDesc));
             LabelNode labelNode = new LabelNode();
@@ -122,6 +234,10 @@ final class PlayerInteractionsPatch extends GamePatch {
             if (returnType == Type.VOID_TYPE) {
                 insnList.add(labelNode);
                 insnList.add(new InsnNode(RETURN));
+            } else if (returnType.getSort() == Type.OBJECT ||
+                    returnType.getSort() == Type.ARRAY) {
+                insnList.add(new InsnNode(ACONST_NULL));
+                insnList.add(new InsnNode(ARETURN));
             } else {
                 insnList.add(new InsnNode(IRETURN));
                 insnList.add(labelNode);
@@ -131,7 +247,8 @@ final class PlayerInteractionsPatch extends GamePatch {
             classNode.methods.add(methodNode);
         } else {
             InsnList prelude = new InsnList();
-            if (!startWithPlayer) getPlayer(classNode, prelude, server);
+            if (addSelf) prelude.add(new VarInsnNode(ALOAD, 0));
+            else if (!startWithPlayer) getPlayer(classNode, prelude, server);
             getAllArguments(prelude, arguments, rmLastArg);
             prelude.add(new MethodInsnNode(INVOKESTATIC, InternalInteractionHooks, helperMethod, helperMethodDesc));
             LabelNode labelNode = new LabelNode();
@@ -139,6 +256,10 @@ final class PlayerInteractionsPatch extends GamePatch {
             sendOutNetworkUpdate(classNode, prelude, arguments, server);
             if (returnType == Type.VOID_TYPE) {
                 prelude.add(new InsnNode(RETURN));
+            } else if (returnType.getSort() == Type.OBJECT ||
+                    returnType.getSort() == Type.ARRAY) {
+                prelude.add(new InsnNode(ACONST_NULL));
+                prelude.add(new InsnNode(ARETURN));
             } else {
                 prelude.add(new InsnNode(ICONST_0));
                 prelude.add(new InsnNode(IRETURN));
@@ -165,7 +286,12 @@ final class PlayerInteractionsPatch extends GamePatch {
             return;
         }
         if (server) {
-            insnList.add(new FieldInsnNode(GETFIELD, classNode.name, "player", "L" + EntityPlayer + ";"));
+            FieldNode fieldNode = TransformerUtils.findFieldDesc(classNode, "L" + EntityPlayerMP + ";");
+            if (fieldNode == null) {
+                insnList.add(new FieldInsnNode(GETFIELD, classNode.name, "player", "L" + EntityPlayer + ";"));
+            } else {
+                insnList.add(new FieldInsnNode(GETFIELD, classNode.name, fieldNode.name, fieldNode.desc));
+            }
         } else {
             insnList.add(new FieldInsnNode(GETFIELD, classNode.name, "mc", "L" + Minecraft + ";"));
             insnList.add(new FieldInsnNode(GETFIELD, Minecraft, "thePlayer", "L" + EntityPlayerSP + ";"));
