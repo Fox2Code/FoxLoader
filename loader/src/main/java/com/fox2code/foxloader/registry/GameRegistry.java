@@ -311,7 +311,7 @@ public final class GameRegistry {
         for (int i = INITIAL_TRANSLATED_BLOCK_ID; i < MAXIMUM_ITEM_ID; i++) {
             Item item = Items.ITEMS_LIST[i];
             CreativeTab creativeTab;
-            if (item != null && (creativeTab = item.getRegisterFLTab()) != null) {
+            if (item != null && (creativeTab = item.getCreativeTab()) != null) {
                 creativeTab.getGlobalItemList(); // Force build tab to avoid it being empty.
                 creativeTab.add(item);
             }

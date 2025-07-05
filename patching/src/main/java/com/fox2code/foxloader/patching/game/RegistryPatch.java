@@ -274,13 +274,52 @@ final class RegistryPatch extends GamePatch {
     }
 
     // Helpers
-    private static void injectGetRegisterFLTab(ClassNode classNode, String creativeTab) {
+    private static void injectGetRegisterFLTab(ClassNode classNode, String creativeTab, boolean withField) {
         MethodNode getRegisterFLTab = new MethodNode(ASM_API,
                 ACC_PUBLIC, "getRegisterFLTab", "()L" + CreativeTab + ";", null, null);
         getRegisterFLTab.instructions.add(new FieldInsnNode(
                 GETSTATIC, CreativeTabs, creativeTab, "L" + CreativeTab + ";"));
         getRegisterFLTab.instructions.add(new InsnNode(ARETURN));
         classNode.methods.add(getRegisterFLTab);
+    }
+
+    private static void injectGetCreativeTab(ClassNode classNode) {
+        FieldNode creativeTab = new FieldNode(ACC_PRIVATE,
+                "creativeTab", "L" + CreativeTab + ";", null, null);
+        classNode.fields.add(creativeTab);
+        MethodNode getCreativeTab = new MethodNode(ASM_API,
+                ACC_PUBLIC, "getCreativeTab", "()L" + CreativeTab + ";", null, null);
+        getCreativeTab.instructions.add(new VarInsnNode(ALOAD, 0));
+        getCreativeTab.instructions.add(new FieldInsnNode(GETFIELD,
+                classNode.name, creativeTab.name, creativeTab.desc));
+        getCreativeTab.instructions.add(new VarInsnNode(ASTORE, 1));
+        getCreativeTab.instructions.add(new VarInsnNode(ALOAD, 1));
+        LabelNode nullCreativeTabOhNo = new LabelNode();
+        getCreativeTab.instructions.add(new JumpInsnNode(IFNULL, nullCreativeTabOhNo));
+        getCreativeTab.instructions.add(new VarInsnNode(ALOAD, 1));
+        getCreativeTab.instructions.add(new InsnNode(ARETURN));
+        getCreativeTab.instructions.add(nullCreativeTabOhNo);
+        getCreativeTab.instructions.add(new VarInsnNode(ALOAD, 0));
+        getCreativeTab.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                classNode.name, "getRegisterFLTab", "()L" + CreativeTab + ";"));
+        getCreativeTab.instructions.add(new InsnNode(ARETURN));
+        TransformerUtils.setThisParameterName(classNode, getCreativeTab);
+        getCreativeTab.localVariables.add(new LocalVariableNode(
+                "creativeTab", "L" + CreativeTab + ";", null,
+                TransformerUtils.getBeginingLabelNode(getCreativeTab),
+                TransformerUtils.getEndingLabelNode(getCreativeTab), 1));
+        classNode.methods.add(getCreativeTab);
+        MethodNode setCreativeTab = new MethodNode(ASM_API,
+                ACC_PUBLIC, "setCreativeTab", "(L" + CreativeTab + ";)L" + classNode.name + ";", null, null);
+        setCreativeTab.instructions.add(new VarInsnNode(ALOAD, 0));
+        setCreativeTab.instructions.add(new VarInsnNode(ALOAD, 1));
+        setCreativeTab.instructions.add(new FieldInsnNode(PUTFIELD,
+                classNode.name, creativeTab.name, creativeTab.desc));
+        setCreativeTab.instructions.add(new VarInsnNode(ALOAD, 0));
+        setCreativeTab.instructions.add(new InsnNode(ARETURN));
+        TransformerUtils.setThisParameterName(classNode, setCreativeTab);
+        TransformerUtils.setParameterName(setCreativeTab, 1, "creativeTab");
+        classNode.methods.add(setCreativeTab);
     }
 
     // Data loss prevention
@@ -651,7 +690,8 @@ final class RegistryPatch extends GamePatch {
         getRegisteringModInsns.add(new InsnNode(ARETURN));
         classNode.methods.add(getRegisteringMod);
         // getRegisterFLTab
-        injectGetRegisterFLTab(classNode, "MISCELLANEOUS");
+        injectGetRegisterFLTab(classNode, "MISCELLANEOUS", true);
+        injectGetCreativeTab(classNode);
     }
 
     private static void patchItemBlock(ClassNode classNode) {
@@ -691,7 +731,40 @@ final class RegistryPatch extends GamePatch {
         getRegisterFLTab.instructions.add(new MethodInsnNode(
                 INVOKEVIRTUAL, Block, "getRegisterFLTab", "()L" + CreativeTab + ";", false));
         getRegisterFLTab.instructions.add(new InsnNode(ARETURN));
+        TransformerUtils.setThisParameterName(classNode, getRegisterFLTab);
         classNode.methods.add(getRegisterFLTab);
+        // getCreativeTab
+        MethodNode getCreativeTab = new MethodNode(ASM_API,
+                ACC_PUBLIC, "getCreativeTab", "()L" + CreativeTab + ";", null, null);
+        getCreativeTab.instructions.add(new FieldInsnNode(
+                GETSTATIC, Blocks, "BLOCKS_LIST", "[L" + Block + ";"));
+        getCreativeTab.instructions.add(new VarInsnNode(ALOAD, 0));
+        getCreativeTab.instructions.add(new FieldInsnNode(
+                GETFIELD, ItemBlock, "blockID", "I"));
+        getCreativeTab.instructions.add(new InsnNode(AALOAD));
+        getCreativeTab.instructions.add(new MethodInsnNode(
+                INVOKEVIRTUAL, Block, "getCreativeTab", "()L" + CreativeTab + ";", false));
+        getCreativeTab.instructions.add(new InsnNode(ARETURN));
+        TransformerUtils.setThisParameterName(classNode, getCreativeTab);
+        classNode.methods.add(getCreativeTab);
+        // setCreativeTab
+        MethodNode setCreativeTab = new MethodNode(ASM_API,
+                ACC_PUBLIC, "setCreativeTab", "(L" + CreativeTab + ";)L" + Item + ";", null, null);
+        setCreativeTab.instructions.add(new FieldInsnNode(
+                GETSTATIC, Blocks, "BLOCKS_LIST", "[L" + Block + ";"));
+        setCreativeTab.instructions.add(new VarInsnNode(ALOAD, 0));
+        setCreativeTab.instructions.add(new FieldInsnNode(
+                GETFIELD, ItemBlock, "blockID", "I"));
+        setCreativeTab.instructions.add(new InsnNode(AALOAD));
+        setCreativeTab.instructions.add(new VarInsnNode(ALOAD, 1));
+        setCreativeTab.instructions.add(new MethodInsnNode(
+                INVOKEVIRTUAL, Block, "setCreativeTab", "(L" + CreativeTab + ";)L" + Block + ";", false));
+        setCreativeTab.instructions.add(new InsnNode(POP));
+        setCreativeTab.instructions.add(new VarInsnNode(ALOAD, 0));
+        setCreativeTab.instructions.add(new InsnNode(ARETURN));
+        TransformerUtils.setThisParameterName(classNode, setCreativeTab);
+        TransformerUtils.setParameterName(setCreativeTab, 1, "creativeTab");
+        classNode.methods.add(setCreativeTab);
     }
 
     private static void patchBlock(ClassNode classNode) {
@@ -875,7 +948,8 @@ final class RegistryPatch extends GamePatch {
         TransformerUtils.insertToBeginningOfCode(harvestBlock, prependHarvestBlock);
         harvestBlock.instructions.insert(addStat, skipStatIncrease);
         // getRegisterFLTab
-        injectGetRegisterFLTab(classNode, "MISCELLANEOUS");
+        injectGetRegisterFLTab(classNode, "MISCELLANEOUS", true);
+        injectGetCreativeTab(classNode);
     }
 
     private static void patchBlocks(ClassNode classNode) {
