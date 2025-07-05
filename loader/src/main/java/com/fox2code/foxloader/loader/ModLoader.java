@@ -24,6 +24,7 @@
 package com.fox2code.foxloader.loader;
 
 import com.fox2code.foxevents.EventHandler;
+import com.fox2code.foxloader.client.gui.GuiButtonCallback;
 import com.fox2code.foxloader.client.gui.GuiButtonCallbackUpdate;
 import com.fox2code.foxloader.client.gui.GuiConfigProvider;
 import com.fox2code.foxloader.client.gui.GuiModMenu;
@@ -46,6 +47,7 @@ import net.minecraft.common.CoreConstants;
 import net.minecraft.common.command.Command;
 import net.minecraft.common.command.ICommandListener;
 import net.minecraft.common.networking.NetworkManager;
+import net.minecraft.common.util.i18n.StringTranslate;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,9 +56,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 public final class ModLoader extends Mod {
     private static final ArrayList<Mod> mods = new ArrayList<>();
+    public static boolean displayServerButton = true;
     private static boolean areAllModsLoaded = false;
     private static boolean areAllModsFullyLoaded = false;
     private static boolean constructingMods = false;
@@ -182,7 +186,7 @@ public final class ModLoader extends Mod {
 
     @EventHandler
     public void onInitGui(GuiScreenInitEvent initGuiEvent) {
-        GuiScreen guiScreen = initGuiEvent.getGuiScreen();
+        final GuiScreen guiScreen = initGuiEvent.getGuiScreen();
         if (guiScreen instanceof GuiMainMenu) {
             SidedMetadataAPI.Internal.setActiveMetaData(null);
         }
@@ -193,6 +197,26 @@ public final class ModLoader extends Mod {
             initGuiEvent.getControlList().add(new GuiButtonCallbackUpdate(
                     500, guiScreen.width - 62, 2, 60, 20, "Mods", () ->
                     Minecraft.getInstance().displayGuiScreen(new GuiModMenu(guiScreen))));
+        }
+        if (guiScreen instanceof GuiIngameMenu && displayServerButton) {
+            final Map<String, String> metadata = SidedMetadataAPI.getActiveMetadata();
+            if (metadata.containsKey(SidedMetadataAPI.KEY_SERVER_BUTTON_NAME) &&
+                    metadata.containsKey(SidedMetadataAPI.KEY_SERVER_BUTTON_LINK)) {
+                StringTranslate st = StringTranslate.getInstance();
+                GuiButton guiButton;
+                initGuiEvent.getControlList().add(guiButton = new GuiButtonCallback(501,
+                        initGuiEvent.getGuiScreen().width / 2 - 100,
+                        initGuiEvent.getGuiScreen().height / 4 + 56,
+                        st.translateKey(metadata.get(SidedMetadataAPI.KEY_SERVER_BUTTON_NAME)), () -> {
+                    if (metadata.containsKey(SidedMetadataAPI.KEY_SERVER_BUTTON_NAME) &&
+                            metadata.containsKey(SidedMetadataAPI.KEY_SERVER_BUTTON_LINK)) {
+                        Minecraft.getInstance().displayGuiScreen(new GuiLinkConfirm(guiScreen,
+                                metadata.get(SidedMetadataAPI.KEY_SERVER_BUTTON_LINK)));
+                    }
+                }));
+                guiButton.canDisplayInfo = true;
+                guiButton.displayInfo = st.translateKey("warning.server-controlled-button");
+            }
         }
     }
 

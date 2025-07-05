@@ -36,6 +36,8 @@ public final class SidedMetadataAPI {
     public static final String KEY_FOXLOADER_VERSION = "foxloader_version";
     public static final String KEY_FOXBUCKET_VERSION = "foxbucket_version";
     public static final String KEY_ALLOW_MISSING_REGISTRY_KEYS = "allow_missing_registry_keys";
+    public static final String KEY_SERVER_BUTTON_NAME = "server_button_name";
+    public static final String KEY_SERVER_BUTTON_LINK = "server_button_link";
     private static final HashMap<String, String> selfMetadata = new HashMap<>();
     private static final Map<String, String> publicSelfMetaData = Collections.unmodifiableMap(selfMetadata);
     private static final ArrayList<Runnable> onActiveMetadataChangedHandlers = new ArrayList<>();
@@ -62,9 +64,15 @@ public final class SidedMetadataAPI {
         return Boolean.parseBoolean(getActiveMetadata().get(key));
     }
 
+    public static boolean isPrivilegedKey(String key) {
+        return KEY_REINDEV_VERSION.equals(key) ||
+                KEY_FOXLOADER_VERSION.equals(key) ||
+                KEY_FOXBUCKET_VERSION.equals(key);
+    }
+
     public static void putSelfMetadata(@NotNull String key, @Nullable String value) {
         Objects.requireNonNull(key, "key");
-        if (KEY_REINDEV_VERSION.equals(key) || KEY_FOXLOADER_VERSION.equals(key) || KEY_FOXBUCKET_VERSION.equals(key)) {
+        if (isPrivilegedKey(key)) {
             // As we may use these fields in the future for compatibility, don't allow change
             throw new IllegalArgumentException("Cannot change privileged key");
         }
