@@ -269,10 +269,6 @@ public final class ModLoader extends Mod {
                 throw new IllegalStateException();
             postInitializeModsTrigger = true;
             ModLoader.postInitializeMods();
-            if (ModLoaderInit.isClientDevModeImpl && // Fix error: [1D-10T]
-                    !(FoxLauncher.DEV_MODE || FoxLauncher.DEVELOPING_FOXLOADER)) {
-                Minecraft.theMinecraft = null;
-            }
         }
 
         public static void debugMarker() {

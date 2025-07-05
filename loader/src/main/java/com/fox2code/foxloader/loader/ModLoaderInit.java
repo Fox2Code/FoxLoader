@@ -73,7 +73,6 @@ public final class ModLoaderInit {
     private static final Collection<ModContainer> modContainnersCollection =
             Collections.unmodifiableCollection(modContainers.values());
     private static boolean inPreBootup = true;
-    static boolean isClientDevModeImpl = true;
 
     static {
         ((LoadingPlugin) JavaLoadingPlugin.JAVA_LOADING_PLUGIN).javaModInfo = JavaModInfo.FOX_LOADER_MOD_INFO;
@@ -120,7 +119,6 @@ public final class ModLoaderInit {
             throw new IllegalStateException("Cannot start FoxLoader in testing mode!");
         }
         getModLoaderLogger().info("Launching FoxLoader " + BuildConfig.FOXLOADER_VERSION + " client");
-        isClientDevModeImpl = args.length < 2 || args[1].length() < 2;
         commonPreInitialize(true);
         try {
             Minecraft.main(args);
