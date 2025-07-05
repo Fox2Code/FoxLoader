@@ -26,13 +26,12 @@ package com.fox2code.foxloader.dev;
 import com.fox2code.foxloader.dependencies.DependencyHelper;
 import com.fox2code.foxloader.launcher.BuildConfig;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.jvm.tasks.Jar;
 
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * Config for the FoxLoader gradle plugin
@@ -58,6 +57,7 @@ public class FoxLoaderConfig {
     public String modWebsite;
     public String modClassTransformer;
     public String modLoadingPlugin;
+    public boolean unofficial = false;
 
     public void modDesc() {
         this.checkConfigMutable();
@@ -95,9 +95,21 @@ public class FoxLoaderConfig {
         return stringJoiner.toString();
     }
 
+    // Compatibility support
+    final LinkedHashMap<String, CompatibilityModule> compatibilityModules = new LinkedHashMap<>();
+    public boolean disableKotlinCompatibility = false;
+    public boolean disableShadowCompatibility = false; // -> https://github.com/GradleUp/shadow
+
+    public void applyCompatibilityModule(CompatibilityModule compatibilityModule) {
+        this.checkConfigMutable();
+        if (!this.compatibilityModules.containsKey(compatibilityModule.getId())) {
+            this.compatibilityModules.put(compatibilityModule.getId(), compatibilityModule);
+        }
+    }
+
     // Special jar task replacement for complex build scripts
     Jar jarTaskToUse;
-    TaskProvider<Jar> jarTaskToUseProvider;
+    TaskProvider<? extends Task> jarTaskToUseProvider;
 
     public final void useJarTask(Jar jarTaskToUse) {
         this.checkConfigMutable();
@@ -105,7 +117,7 @@ public class FoxLoaderConfig {
         this.jarTaskToUseProvider = null;
     }
 
-    public final void useJarTask(TaskProvider<Jar> jarTaskToUseProvider) {
+    public final void useJarTask(TaskProvider<? extends Task> jarTaskToUseProvider) {
         this.checkConfigMutable();
         this.jarTaskToUse = null;
         this.jarTaskToUseProvider = jarTaskToUseProvider;
@@ -116,7 +128,7 @@ public class FoxLoaderConfig {
             return this.jarTaskToUse;
         }
         if (this.jarTaskToUseProvider != null) {
-            return this.jarTaskToUseProvider.get();
+            return (Jar) this.jarTaskToUseProvider.get();
         }
         return (Jar) project.getTasks().named("jar").get();
     }
@@ -126,7 +138,6 @@ public class FoxLoaderConfig {
     public String foxLoaderLibVersionOverride;
     public boolean localTesting = false;
     public boolean forceReload = false;
-    public boolean unofficial = false;
     public boolean useLWJGLX = false;
     public String LWJGLXVersion = BuildConfig.LWJGLX_VERSION;
     public String LWJGLXLWJGLVersion = "3.3.6";

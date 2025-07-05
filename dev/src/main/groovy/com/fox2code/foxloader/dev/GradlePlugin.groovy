@@ -24,6 +24,8 @@
 package com.fox2code.foxloader.dev
 
 import com.fox2code.foxloader.dependencies.DependencyHelper
+import com.fox2code.foxloader.dev.compatibility.KotlinCompatibility
+import com.fox2code.foxloader.dev.compatibility.ShadowCompatibility
 import com.fox2code.foxloader.launcher.BuildConfig
 import com.fox2code.foxloader.patching.PatchBridge
 import com.fox2code.foxloader.utils.Platform
@@ -202,8 +204,16 @@ class GradlePlugin implements Plugin<Project> {
                 options.encoding = 'UTF-8'
             }
             FoxLoaderConfig config = ((FoxLoaderConfig) project.extensions.getByName("foxloader"))
-            if (project.pluginManager.hasPlugin("org.jetbrains.kotlin.jvm")) {
-                config.useDependencyBundle("kotlin")
+            if ((!config.disableKotlinCompatibility) &&
+                    project.pluginManager.hasPlugin("org.jetbrains.kotlin.jvm")) {
+                config.applyCompatibilityModule(KotlinCompatibility.INSTANCE)
+            }
+            if ((!config.disableShadowCompatibility) &&
+                    project.pluginManager.hasPlugin("com.gradleup.shadow")) {
+                config.applyCompatibilityModule(ShadowCompatibility.INSTANCE)
+            }
+            for (CompatibilityModule compatibilityModule : config.compatibilityModules.values()) {
+                compatibilityModule.onApplyOnConfig(project, config)
             }
             config.configImmutable = true
             for (DependencyHelper.Dependency dependency : DependencyHelper.commonDependencies) {
@@ -431,6 +441,9 @@ class GradlePlugin implements Plugin<Project> {
                         }
                     }
                 }
+            }
+            for (CompatibilityModule compatibilityModule : config.compatibilityModules.values()) {
+                compatibilityModule.onLateApply(project, config)
             }
         }
     }

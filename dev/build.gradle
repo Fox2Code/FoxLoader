@@ -48,6 +48,10 @@ dependencies {
     include(project(":patching")) {
         transitive = false
     }
+    // Shadow compatibility
+    compileOnly("com.gradleup.shadow:shadow-gradle-plugin:8.3.7") {
+        transitive = false
+    }
     // For tests only
     testImplementation(gradleTestKit())
     testImplementation(gradleFixtures()) { transitive = false }
