@@ -61,9 +61,18 @@ final class ShadowCompatibility extends CompatibilityModule {
                     boolean isSatisfiedBy(ResolvedDependency resolvedDependency) {
                         String dependencyName = resolvedDependency.getName()
                         return dependenciesToExclude.contains(dependencyName) ||
+                                // Exclude Mixins
                                 dependencyName.startsWith("net.fabricmc:sponge-mixin:") ||
                                 dependencyName.startsWith("org.spongepowered:mixin:") ||
+                                // Exclude Junit
+                                dependencyName.startsWith("junit:junit:") ||
+                                dependencyName.startsWith("org.junit.jupiter:") ||
+                                dependencyName.startsWith("org.junit.platform:") ||
+                                // Exclude LWJGL2
+                                dependencyName.startsWith("net.java.jutils:") ||
+                                dependencyName.startsWith("net.java.jinput:") ||
                                 dependencyName.startsWith("org.lwjgl.lwjgl:") ||
+                                // Exclude LWJGL3
                                 dependencyName.startsWith("org.lwjgl:")
                     }
                 })
