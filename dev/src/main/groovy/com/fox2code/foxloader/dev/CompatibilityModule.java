@@ -58,6 +58,10 @@ public abstract class CompatibilityModule {
         if (config.useLWJGLX) {
             collection.add("com.fox2code:lwjglx:" + config.LWJGLXVersion);
         }
+        collection.add(DependencyHelper.annotations.name);
+        collection.add(DependencyHelper.jansi.name);
+        collection.add("net.silveros:reindev-fl:" +
+                BuildConfig.REINDEV_VERSION + "-fl_" + BuildConfig.FOXLOADER_VERSION);
         String foxLoaderVersion = BuildConfig.FOXLOADER_VERSION;
         if (config.foxLoaderLibVersionOverride != null) {
             foxLoaderVersion = config.foxLoaderLibVersionOverride;
@@ -69,6 +73,7 @@ public abstract class CompatibilityModule {
         for (DependencyHelper.Dependency dependency : DependencyHelper.commonDependenciesModernJava) {
             collection.add(dependency.name);
         }
+        collection.add(DependencyHelper.sparkDependency.name);
         for (String bundle : config.usedDependencyBundlesList) {
             for (DependencyHelper.Dependency dependency : DependencyHelper.getDependencyBundle(bundle)) {
                 collection.add(dependency.name);

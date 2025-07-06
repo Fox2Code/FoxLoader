@@ -46,13 +46,11 @@ final class ShadowCompatibility extends CompatibilityModule {
 
     @Override
     void onLateApply(Project project, FoxLoaderConfig config) {
+        final HashSet<String> dependenciesToExclude = new HashSet<>()
+        appendDependenciesNamesToExclude(config, dependenciesToExclude)
         project.tasks.named('shadowJar', ShadowJar) {
             archiveClassifier.set("")
             dependencies {
-                for (String dependencyToExclude : getDependenciesNamesToExclude(config)) {
-                    exclude(dependency(dependencyToExclude))
-                }
-                // LWJGLX support.
                 exclude(new Spec<? super ResolvedDependency>() {
                     @Override
                     boolean isSatisfiedBy(Object o) {
@@ -62,7 +60,10 @@ final class ShadowCompatibility extends CompatibilityModule {
 
                     boolean isSatisfiedBy(ResolvedDependency resolvedDependency) {
                         String dependencyName = resolvedDependency.getName()
-                        return dependencyName.startsWith("org.lwjgl.lwjgl:") ||
+                        return dependenciesToExclude.contains(dependencyName) ||
+                                dependencyName.startsWith("net.fabricmc:sponge-mixin:") ||
+                                dependencyName.startsWith("org.spongepowered:mixin:") ||
+                                dependencyName.startsWith("org.lwjgl.lwjgl:") ||
                                 dependencyName.startsWith("org.lwjgl:")
                     }
                 })

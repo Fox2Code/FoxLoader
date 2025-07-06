@@ -59,7 +59,7 @@ public final class DependencyHelper {
             "org.fusesource.jansi:jansi:" + BuildConfig.JANSI_VERSION, MAVEN_CENTRAL,
             "org.fusesource.jansi.AnsiConsole", null, "0b7b8b003a90ea491579b62f5118828e45112914c65589b00faa49d6ec785839");
 
-    private static final Dependency annotations =
+    public static final Dependency annotations =
             new Dependency("org.jetbrains:annotations:24.1.0", MAVEN_CENTRAL,
                     "org.jetbrains.annotations.NotNull", null, "27a770dc7ce50500918bb8c3c0660c98290630ec796b5e3cf6b90f403b3033c6");
 
