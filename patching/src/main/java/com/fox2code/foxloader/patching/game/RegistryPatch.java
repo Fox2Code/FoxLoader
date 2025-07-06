@@ -820,32 +820,34 @@ final class RegistryPatch extends GamePatch {
         initPrefix.add(new VarInsnNode(ISTORE, 3));
         flInit.instructions.insert(lastFieldSet, initPrefix);
         TransformerUtils.addMethodBefore(classNode, "<init>", flInit);
-        MethodNode getItemID = TransformerUtils.getMethod(classNode, "getItemID");
-        LabelNode getItemIDGoto = null;
-        for (AbstractInsnNode abstractInsnNode : getItemID.instructions) {
-            if (abstractInsnNode.getOpcode() == GOTO) {
-                getItemIDGoto = ((JumpInsnNode) abstractInsnNode).label;
-                break;
+        for (java.lang.String methodName : new String[]{"idDropped", "getItemID"}) {
+            MethodNode getItemIDLike = TransformerUtils.getMethod(classNode, methodName);
+            LabelNode getItemIDGoto = null;
+            for (AbstractInsnNode abstractInsnNode : getItemIDLike.instructions) {
+                if (abstractInsnNode.getOpcode() == GOTO) {
+                    getItemIDGoto = ((JumpInsnNode) abstractInsnNode).label;
+                    break;
+                }
             }
+            InsnList blockIdPrefix = new InsnList();
+            blockIdPrefix.add(new VarInsnNode(ALOAD, 0));
+            blockIdPrefix.add(new FieldInsnNode(GETFIELD, Block, "blockID", "I"));
+            blockIdPrefix.add(TransformerUtils.getNumberInsn(INITIAL_BLOCK_ID));
+            LabelNode jmp = new LabelNode();
+            blockIdPrefix.add(new JumpInsnNode(IF_ICMPLT, jmp));
+            blockIdPrefix.add(new VarInsnNode(ALOAD, 0));
+            blockIdPrefix.add(new FieldInsnNode(GETFIELD, Block, "blockID", "I"));
+            blockIdPrefix.add(TransformerUtils.getNumberInsn(BLOCK_ID_DIFF));
+            blockIdPrefix.add(new InsnNode(IADD));
+            if (getItemIDGoto != null) {
+                blockIdPrefix.add(new JumpInsnNode(GOTO, getItemIDGoto));
+            } else {
+                blockIdPrefix.add(new InsnNode(IRETURN));
+            }
+            blockIdPrefix.add(jmp);
+            TransformerUtils.insertToBeginningOfCode(getItemIDLike, blockIdPrefix);
+            // getItemID.access |= ACC_FINAL; // ReIndev need to override BLock.getItemID()
         }
-        InsnList blockIdPrefix = new InsnList();
-        blockIdPrefix.add(new VarInsnNode(ALOAD, 0));
-        blockIdPrefix.add(new FieldInsnNode(GETFIELD, Block, "blockID", "I"));
-        blockIdPrefix.add(TransformerUtils.getNumberInsn(INITIAL_BLOCK_ID));
-        LabelNode jmp = new LabelNode();
-        blockIdPrefix.add(new JumpInsnNode(IF_ICMPLT, jmp));
-        blockIdPrefix.add(new VarInsnNode(ALOAD, 0));
-        blockIdPrefix.add(new FieldInsnNode(GETFIELD, Block, "blockID", "I"));
-        blockIdPrefix.add(TransformerUtils.getNumberInsn(BLOCK_ID_DIFF));
-        blockIdPrefix.add(new InsnNode(IADD));
-        if (getItemIDGoto != null) {
-            blockIdPrefix.add(new JumpInsnNode(GOTO, getItemIDGoto));
-        } else {
-            blockIdPrefix.add(new InsnNode(IRETURN));
-        }
-        blockIdPrefix.add(jmp);
-        TransformerUtils.insertToBeginningOfCode(getItemID, blockIdPrefix);
-        // getItemID.access |= ACC_FINAL; // ReIndev need to override BLock.getItemID()
         MethodNode initializeItemBlock = new MethodNode(ASM_API, ACC_PROTECTED,
                 "initializeItemBlock", "()L" + ItemBlock + ";", null, null);
         initializeItemBlock.instructions.add(new TypeInsnNode(NEW, ItemBlock));
