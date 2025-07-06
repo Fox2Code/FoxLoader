@@ -30,17 +30,21 @@ import java.util.Objects;
 
 final class FluidsPatch extends GamePatch {
     private static final String World = "net/minecraft/common/world/World";
+    private static final String Fluid = "net/minecraft/common/block/fluid/Fluid";
+    private static final String Fluids = "net/minecraft/common/block/fluid/Fluids";
     private static final String BlockFluid = "net/minecraft/common/block/children/BlockFluid";
     private static final String InternalFluidsHooks = "com/fox2code/foxloader/internal/InternalFluidsHooks";
 
     FluidsPatch() {
-        super(BlockFluid);
+        super(new String[]{BlockFluid, Fluids});
     }
 
     @Override
     public ClassNode transform(ClassNode classNode) {
         if (BlockFluid.equals(classNode.name)) {
             patchBlockFluid(classNode);
+        } else if (Fluids.equals(classNode.name)) {
+            patchFluids(classNode);
         }
         return classNode;
     }
@@ -66,5 +70,23 @@ final class FluidsPatch extends GamePatch {
                 "onLiquidFlowIntoBlock", "(L" + World + ";IIIL" + BlockFluid + ";I)Z", false));
         insnList.add(new JumpInsnNode(IFNE, jumpInstance.label));
         methodNode.instructions.insert(jumpInstance, insnList);
+    }
+
+    private static void patchFluids(ClassNode classNode) {
+        FieldNode mat2fluids = TransformerUtils.getFieldDesc(classNode, "Ljava/util/IdentityHashMap;");
+        MethodNode getFluids = new MethodNode(ACC_PUBLIC | ACC_STATIC, "getFluids",
+                "()Ljava/util/Collection;", "()Ljava/util/Collection<L" + Fluid + ";>;", null);
+        getFluids.instructions.add(new FieldInsnNode(GETSTATIC, Fluids, mat2fluids.name, mat2fluids.desc));
+        getFluids.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                "java/util/IdentityHashMap", "values", "()Ljava/util/Collection;"));
+        getFluids.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                "java/util/Collections", "unmodifiableCollection",
+                "(Ljava/util/Collection;)Ljava/util/Collection;"));
+        getFluids.instructions.add(new InsnNode(ARETURN));
+        if ("<clinit>".equals(classNode.methods.get(classNode.methods.size() - 1).name)) {
+            TransformerUtils.addMethodBefore(classNode, "<clinit>", getFluids);
+        } else {
+            classNode.methods.add(getFluids);
+        }
     }
 }
