@@ -92,6 +92,7 @@ public final class GamePatches {
         addGamePatch(new TileEntityPatch());
         addGamePatch(new EditTextPatch());
         addGamePatch(new PlayerSelectionPatch());
+        addGamePatch(new MovementPatch());
         // Debug & cosmetic stuff
         addGamePatch(new VarNamePatch());
     }

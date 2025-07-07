@@ -39,4 +39,8 @@ public abstract class PlayerEvent extends Event {
     @NotNull public final EntityPlayer getEntityPlayer() {
         return this.entityPlayer;
     }
+
+    public final boolean isRemote() {
+        return this.entityPlayer.worldObj.isRemote;
+    }
 }

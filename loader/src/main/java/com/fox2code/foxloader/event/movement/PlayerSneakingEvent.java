@@ -21,26 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.fox2code.foxloader.event.world;
+package com.fox2code.foxloader.event.movement;
 
-import com.fox2code.foxevents.Event;
-import net.minecraft.common.world.World;
+import com.fox2code.foxloader.event.player.PlayerEvent;
+import net.minecraft.common.entity.player.EntityPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
-public abstract class WorldEvent extends Event {
-    private final World world;
-
-    protected WorldEvent(World world) {
-        this.world = Objects.requireNonNull(world, "world");
-    }
-
-    @NotNull public World getWorld() {
-        return this.world;
-    }
-
-    public final boolean isRemote() {
-        return this.world.isRemote;
+public final class PlayerSneakingEvent extends PlayerEvent {
+    public PlayerSneakingEvent(@NotNull EntityPlayer entityPlayer) {
+        super(entityPlayer);
     }
 }

@@ -172,22 +172,23 @@ public final class TransformerUtils {
         }
     }
 
-    public static FieldNode getField(ClassNode classNode,String fieldName) {
+    public static @NotNull FieldNode getField(ClassNode classNode,String fieldName) {
         return findField0(classNode, fieldName, null, true);
     }
 
-    public static FieldNode getField(ClassNode classNode, String fieldName, String fieldDesc) {
+    public static @NotNull FieldNode getField(ClassNode classNode, String fieldName, String fieldDesc) {
         return findField0(classNode, fieldName, fieldDesc, true);
     }
 
-    public static FieldNode findField(ClassNode classNode,String fieldName) {
+    public static @Nullable FieldNode findField(ClassNode classNode,String fieldName) {
         return findField0(classNode, fieldName, null, false);
     }
 
-    public static FieldNode findField(ClassNode classNode, String fieldName, String fieldDesc) {
+    public static @Nullable FieldNode findField(ClassNode classNode, String fieldName, String fieldDesc) {
         return findField0(classNode, fieldName, fieldDesc, false);
     }
 
+    @Contract("_, _, _, true -> !null")
     private static FieldNode findField0(ClassNode classNode, String fieldName, String fieldDesc, boolean require) {
         for (FieldNode fieldNode:classNode.fields) {
             if (fieldNode.name.equals(fieldName) &&
@@ -203,14 +204,15 @@ public final class TransformerUtils {
         }
     }
 
-    public static FieldNode getFieldDesc(ClassNode classNode, String fieldDesc) {
+    public static @NotNull FieldNode getFieldDesc(ClassNode classNode, String fieldDesc) {
         return findFieldDesc0(classNode, fieldDesc, true);
     }
 
-    public static FieldNode findFieldDesc(ClassNode classNode, String fieldDesc) {
+    public static @Nullable FieldNode findFieldDesc(ClassNode classNode, String fieldDesc) {
         return findFieldDesc0(classNode, fieldDesc, false);
     }
 
+    @Contract("_, _, true -> !null")
     private static FieldNode findFieldDesc0(ClassNode classNode, String fieldDesc, boolean required) {
         for (FieldNode fieldNode:classNode.fields) {
             if (fieldNode.desc.equals(fieldDesc)) {
@@ -236,11 +238,11 @@ public final class TransformerUtils {
         throw new NoSuchElementException("No such opcode: " + opcode);
     }
 
-    public static AbstractInsnNode getBooleanInsn(boolean bool) {
+    public static @NotNull AbstractInsnNode getBooleanInsn(boolean bool) {
         return new InsnNode(bool ? Opcodes.ICONST_1 : Opcodes.ICONST_0);
     }
 
-    public static AbstractInsnNode getNumberInsn(int number) {
+    public static @NotNull AbstractInsnNode getNumberInsn(int number) {
         if (number >= -1 && number <= 5)
             return new InsnNode(number + 3);
         else if (number >= -128 && number <= 127)
