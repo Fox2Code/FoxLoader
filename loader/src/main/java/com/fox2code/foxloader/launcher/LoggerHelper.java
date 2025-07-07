@@ -265,7 +265,9 @@ final class LoggerHelper {
         @Override
         public synchronized void publish(LogRecord record) {
             super.publish(record);
-            flush();
+            if (!Thread.currentThread().isInterrupted()) {
+                this.flush();
+            }
         }
     }
 
