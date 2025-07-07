@@ -48,7 +48,11 @@ public class MissingItemDesc implements ItemDesc {
             int itemId = itemStack.getItemID();
             remoteRawId = GameRegistry.itemIdMappingLocalNames[itemId];
             isBlock = GameRegistry.isItemBlock(itemId);
-            if (remoteRawId == null) return;
+            if (remoteRawId == null) {
+                remoteRawId = itemStack.hasRemoteID() ?
+                        ("Unknown remote id: " + itemStack.getRemoteItemID()) :
+                        ("Unknown local id: " + itemStack.getItemID());
+            }
         }
         if ("foxloader:item_missing".equals(remoteRawId) ||
                 "foxloader:block_missing".equals(remoteRawId)) {

@@ -538,6 +538,20 @@ final class RegistryPatch extends GamePatch {
         setRemoteItemID.instructions.add(new InsnNode(RETURN));
         TransformerUtils.setThisParameterName(classNode, setRemoteItemID);
         TransformerUtils.setParameterName(setRemoteItemID, 1, "netItemID");
+        // Has remote id
+        MethodNode hasRemoteID = new MethodNode(ACC_PUBLIC, "hasRemoteID", "()Z", null, null);
+        classNode.methods.add(hasRemoteID);
+        hasRemoteID.instructions.add(new VarInsnNode(ALOAD, 0));
+        hasRemoteID.instructions.add(new FieldInsnNode(GETFIELD, ItemStack, "netItemID", "I"));
+        hasRemoteID.instructions.add(TransformerUtils.getNumberInsn(-1));
+        LabelNode ifNegOne = new LabelNode();
+        hasRemoteID.instructions.add(new JumpInsnNode(IF_ICMPEQ, ifNegOne));
+        hasRemoteID.instructions.add(TransformerUtils.getBooleanInsn(true));
+        hasRemoteID.instructions.add(new InsnNode(IRETURN));
+        hasRemoteID.instructions.add(ifNegOne);
+        hasRemoteID.instructions.add(TransformerUtils.getBooleanInsn(false));
+        hasRemoteID.instructions.add(new InsnNode(IRETURN));
+        TransformerUtils.setThisParameterName(classNode, hasRemoteID);
     }
 
     private static void patchPacket(ClassNode classNode) {
