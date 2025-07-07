@@ -136,6 +136,14 @@ final class ClientGameDirectoryPatch extends GamePatch {
                 changeWorldSetPlayer.add(notNewPlayer);
                 changeWorld.instructions.insert(setPlayer, changeWorldSetPlayer);
             }
+            MethodNode respawnPlayer = TransformerUtils.getMethod(classNode, "respawn");
+            InsnList respawnPlayerAppend = new InsnList();
+            respawnPlayerAppend.add(new VarInsnNode(ALOAD, 0));
+            respawnPlayerAppend.add(new FieldInsnNode(GETFIELD,
+                    Minecraft, "thePlayer", "L" + EntityPlayerSP + ";"));
+            respawnPlayerAppend.add(new MethodInsnNode(INVOKESTATIC, InternalPlayerHooks,
+                    "sendPlayerRespawnEvent", "(L" + EntityPlayer + ";)V"));
+            TransformerUtils.insertToEndOfCode(respawnPlayer, respawnPlayerAppend);
         }
         return classNode;
     }

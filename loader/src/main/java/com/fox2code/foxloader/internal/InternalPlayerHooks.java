@@ -27,6 +27,7 @@ import com.fox2code.foxevents.EventHolder;
 import com.fox2code.foxloader.event.player.PlayerChatEvent;
 import com.fox2code.foxloader.event.player.PlayerJoinEvent;
 import com.fox2code.foxloader.event.player.PlayerLeaveEvent;
+import com.fox2code.foxloader.event.player.PlayerRespawnEvent;
 import net.minecraft.common.entity.player.EntityPlayer;
 import net.minecraft.common.networking.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
@@ -38,6 +39,8 @@ public final class InternalPlayerHooks {
             EventHolder.getHolderFromEvent(PlayerJoinEvent.class);
     private static final EventHolder<PlayerLeaveEvent> PLAYER_LEAVE_EVENT =
             EventHolder.getHolderFromEvent(PlayerLeaveEvent.class);
+    private static final EventHolder<PlayerRespawnEvent> PLAYER_RESPAWN_EVENT =
+            EventHolder.getHolderFromEvent(PlayerRespawnEvent.class);
 
     private InternalPlayerHooks() {}
 
@@ -64,5 +67,10 @@ public final class InternalPlayerHooks {
         if (minecraftServer != null && playerJoinEvent.getLeaveMessage() != null) {
             minecraftServer.configManager.sendPacketToAllPlayers(new Packet3Chat(playerJoinEvent.getLeaveMessage()));
         }
+    }
+
+    public static void sendPlayerRespawnEvent(EntityPlayer entityPlayer) {
+        if (PLAYER_RESPAWN_EVENT.isEmpty()) return;
+        PLAYER_RESPAWN_EVENT.callEvent(new PlayerRespawnEvent(entityPlayer));
     }
 }

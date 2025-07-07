@@ -80,6 +80,8 @@ final class NetworkConnectionPatch extends GamePatch {
                 return transformPacket(classNode);
             case Packet2ClientProtocol:
                 return transformPacket2ClientProtocol(classNode);
+            case ServerConfigurationManager:
+                return transformServerConfigurationManager(classNode);
             case NetClientHandler:
                 return transformNetHandlers(classNode, true, false, false);
             case NetLoginHandler:
@@ -446,6 +448,21 @@ final class NetworkConnectionPatch extends GamePatch {
         consumeFoxLoaderHeader.instructions.add(new InsnNode(ICONST_1));
         consumeFoxLoaderHeader.instructions.add(new InsnNode(IRETURN));
         classNode.methods.add(consumeFoxLoaderHeader);
+        return classNode;
+    }
+
+    private ClassNode transformServerConfigurationManager(ClassNode classNode) {
+        MethodNode methodNode = TransformerUtils.getMethod(classNode, "respawnPlayer");
+        AbstractInsnNode aReturn = TransformerUtils.previousCodeInsn(TransformerUtils.getEndingLabelNode(methodNode));
+        VarInsnNode aLoad = (VarInsnNode) TransformerUtils.previousCodeInsn(aReturn);
+        if (aLoad.getOpcode() != Opcodes.ALOAD) {
+            throw new RuntimeException("Not ALOAD");
+        }
+        InsnList append = new InsnList();
+        append.add(new VarInsnNode(ALOAD, aLoad.var));
+        append.add(new MethodInsnNode(INVOKESTATIC, InternalPlayerHooks,
+                "sendPlayerRespawnEvent", "(L" + EntityPlayer + ";)V"));
+        methodNode.instructions.insertBefore(aLoad, append);
         return classNode;
     }
 
