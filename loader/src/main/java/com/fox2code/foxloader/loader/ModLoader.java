@@ -32,8 +32,6 @@ import com.fox2code.foxloader.energy.FoxPowerUtils;
 import com.fox2code.foxloader.event.FoxLoaderEvents;
 import com.fox2code.foxloader.event.client.GuiScreenInitEvent;
 import com.fox2code.foxloader.event.lifecycle.LifecycleStartEvent;
-import com.fox2code.foxloader.event.movement.PlayerJumpingEvent;
-import com.fox2code.foxloader.event.movement.PlayerSneakingEvent;
 import com.fox2code.foxloader.internal.InternalTranslateHooks;
 import com.fox2code.foxloader.launcher.FoxLauncher;
 import com.fox2code.foxloader.loader.packet.LoaderNetworkManager;

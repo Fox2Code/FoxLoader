@@ -949,6 +949,27 @@ final class RegistryPatch extends GamePatch {
         prependHarvestBlock.add(new JumpInsnNode(IF_ICMPGE, skipStatIncrease));
         TransformerUtils.insertToBeginningOfCode(harvestBlock, prependHarvestBlock);
         harvestBlock.instructions.insert(addStat, skipStatIncrease);
+        // dropBlockAsItem_do fix
+        MethodNode dropBlockAsItem_do = TransformerUtils.getMethod(classNode, "dropBlockAsItem_do");
+        JumpInsnNode dropBlockAsItem_doCheck = null;
+        for (AbstractInsnNode abstractInsnNode : dropBlockAsItem_do.instructions) {
+            if (abstractInsnNode.getOpcode() == IFNE) {
+                dropBlockAsItem_doCheck = (JumpInsnNode) abstractInsnNode;
+                break;
+            }
+        }
+        Objects.requireNonNull(dropBlockAsItem_doCheck);
+        InsnList dropBlockAsItem_doNewChecks = new InsnList();
+        dropBlockAsItem_doNewChecks.add(new VarInsnNode(ALOAD, 5));
+        dropBlockAsItem_doNewChecks.add(new JumpInsnNode(
+                IFNULL, dropBlockAsItem_doCheck.label));
+        dropBlockAsItem_doNewChecks.add(new VarInsnNode(ALOAD, 5));
+        dropBlockAsItem_doNewChecks.add(new MethodInsnNode(INVOKESTATIC,
+                GameRegistry, "isMissingItemStack", "(L" + ItemStack + ";)Z"));
+        dropBlockAsItem_doNewChecks.add(new JumpInsnNode(
+                IFNE, dropBlockAsItem_doCheck.label));
+        dropBlockAsItem_do.instructions.insert(
+                dropBlockAsItem_doCheck, dropBlockAsItem_doNewChecks);
         // getRegisterFLTab
         injectGetRegisterFLTab(classNode, "MISCELLANEOUS", true);
         injectGetCreativeTab(classNode);
