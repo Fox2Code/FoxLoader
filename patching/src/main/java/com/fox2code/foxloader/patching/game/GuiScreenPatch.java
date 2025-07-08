@@ -121,6 +121,7 @@ public final class GuiScreenPatch extends GamePatch {
                 break;
             }
         }
+        TransformerUtils.makeGetterForFields(classNode, "selectedElement");
     }
 
     private void patchGuiContainer(ClassNode classNode) {
