@@ -163,8 +163,10 @@ public final class InternalInteractionHooks {
 
     public static boolean onDropCurrentItem(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        ItemStack currentItem = player.inventory.getCurrentItem();
+        if (currentItem == null) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 1, false, true);
+                player, currentItem, player.inventory.currentItem, 1, false, true);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -172,8 +174,10 @@ public final class InternalInteractionHooks {
 
     public static boolean onDropCurrentItemStack(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        ItemStack currentItem = player.inventory.getCurrentItem();
+        if (currentItem == null) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCurrentItem(), player.inventory.currentItem, 64, false, true);
+                player, currentItem, player.inventory.currentItem, 64, false, true);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -181,8 +185,10 @@ public final class InternalInteractionHooks {
 
     public static boolean onDropCursorItem(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        ItemStack cursorItem = player.inventory.getCursorStack();
+        if (cursorItem == null) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCursorStack(), -999, 1, false, false);
+                player, cursorItem, -999, 1, false, false);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -190,8 +196,10 @@ public final class InternalInteractionHooks {
 
     public static boolean onDropCursorItemStack(EntityPlayer player) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        ItemStack cursorItem = player.inventory.getCursorStack();
+        if (cursorItem == null) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
-                player, player.inventory.getCursorStack(), -999, 64, false, false);
+                player, cursorItem, -999, 64, false, false);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
         updateSlotItemIfCancelled(playerDropItemEvent);
         return playerDropItemEvent.isCancelled();
@@ -199,6 +207,7 @@ public final class InternalInteractionHooks {
 
     public static boolean onDropCreativeItemStack(EntityPlayer player, ItemStack itemStack) {
         if (PLAYER_DROP_ITEM_EVENT.isEmpty()) return false;
+        if (itemStack == null) return false;
         PlayerDropItemEvent playerDropItemEvent = new PlayerDropItemEvent(
                 player, itemStack, -999, 64, true, false);
         PLAYER_DROP_ITEM_EVENT.callEvent(playerDropItemEvent);
