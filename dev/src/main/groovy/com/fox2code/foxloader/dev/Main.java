@@ -132,6 +132,13 @@ public class Main {
             foxJavaExec.addFile(SourceUtil.getSourceFile(Type.class));
             foxJavaExec.addFile(SourceUtil.getSourceFile(DecompileHelper.class));
             foxJavaExec.addFile(DependencyHelper.loadDependencyAsFile(DependencyHelper.vineFlower));
+            // An issue reported by SalTay seems to indicate this class
+            // being accessible at runtime is sometimes a requirement?
+            File sourceFile = SourceUtil.getSourceFileOfClassName(
+                    "org.gradle.internal.classpath.Instrumented");
+            if (sourceFile != null) {
+                foxJavaExec.addFile(sourceFile);
+            }
             foxJavaExec.setMainClass("com.fox2code.foxloader.decompiler.FoxLoaderDecompiler");
             foxJavaExec.exec("default", Main.UNPICKED.getAbsolutePath(), Main.DECOMPILED.getAbsolutePath());
         }
