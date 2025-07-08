@@ -28,6 +28,7 @@ import com.fox2code.foxloader.utils.Enumerations;
 import com.fox2code.foxloader.utils.Platform;
 import com.fox2code.foxloader.utils.async.AsyncItrLinkedList;
 import com.fox2code.foxloader.utils.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,7 +39,10 @@ import java.nio.file.Files;
 import java.security.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class FoxClassLoader extends URLClassLoader implements ClassLoaderMarker {
     private static final String MIXIN_INFO = "org.spongepowered.asm.mixin.transformer.MixinInfo";
@@ -51,11 +55,12 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
         ClassLoader.registerAsParallelCapable();
     }
 
-    private final HashMap<String, CodeSource> codeSourceCache = new HashMap<>();
-    private final HashMap<String, FileInfo> fileInfoCache = new HashMap<>();
+    private final NullCheckedHashMap<String, CodeSource> codeSourceCache = new NullCheckedHashMap<>();
+    private final NullCheckedHashMap<String, FileInfo> fileInfoCache = new NullCheckedHashMap<>();
+    private final FileInfoListHolder fileInfoListHolder = new FileInfoListHolder();
     private final AsyncItrLinkedList<String> exclusions = new AsyncItrLinkedList<>();
-    private final HashMap<String, byte[]> injectedClasses = new HashMap<>();
-    private final HashMap<String, URL> injectedResources = new HashMap<>();
+    private final NullCheckedHashMap<String, byte[]> injectedClasses = new NullCheckedHashMap<>();
+    private final NullCheckedHashMap<String, URL> injectedResources = new NullCheckedHashMap<>();
     private URLClassLoader gameExclusiveSource;
     private boolean allowLoadingGame;
     private WrappedExtensions wrappedExtensions;
@@ -282,12 +287,16 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
             }
         }
         if (inCls) {
-            this.fileInfoCache.putIfAbsent(urlStr, fileInfo);
+            if (this.fileInfoCache.putIfAbsent(urlStr, fileInfo) == null) {
+                this.fileInfoListHolder.addFileInfo(fileInfo);
+            }
         }
     }
 
     void injectMissingFileInfoUnchecked(FileInfo fileInfo) {
-        this.fileInfoCache.putIfAbsent(fileInfo.source.toString(), fileInfo);
+        if (this.fileInfoCache.putIfAbsent(fileInfo.source.toString(), fileInfo) == null) {
+            this.fileInfoListHolder.addFileInfo(fileInfo);
+        }
     }
 
     @Override
@@ -421,6 +430,7 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
             return;
         }
         this.fileInfoCache.put(urlStr, fileInfo);
+        this.fileInfoListHolder.addFileInfo(fileInfo);
         if (isJavaArchiveSafe(fileInfo)) {
             URL url = fileInfo.source;
             if (fileInfo.jarPath != null) {
@@ -561,7 +571,7 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
     }
 
     public Collection<FileInfo> loadingClassPath() {
-        return Collections.unmodifiableCollection(this.fileInfoCache.values());
+        return Collections.unmodifiableCollection(new ArrayList<>(this.fileInfoListHolder));
     }
 
     private static boolean isJavaArchiveSafe(FileInfo fileInfo) {
@@ -624,5 +634,59 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
         public abstract byte[] transformClass(FileInfo fileInfo, String className, byte[] classData);
 
         public abstract void info(String message);
+    }
+
+    private static final class NullCheckedHashMap<K, V> extends HashMap<K, V> {
+        @Override
+        public V put(@NotNull K key,@NotNull V value) {
+            Objects.requireNonNull(key);
+            Objects.requireNonNull(value);
+            return super.put(key, value);
+        }
+
+        @Override
+        public V putIfAbsent(@NotNull K key,@NotNull V value) {
+            Objects.requireNonNull(key);
+            Objects.requireNonNull(value);
+            return super.putIfAbsent(key, value);
+        }
+    }
+
+    private static final class FileInfoListHolder extends AbstractCollection<FileInfo> {
+        private final Consumer<FileInfo> addFnc;
+        private final Supplier<Iterator<FileInfo>> iteratorFnc;
+        private int size;
+
+        private FileInfoListHolder() {
+            final ArrayList<FileInfo> fileInfos = new ArrayList<>();
+            this.addFnc = fileInfos::add;
+            final Supplier<Iterator<FileInfo>> fileInfosUnmodifiable =
+                    Collections.unmodifiableCollection(fileInfos)::iterator;
+            this.iteratorFnc = () -> {
+                final Iterator<FileInfo> fileInfoIterator = fileInfosUnmodifiable.get();
+                final BooleanSupplier hasNext = fileInfoIterator::hasNext;
+                final Supplier<FileInfo> next = fileInfoIterator::next;
+                return new Iterator<FileInfo>() {
+                    @Override public boolean hasNext() { return hasNext.getAsBoolean(); }
+                    @Override public FileInfo next() { return next.get(); }
+                };
+            };
+            this.size = 0;
+        }
+
+        private void addFileInfo(FileInfo fileInfo) {
+            this.size++;
+            this.addFnc.accept(fileInfo);
+        }
+
+        @Override
+        public @NotNull Iterator<FileInfo> iterator() {
+            return this.iteratorFnc.get();
+        }
+
+        @Override
+        public int size() {
+            return this.size;
+        }
     }
 }
