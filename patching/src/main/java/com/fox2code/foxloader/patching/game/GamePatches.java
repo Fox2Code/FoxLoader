@@ -93,6 +93,7 @@ public final class GamePatches {
         addGamePatch(new EditTextPatch());
         addGamePatch(new PlayerSelectionPatch());
         addGamePatch(new MovementPatch());
+        addGamePatch(new LootPatch());
         // Debug & cosmetic stuff
         addGamePatch(new VarNamePatch());
     }
