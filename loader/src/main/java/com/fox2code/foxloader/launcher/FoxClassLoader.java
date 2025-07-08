@@ -636,7 +636,7 @@ public final class FoxClassLoader extends URLClassLoader implements ClassLoaderM
         public abstract void info(String message);
     }
 
-    private static final class NullCheckedHashMap<K, V> extends HashMap<K, V> {
+    private static final class NullCheckedHashMap<K, V> extends LinkedHashMap<K, V> {
         @Override
         public V put(@NotNull K key,@NotNull V value) {
             Objects.requireNonNull(key);
