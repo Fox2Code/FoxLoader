@@ -24,6 +24,7 @@
 package com.fox2code.foxloader.utils;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
@@ -65,5 +66,27 @@ public final class ReflectionUtils {
             }
         } catch (ReflectiveOperationException ignored) {}
         return null;
+    }
+
+    public static boolean isFieldStringCollection(Field field) {
+        Class<?> type = field.getType();
+        switch (type.getName()) {
+            case "java.util.Collection":
+            case "java.util.Set":
+            case "java.util.HashSet":
+            case "java.util.LinkedHashSet":
+            case "java.util.List":
+            case "java.util.ArrayList":
+            case "java.util.LinkedList": {
+                break;
+            }
+            default: {
+                return false;
+            }
+        }
+        String signature = field.getGenericType().getTypeName();
+        int start = signature.indexOf('<');
+        return start != -1 && signature.endsWith(">") &&
+                signature.substring(start + 1, signature.length() - 1).equals("java.lang.String");
     }
 }
