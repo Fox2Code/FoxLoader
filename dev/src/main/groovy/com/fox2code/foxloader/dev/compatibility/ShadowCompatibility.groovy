@@ -42,6 +42,9 @@ final class ShadowCompatibility extends CompatibilityModule {
         config.useJarTask(project.tasks.named('shadowJar', ShadowJar))
         project.tasks.jar.enabled = false
         project.tasks.assemble.dependsOn("shadowJar")
+        project.tasks.named('shadowJar', ShadowJar) {
+            archiveClassifier.set("")
+        }
     }
 
     @Override
@@ -49,7 +52,6 @@ final class ShadowCompatibility extends CompatibilityModule {
         final HashSet<String> dependenciesToExclude = new HashSet<>()
         appendDependenciesNamesToExclude(config, dependenciesToExclude)
         project.tasks.named('shadowJar', ShadowJar) {
-            archiveClassifier.set("")
             dependencies {
                 exclude(new Spec<? super ResolvedDependency>() {
                     @Override
