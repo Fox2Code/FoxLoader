@@ -166,22 +166,6 @@ public final class ModLoader extends Mod {
     public void onPreInit() {
         this.setConfigObject(ModLoaderOptions.INSTANCE);
         FoxPowerUtils.updateMaxSinkPriorityValue();
-        CommandRegistry.registerClientCommand(new Command("fldebug2", false, false) {
-            @Override
-            public void onExecute(String[] args, ICommandListener commandExecutor) {
-                commandExecutor.log(GameRegistry.Internal.state());
-            }
-
-            @Override
-            public void printHelpInformation(ICommandListener iCommandListener) {
-
-            }
-
-            @Override
-            public String commandSyntax() {
-                return "";
-            }
-        });
     }
 
     @EventHandler
