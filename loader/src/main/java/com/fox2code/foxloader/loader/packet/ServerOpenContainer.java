@@ -62,11 +62,14 @@ public final class ServerOpenContainer extends FoxPacket {
     @Override
     public void readData(DataInputStream dataInputStream) throws IOException {
         this.containerID = Packet.readString(dataInputStream, 128);
+        this.windowID = dataInputStream.readInt();
         if (dataInputStream.readBoolean()) {
             this.x = dataInputStream.readInt();
             this.y = dataInputStream.readInt();
             this.z = dataInputStream.readInt();
+            this.block = true;
         } else {
+            this.block = false;
             this.x = 0;
             this.y = 0;
             this.z = 0;
@@ -76,6 +79,7 @@ public final class ServerOpenContainer extends FoxPacket {
     @Override
     public void writeData(DataOutputStream dataOutputStream) throws IOException {
         Packet.writeString(this.containerID, dataOutputStream);
+        dataOutputStream.writeInt(this.windowID);
         if (this.block) {
             dataOutputStream.writeBoolean(true);
             dataOutputStream.writeInt(this.x);
