@@ -276,7 +276,6 @@ public final class DependencyHelper {
                     throw new IllegalStateException( // This is a sanity check when in development
                             "Mismatching hash for " + dependency.name +
                                     " (" + dependency.sha256Sum + " != " + realSha256 + ")");
-
                 }
             }
             if (!dev) {
@@ -383,16 +382,18 @@ public final class DependencyHelper {
     private static boolean checkHashOrDeleteEx(File file, Dependency dependency, boolean errorOut, boolean keepFile) {
         if (dependency.sha256Sum == null || !file.exists()) return false;
         String hashString;
+        Throwable cause = null;
         try {
             hashString = IOUtils.toHex(IOUtils.sha256Of(file));
         } catch (IOException e) {
             hashString = "";
+            cause = e;
         }
         if (!dependency.sha256Sum.equals(hashString)) {
             boolean deleteSuccessful = keepFile || file.delete();
             if (errorOut) {
                 throw new RuntimeException("Remote dependency " + dependency.name + " checksum mismatch " +
-                        "(got: " + hashString + ", expected: " + dependency.sha256Sum + ")");
+                        "(got: " + hashString + ", expected: " + dependency.sha256Sum + ")", cause);
             }
             if (!deleteSuccessful) {
                 throw new RuntimeException("Can't delete dependency with checksum mismatch " + dependency.name);
