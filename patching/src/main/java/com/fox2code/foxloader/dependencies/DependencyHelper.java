@@ -396,7 +396,7 @@ public final class DependencyHelper {
                         "(got: " + hashString + ", expected: " + dependency.sha256Sum + ")", cause);
             }
             if (!deleteSuccessful) {
-                throw new RuntimeException("Can't delete dependency with checksum mismatch " + dependency.name);
+                throw new RuntimeException("Can't delete dependency with checksum mismatch " + dependency.name, cause);
             }
             return false;
         }
