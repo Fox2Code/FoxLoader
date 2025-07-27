@@ -391,6 +391,9 @@ public final class DependencyHelper {
         }
         if (!dependency.sha256Sum.equals(hashString)) {
             boolean deleteSuccessful = keepFile || file.delete();
+            if (!deleteSuccessful) {
+                file.deleteOnExit();
+            }
             if (errorOut) {
                 throw new RuntimeException("Remote dependency " + dependency.name + " checksum mismatch " +
                         "(got: " + hashString + ", expected: " + dependency.sha256Sum + ")", cause);
@@ -431,7 +434,7 @@ public final class DependencyHelper {
                 inst.appendToSystemClassLoaderSearch(new JarFile(library));
             } catch (final IOException e) {
                 System.err.println("Failed to add jar to ClassPath");
-                e.printStackTrace();
+                DependencyImpl.CURRENT_IMPL.printStackTrace(e);
                 System.exit(1);
             }
         }
