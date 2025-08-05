@@ -93,6 +93,7 @@ public final class InternalEditTextHooks {
                 netServerHandler.getEntityPlayer(), tileEntitySign.signText, updateSignPacket.signLines);
         PLAYER_EDIT_SIGN_EVENT.callEvent(playerEditSignEvent);
         if (playerEditSignEvent.isCancelled()) {
+            netServerHandler.sendPacket(tileEntitySign.getDescriptionPacket());
             return true;
         }
         updateSignPacket.signLines = playerEditSignEvent.getSignLinesNew();
