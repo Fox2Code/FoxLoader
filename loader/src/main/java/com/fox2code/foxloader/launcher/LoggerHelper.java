@@ -37,13 +37,19 @@ final class LoggerHelper {
     private static final String formatDefault = "[%1$tT] [%2$-7s] %3$s";
     private static final String formatClient = "[%1$tT] [CLIENT] [%2$-7s] %3$s";
     private static final String formatServer = "[%1$tT] [SERVER] [%2$-7s] %3$s";
+    private static final boolean hasConsoleObject = System.console() != null;
     static final boolean devEnvironment = FoxLauncher.DEVELOPING_FOXLOADER || FoxLauncher.DEV_MODE;
     static final boolean consoleSupportColor = devEnvironment ||
-            Boolean.getBoolean("foxloader.console-support-color") || System.console() != null;
+            Boolean.getBoolean("foxloader.console-support-color") || hasConsoleObject;
     private static final boolean disableLoggerHelper =
             Boolean.getBoolean("foxloader.disable-logger-helper");
     private static final boolean loggerDistinguishSide =
             Boolean.getBoolean("foxloader.logger-distinguish-side");
+    static final boolean wantJAnsi = (consoleSupportColor && hasConsoleObject &&
+            (!disableLoggerHelper) && (!devEnvironment) &&
+            // Always allow the JVM Flags to work
+            !Boolean.getBoolean("foxloader.force-ignore-jansi")) ||
+            Boolean.getBoolean("foxloader.force-use-jansi");
     private static final String format = loggerDistinguishSide ?
             FoxLauncher.isServer() ? formatServer : formatClient : formatDefault;
     private static final FoxLoaderLogFormatter simpleFormatter = new FoxLoaderLogFormatter();

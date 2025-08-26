@@ -295,8 +295,7 @@ public final class FoxLauncher {
     }
 
     public static boolean wantJAnsi() {
-        return hasLogger && LoggerHelper.consoleSupportColor &&
-                (LoggerHelper.devEnvironment || !isClient());
+        return hasLogger && LoggerHelper.wantJAnsi;
     }
 
     public static boolean hasAnsi() {
