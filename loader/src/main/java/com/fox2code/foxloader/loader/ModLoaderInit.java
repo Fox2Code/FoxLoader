@@ -143,9 +143,6 @@ public final class ModLoaderInit {
     }
 
     private static void commonPreInitialize(boolean client) throws Exception {
-        if (BuildConfig.IS_DEV_BUILD) {
-            getModLoaderLogger().warning("This is a development build of FoxLoader.");
-        }
         J_L_ClassLoader.setClassloaderName("FoxLoader", FoxLauncher.getFoxClassLoader());
         if (FoxLauncher.wantJAnsi()) {
             DependencyHelper.loadDependency(DependencyHelper.jansi);
@@ -156,6 +153,9 @@ public final class ModLoaderInit {
             }
         } else {
             DependencyHelper.checkDependency(DependencyHelper.jansi);
+        }
+        if (BuildConfig.IS_DEV_BUILD) {
+            getModLoaderLogger().warning("This is a development build of FoxLoader.");
         }
         PreLoader.initializePatching();
         DependencyHelper.loadModernJavaDependencies();
