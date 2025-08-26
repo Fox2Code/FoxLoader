@@ -99,12 +99,15 @@ tasks.compileJava.dependsOn(":patching:jar")
 
 File classDir = new File(project.rootProject.rootDir, "loader" + File.separator +
         "build" + File.separator + "classes" + File.separator + "java" + File.separator + "main")
+File resourcesDir = new File(project.rootProject.rootDir, "loader" + File.separator +
+        "build" + File.separator + "resources" + File.separator + File.separator + "main")
 
 tasks.register("transformFoxLoader", JavaExec) {
     classpath = project(":patching").sourceSets.main.runtimeClasspath
     mainClass = "com.fox2code.foxloader.patching.FoxLoaderPatches"
-    args = [classDir.getAbsolutePath()]
+    args = [classDir.getAbsolutePath(), resourcesDir.getAbsolutePath()]
     dependsOn(tasks.compileJava)
+    dependsOn(tasks.processResources)
 }
 
 tasks.classes.dependsOn(tasks.transformFoxLoader)
