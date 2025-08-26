@@ -53,6 +53,7 @@ installer.install-special=Install on %s Launcher
 installer.install-minecraft=Install on Minecraft Launcher
 installer.install-betacraft=Install on BetaCraft Launcher
 installer.extract-multimc=Extract MultiMC Instance
+installer.extract-multimc-lwjglx=Extract LWJGLX MultiMC Instance
 installer.extract-server=Extract Server Jar
 installer.exit-installer=Exit installer
 installer.install-server=Install Server

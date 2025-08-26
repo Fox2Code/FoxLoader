@@ -1,0 +1,13 @@
+{
+    "formatVersion": 1,
+    "libraries": [
+        {
+            "name": "com.fox2code:lwjglx:#lwjglx_version#",
+            "url": "https://cdn.fox2code.com/maven"
+        }
+    ],
+    "name": "LWJGLX",
+    "type": "release",
+    "uid": "com.fox2code.lwjglx",
+    "version": "#lwjglx_version#"
+}

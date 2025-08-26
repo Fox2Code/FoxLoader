@@ -31,8 +31,8 @@
     "name": "FoxLoader",
     "requires": [
         {
-            "suggests": "2.9.4-nightly-20150209",
-            "uid": "org.lwjgl"
+            "suggests": "#lwjgl_version#",
+            "uid": "#lwjgl_uid#"
         }
     ],
     "mainClass": "com.fox2code.foxloader.launcher.ClientMain",

@@ -27,6 +27,7 @@ installer.install-special=Установить на %s лаунчер
 installer.install-minecraft=Установить на Minecraft лаунчер
 installer.install-betacraft=Установить на BetaCraft лаунчер
 installer.extract-multimc=Извлечь сборку MultiMC
+installer.extract-multimc-lwjglx=Извлечь сборку LWJGLX MultiMC
 installer.exit-installer=Выйти из программы установки
 installer.install-server=Установить сервер
 installer.install-server.text.1=Вы можете добавить аргумент "--server" в

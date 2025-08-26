@@ -62,8 +62,15 @@ final class InstallerGUI {
     private static final String FULLSCREEN_LABEL =
             "FoxLoader " + BuildConfig.FOXLOADER_VERSION + " for ReIndev " + BuildConfig.REINDEV_VERSION;
     private static final int PROGRESS_BAR_MAX = DependencyHelper.commonDependencies.length + 1;
-    private static final HashSet<String> MMC_PATCHES = new HashSet<>(Arrays.asList(
-            "com.fox2code.foxloader.json", "net.minecraft.json", "net.minecraftforge.json"));
+    private static final HashSet<String> MMC_PATCHES_ALL = new HashSet<>(Arrays.asList(
+            "com.fox2code.foxloader.json", "net.minecraft.json",
+            "net.minecraftforge.json", "com.fox2code.lwjglx.json"));
+    private static final String[] MMC_FILES = new String[]{"patches/com.fox2code.foxloader.json",
+            "patches/net.minecraft.json", "patches/net.minecraftforge.json",
+            "patches/org.lwjgl.json", "instance.cfg", "mmc-pack.json"};
+    private static final String[] MMC_FILES_LWJGLX = new String[]{"patches/com.fox2code.foxloader.json",
+            "patches/net.minecraft.json", "patches/net.minecraftforge.json",
+            "patches/com.fox2code.lwjglx.json", "instance.cfg", "mmc-pack-lwjglx.json"};
     private final InstallerPlatform installerPlatform;
     private final LauncherType launcherType;
     private final JFrame jFrame;
@@ -94,16 +101,16 @@ final class InstallerGUI {
         languageContainer.add(TranslateEngine.makeLanguageSelectComponent());
         JPanel clientContainer = makeContainer("installer.install-client");
         JButton minecraftButton;
-        JButton mmcButton;
         if (installerPlatform.specialLauncher) {
             minecraftButton = makeButton(clientContainer,
                     "installer.install-special", this::installMineCraft, installerPlatform.platformName);
-            mmcButton = null;
         } else {
             minecraftButton = makeButton(clientContainer,
                     "installer.install-minecraft", this::installMineCraft);
-            mmcButton = makeButton(clientContainer,
-                    "installer.extract-multimc", this::extractMMCInstance);
+            makeButton(clientContainer,
+                    "installer.extract-multimc", () -> this.extractMMCInstance(false));
+            makeButton(clientContainer,
+                    "installer.extract-multimc-lwjglx", () -> this.extractMMCInstance(true));
         }
         if (BuildConfig.IS_PRIVATE_DEV_BUILD) {
             minecraftButton.setEnabled(false);
@@ -291,15 +298,15 @@ final class InstallerGUI {
                 TranslateEngine.getTranslation("installer.comment"), false);
     }
 
-    public void extractMMCInstance() {
+    public void extractMMCInstance(boolean lwjglx) {
         String fileName = Main.currentInstallerFile.getName();
         if (fileName.endsWith("-installer.jar")) {
             fileName = fileName.replace("-installer.jar", ".jar");
         }
-        this.extractMMCInstance(fileName);
+        this.extractMMCInstance(fileName, lwjglx);
     }
 
-    public void extractMMCInstance(String baseFileName) {
+    public void extractMMCInstance(String baseFileName, boolean lwjglx) {
         if (this.checkInstaller(true)) {
             return;
         }
@@ -309,7 +316,16 @@ final class InstallerGUI {
         }
 
         File instanceDest = new File(Main.currentInstallerFile.getParentFile(),
-                baseFileName.substring(0, baseFileName.length() - 4) + "-mmc.zip");
+                baseFileName.substring(0, baseFileName.length() - 4) +
+                        (lwjglx ? "-mmc-lwjglx.zip" : "-mmc.zip"));
+        String lwjglPatchId, lwjglVersion;
+        if (lwjglx) {
+            lwjglVersion = "3.3.3";
+            lwjglPatchId = "org.lwjgl3";
+        } else {
+            lwjglVersion = "2.9.4-nightly-20150209";
+            lwjglPatchId = "org.lwjgl";
+        }
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(instanceDest.toPath()))) {
             zipOutputStream.putNextEntry(new ZipEntry("libraries/foxloader-" + BuildConfig.FOXLOADER_VERSION + ".jar"));
             copyCloseIn(Files.newInputStream(Main.currentInstallerFile.toPath()), zipOutputStream);
@@ -320,16 +336,19 @@ final class InstallerGUI {
                 zipOutputStream.closeEntry();
             }
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            for (String entry : new String[]{"patches/com.fox2code.foxloader.json",
-                    "patches/net.minecraft.json", "patches/net.minecraftforge.json",
-                    "patches/org.lwjgl.json", "instance.cfg", "mmc-pack.json"}) {
-                zipOutputStream.putNextEntry(new ZipEntry(entry));
+            for (String entry : (lwjglx ? MMC_FILES_LWJGLX : MMC_FILES)) {
+                zipOutputStream.putNextEntry(new ZipEntry(
+                        "mmc-pack-lwjglx.json".equals(entry) ?
+                                "mmc-pack.json" : entry));
                 byteArrayOutputStream.reset();
                 IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
                         "/mmc/" + entry), byteArrayOutputStream);
                 copyCloseIn(new ByteArrayInputStream(byteArrayOutputStream.toString()
                         .replace("#version#", this.versionName)
                         .replace("#foxloader_version#", BuildConfig.FOXLOADER_VERSION)
+                        .replace("#lwjglx_version#", BuildConfig.LWJGLX_VERSION)
+                        .replace("#lwjgl_version#", lwjglVersion)
+                        .replace("#lwjgl_uid#", lwjglPatchId)
                         .getBytes(StandardCharsets.UTF_8)), zipOutputStream);
                 zipOutputStream.closeEntry();
             }
@@ -416,10 +435,20 @@ final class InstallerGUI {
                 if (!patch.exists()) {
                     for (File file : Objects.requireNonNull(patches.listFiles())) {
                         if (file.getName().endsWith(".json") &&
-                                !MMC_PATCHES.contains(file.getName())) {
+                                !MMC_PATCHES_ALL.contains(file.getName())) {
                             if (!file.delete()) file.deleteOnExit();
                         }
                     }
+                }
+                File patchLwjglx = new File(patches, "com.fox2code.lwjglx.json");
+                boolean lwjglx = patchLwjglx.exists();
+                String lwjglPatchId, lwjglVersion;
+                if (lwjglx) {
+                    lwjglVersion = "3.3.3";
+                    lwjglPatchId = "org.lwjgl3";
+                } else {
+                    lwjglVersion = "2.9.4-nightly-20150209";
+                    lwjglPatchId = "org.lwjgl";
                 }
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
@@ -427,11 +456,21 @@ final class InstallerGUI {
                 IOUtils.copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
                         .replace("#version#", this.versionName)
                         .replace("#foxloader_version#", BuildConfig.FOXLOADER_VERSION)
+                        .replace("#lwjgl_version#", lwjglVersion)
+                        .replace("#lwjgl_uid#", lwjglPatchId)
                         .getBytes(StandardCharsets.UTF_8)), Files.newOutputStream(patch.toPath()));
+                if (lwjglx) {
+                    byteArrayOutputStream.reset();
+                    IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
+                            "/mmc/patches/com.fox2code.lwjglx.json"), byteArrayOutputStream);
+                    IOUtils.copyAndClose(new ByteArrayInputStream(byteArrayOutputStream.toString()
+                            .replace("#lwjglx_version#", BuildConfig.LWJGLX_VERSION)
+                            .getBytes(StandardCharsets.UTF_8)), Files.newOutputStream(patchLwjglx.toPath()));
+                }
                 for (String entry : new String[]{ // Fix in place replace!
                         "patches/net.minecraft.json", "patches/net.minecraftforge.json"}) {
                     IOUtils.copyAndClose(InstallerGUI.class.getResourceAsStream(
-                                    "/mmc/patches/com.fox2code.foxloader.json"),
+                                    "/mmc/patches/" + entry + ".json"),
                             Files.newOutputStream(new File(entry).toPath()));
                 }
                 break;

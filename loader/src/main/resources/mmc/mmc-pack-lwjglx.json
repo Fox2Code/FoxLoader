@@ -1,8 +1,16 @@
 {
     "components": [
         {
-            "cachedName": "LWJGL 2",
-            "cachedVersion": "2.9.4+legacyfabric.9",
+            "cachedName": "LWJGLX",
+            "cachedVersion": "#lwjglx_version#",
+            "cachedVolatile": true,
+            "important": true,
+            "uid": "com.fox2code.lwjglx",
+            "version": "#lwjglx_version#"
+        },
+        {
+            "cachedName": "LWJGL 3",
+            "cachedVersion": "#lwjgl_version#",
             "cachedVolatile": true,
             "dependencyOnly": true,
             "uid": "#lwjgl_uid#",
