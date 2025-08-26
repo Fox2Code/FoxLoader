@@ -25,6 +25,7 @@ package com.fox2code.foxloader.patching;
 
 import com.fox2code.foxloader.dependencies.DependencyHelper;
 import com.fox2code.foxloader.launcher.BuildConfig;
+import com.fox2code.foxloader.utils.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -33,14 +34,21 @@ import org.objectweb.asm.tree.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 // Allows us to do stuff java doesn't allow us to do.
 public final class FoxLoaderPatches implements Opcodes {
     private static final boolean DEBUG = false;
 
     public static void main(String[] args) throws IOException {
-        patchFoxLoaderClassesDir(new File(args[0]));
-        patchFoxLoaderResourcesDir(new File(args[1]));
+        if (args.length == 2) {
+            patchFoxLoaderClassesDir(new File(args[0]));
+            patchFoxLoaderResourcesDir(new File(args[1]));
+        } else {
+            patchFoxLoaderFinalJar(new File(args[0]));
+        }
     }
 
     public static void patchFoxLoaderClassesDir(File classesDir) throws IOException {
@@ -49,6 +57,85 @@ public final class FoxLoaderPatches implements Opcodes {
 
     public static void patchFoxLoaderResourcesDir(File resourcesDir) throws IOException {
         generateDependenciesResources(resourcesDir);
+    }
+
+    // Patching this late allow FoxLoader to inline BuildConfig values while having mods not inline them.
+    public static void patchFoxLoaderFinalJar(File foxloaderJar) throws IOException {
+        File backup = new File(foxloaderJar.getParentFile(), foxloaderJar.getName() + ".bak");
+        if (backup.exists() && !backup.delete()) {
+            throw new IOException("Failed to delete backup jar");
+        }
+        if (!foxloaderJar.renameTo(backup)) {
+            throw new IOException("Failed to rename loader jar");
+        }
+        try (ZipInputStream zipInputStream = new ZipInputStream(
+                new BufferedInputStream(Files.newInputStream(backup.toPath())));
+             ZipOutputStream zipOutputStream = new ZipOutputStream(
+                     new BufferedOutputStream(Files.newOutputStream(foxloaderJar.toPath())))) {
+            zipOutputStream.setLevel(9);
+            ZipEntry input;
+            while ((input = zipInputStream.getNextEntry()) != null) {
+                if (input.isDirectory()) continue;
+                String pathName = input.getName();
+                ZipEntry output = new ZipEntry(pathName);
+                zipOutputStream.putNextEntry(output);
+                if ("com/fox2code/foxloader/launcher/BuildConfig.class".equals(pathName)) {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    IOUtils.copy(zipInputStream, byteArrayOutputStream);
+                    zipOutputStream.write(patchBuildConfig(byteArrayOutputStream.toByteArray()));
+                } else {
+                    IOUtils.copy(zipInputStream, zipOutputStream);
+                }
+                zipOutputStream.closeEntry();
+                zipInputStream.closeEntry();
+            }
+            zipOutputStream.finish();
+        }
+        if (backup.exists() && !backup.delete()) {
+            throw new IOException("Failed to delete backup jar");
+        }
+    }
+
+    private static byte[] patchBuildConfig(byte[] buildConfig) {
+        ClassNode classNode = new ClassNode();
+        new ClassReader(buildConfig).accept(classNode, 0);
+        if (TransformerUtils.findMethod(classNode, "<clinit>") != null) {
+            throw new RuntimeException("<clinit>()V detected in BuildConfig!");
+        }
+        MethodNode clInit = new MethodNode(ACC_STATIC, "<clinit>", "()V", null, null);
+        for (FieldNode fieldNode : classNode.fields) {
+            if (fieldNode.access != (ACC_PUBLIC | ACC_STATIC | ACC_FINAL)) {
+                throw new RuntimeException("Invalid field access: " + fieldNode.access);
+            }
+            AbstractInsnNode constInsn;
+            switch (fieldNode.desc) {
+                case "Ljava/lang/String;":
+                    constInsn = new LdcInsnNode(fieldNode.value);
+                    break;
+                case "I":
+                case "Z":
+                    if (fieldNode.value instanceof Integer) {
+                        constInsn = TransformerUtils.getNumberInsn((Integer) fieldNode.value);
+                    } else if (fieldNode.value instanceof Boolean) {
+                        constInsn = TransformerUtils.getBooleanInsn((Boolean) fieldNode.value);
+                    } else {
+                        throw new RuntimeException("WTF???");
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported desc: \"" + fieldNode.desc + "\"");
+            }
+            fieldNode.value = null;
+            clInit.instructions.add(constInsn);
+            clInit.instructions.add(new FieldInsnNode(PUTSTATIC,
+                    "com/fox2code/foxloader/launcher/BuildConfig",
+                    fieldNode.name, fieldNode.desc));
+        }
+        clInit.instructions.add(new InsnNode(RETURN));
+        classNode.methods.add(clInit);
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        classNode.accept(classWriter);
+        return classWriter.toByteArray();
     }
 
     private static void patchFoxClassLoader(File classesDir) throws IOException {
@@ -139,7 +226,7 @@ public final class FoxLoaderPatches implements Opcodes {
     private static void generateDependenciesResource(
             File file, DependencyHelper.Dependency[] dependencies) throws IOException {
         try (PrintStream printStream = new PrintStream(file, "UTF-8")) {
-            printStream.println("# Autogenerated by FoxLoader " + BuildConfig.FOXLOADER_VERSION);
+            printStream.println("# Autogenerated by " + BuildConfig.FOXLOADER_DISPLAY);
             for (DependencyHelper.Dependency dependency : dependencies) {
                 printStream.println(dependency.javaSupport + " " + dependency.name);
             }
