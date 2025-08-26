@@ -24,7 +24,9 @@
 package com.fox2code.foxloader.installer;
 
 import com.fox2code.foxloader.dependencies.DependencyHelper;
+import com.fox2code.foxloader.utils.Platform;
 
+import java.io.File;
 import java.net.URL;
 
 final class InstallerDependencyHelperImpl extends DependencyHelper.DependencyImpl {
@@ -39,6 +41,28 @@ final class InstallerDependencyHelperImpl extends DependencyHelper.DependencyImp
     @Override
     public boolean isDev() {
         return true;
+    }
+
+    @Override
+    public File checkMCLibraryRoot(File mcLibraries) {
+        if (mcLibraries == null) {
+            String mcLibrariesPath;
+            switch (Platform.getPlatform()) {
+                case WINDOWS:
+                    mcLibrariesPath = System.getenv("APPDATA") + "\\.minecraft\\";
+                    break;
+                case MACOS:
+                    mcLibrariesPath = System.getProperty("user.home") + "/Library/Application Support/minecraft/";
+                    break;
+                case LINUX:
+                    mcLibrariesPath = System.getProperty("user.home") + "/.minecraft/";
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported operating system");
+            }
+            mcLibraries = new File(mcLibrariesPath + "libraries");
+        }
+        return mcLibraries;
     }
 
     @Override
