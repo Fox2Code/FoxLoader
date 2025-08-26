@@ -23,6 +23,7 @@
  */
 package com.fox2code.foxloader.patching.dev;
 
+import com.fox2code.foxloader.launcher.BuildConfig;
 import com.fox2code.foxloader.patching.TransformerUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -35,13 +36,14 @@ import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class DevelopmentSourceConstantData {
+public final class DevelopmentSourceConstantData {
     private static final int STATUS_DISABLED = -1;
     private static final int STATUS_DEFAULT = 0;
     private static final int STATUS_DISPLAY_FIRST = 1;
     private static final int PUBLIC_STATIC_FINAL = Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
     private static final String CoreConstants = "net/minecraft/common/CoreConstants";
     private static final String ChatColors = "net/minecraft/common/util/ChatColors";
+    private static final String ASMBuildConfig = "com/fox2code/foxloader/launcher/BuildConfig";
     public final String internalVersion, version, displayVersion;
     private final ConstantCheck[] regular, displayFirst;
     private final ArrayList<ConstantCheck> chatColorsConstantChecks;
@@ -54,18 +56,20 @@ public class DevelopmentSourceConstantData {
         CoreConstantCheck internalVersionCheck = new CoreConstantCheck(this.internalVersion, "INTERNAL_VERSION");
         CoreConstantCheck versionCheck = new CoreConstantCheck(this.version, "VERSION");
         CoreConstantCheck displayVersionCheck = new CoreConstantCheck(this.displayVersion, "DISPLAY_VERSION");
+        FLConstantCheck flVersionCheck = new FLConstantCheck(BuildConfig.FOXLOADER_DISPLAY, "FOXLOADER_DISPLAY");
         if (Objects.equals(this.version, this.displayVersion)) {
-            this.regular = new ConstantCheck[]{versionCheck, internalVersionCheck};
-            this.displayFirst = new ConstantCheck[]{displayVersionCheck, internalVersionCheck};
+            this.regular = new ConstantCheck[]{versionCheck, internalVersionCheck, flVersionCheck};
+            this.displayFirst = new ConstantCheck[]{displayVersionCheck, internalVersionCheck, flVersionCheck};
         } else {
             this.displayFirst = this.regular = new ConstantCheck[]{
-                    displayVersionCheck, versionCheck, internalVersionCheck};
+                    displayVersionCheck, versionCheck, internalVersionCheck, flVersionCheck};
         }
         this.chatColorsConstantChecks = new ArrayList<>();
         this.constants = new HashSet<>();
         this.constants.add(this.internalVersion);
         this.constants.add(this.version);
         this.constants.add(this.displayVersion);
+        this.constants.add(BuildConfig.FOXLOADER_DISPLAY);
 
         for (FieldNode fieldNode : chatColorsClassNode.fields) {
             if ((fieldNode.access & PUBLIC_STATIC_FINAL) == PUBLIC_STATIC_FINAL &&
@@ -214,6 +218,20 @@ public class DevelopmentSourceConstantData {
         public FieldInsnNode makeFieldInsnNode() {
             return new FieldInsnNode(Opcodes.GETSTATIC,
                     CoreConstants, this.fieldName, "Ljava/lang/String;");
+        }
+    }
+
+    private static class FLConstantCheck extends ConstantCheck {
+        private final String fieldName;
+
+        private FLConstantCheck(String value, String fieldName) {
+            super(value);
+            this.fieldName = fieldName;
+        }
+
+        public FieldInsnNode makeFieldInsnNode() {
+            return new FieldInsnNode(Opcodes.GETSTATIC,
+                    ASMBuildConfig, this.fieldName, "Ljava/lang/String;");
         }
     }
 

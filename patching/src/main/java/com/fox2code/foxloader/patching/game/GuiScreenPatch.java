@@ -90,9 +90,9 @@ public final class GuiScreenPatch extends GamePatch {
                     if (constant.endsWith(")")) {
                         // This branch happens for betas and such
                         ldcInsnNode.cst = constant.substring(0, constant.length() - 1) +
-                                " / FoxLoader " + BuildConfig.FOXLOADER_VERSION + ")";
+                                " / " + BuildConfig.FOXLOADER_DISPLAY + ")";
                     } else {
-                        ldcInsnNode.cst = constant + " (FoxLoader " + BuildConfig.FOXLOADER_VERSION + ")";
+                        ldcInsnNode.cst = constant + " (" + BuildConfig.FOXLOADER_DISPLAY + ")";
                     }
                 }
             }
@@ -153,7 +153,7 @@ public final class GuiScreenPatch extends GamePatch {
                 LdcInsnNode ldcInsnNode = (LdcInsnNode) abstractInsnNode;
                 if (ldcInsnNode.cst instanceof String &&
                         ((String) ldcInsnNode.cst).startsWith(reIndevVersionPattern)) {
-                    ldcInsnNode.cst = "FoxLoader " + BuildConfig.FOXLOADER_VERSION;
+                    ldcInsnNode.cst = BuildConfig.FOXLOADER_DISPLAY;
                 }
             } else if (abstractInsnNode.getOpcode() == BIPUSH) {
                 if(((IntInsnNode) abstractInsnNode).operand == 10) {
