@@ -44,12 +44,13 @@ public class MixinConstraintsImpl extends Abstractions {
     }
 
     @Override
-    protected boolean isVersionInRange(String version, String min, String max) {
+    protected boolean isVersionInRange(String version, String minVersion, String maxVersion,
+                                       boolean minInclusive, boolean maxInclusive) {
         FlexVer versionFlex = FlexVer.parse(version);
-        FlexVer minFlex = FlexVer.parse(version);
-        FlexVer maxFlex = FlexVer.parse(version);
-        return versionFlex.isGreaterOrEqual(minFlex) &&
-                maxFlex.isGreaterOrEqual(versionFlex);
+        FlexVer minFlex = FlexVer.parse(minVersion);
+        FlexVer maxFlex = FlexVer.parse(maxVersion);
+        return (minInclusive ? versionFlex.isGreaterOrEqual(minFlex) : versionFlex.isGreater(minFlex)) &&
+                (maxInclusive ? maxFlex.isGreaterOrEqual(versionFlex) : maxFlex.isGreater(versionFlex));
     }
 
     @Override

@@ -87,9 +87,9 @@ public final class DependencyHelper {
             new Dependency("com.unascribed:ears-api:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.api.features.EarsFeatures", null, "6482fe4f9473c1b49e0513684e95647a95dca289528b5fdcad3347c193500871"),
             new Dependency("com.unascribed:ears-common:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.common.EarsCommon", null, "8ec4fb89e30901abf1f9d35c5ed5ac4d0d57d212dc4f4260566b33fbc826ca0d"),
             new Dependency("net.fabricmc:sponge-mixin:" + BuildConfig.FABRIC_MIXIN_VERSION, FABRIC_MC,
-                    "org.spongepowered.asm.mixin.Mixins", null, "349b6fb8b953ac0089ee75a8c9f75003f0ce17632424c95e86701e02d5512c21"),
+                    "org.spongepowered.asm.mixin.Mixins", null, "921a2ca066d82d15d2939efd5eb22754e308db74b1e4277130a76625c3638dfd"),
             new Dependency("io.github.llamalad7:mixinextras-common:" + BuildConfig.MIXIN_EXTRAS_VERSION, MAVEN_CENTRAL,
-                    "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "6a2c6f39f285348635ba1e0e914d066fe718c207e220a49012e8b347cb27fbda"),
+                    "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "42c6bdf93c12cbf90f5451988dfed763ab8489ce2e40a1d843518b309ff0abaa"),
             new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:" + BuildConfig.MIXIN_SQUARED_VERSION,
                     FOX2CODE, "com.bawnorton.mixinsquared.MixinSquaredBootstrap", null, "5ae421a724f2cc9b06ade3da79fb3224e8073fdeac9a35df6f16ae59147a1abb"),
             new Dependency("com.fox2code:ReBuild:" + BuildConfig.REBUILD_VERSION, FOX2CODE,
@@ -111,15 +111,15 @@ public final class DependencyHelper {
     public static final Dependency[] commonDependenciesModernJava = new Dependency[]{
             new Dependency("blue.endless:jankson:" + BuildConfig.JANKSON_VERSION, SLEEPING_TOWN,
                     "blue.endless.jankson.api.Jankson", null,
-                    "3816dd5705f4d6e097fca9ddce79baa105931baacd5e4c0912fdb5f1c8c091e3", 21),
+                    "9414a8853e8a359fa551c4cd8d799c6f5458eebac98da0fa7bbca599ec7ab425", 21),
             new Dependency("com.moulberry:mixinconstraints:" + BuildConfig.MIXIN_CONSTRAINTS_VERSION,
                     MAVEN_CENTRAL, "com.moulberry.mixinconstraints.MixinConstraints", null,
-                    "756a8b5d17306a03fe5453767269b7623fb4436c41e0649ec1ca9b203f82f75c", 17),
+                    "67e1fca9cb518f8afb356105c7816587e02880c2acca3bbdb6e08c8e967fc1be", 17),
     };
 
     public static final Dependency sparkDependency =
             new Dependency(BuildConfig.SPARK_DEPENDENCY, MODRINTH, "me.lucko.spark.common.SparkPlugin",
-                    null, "66d6c264962d6895933bc89287aeac31287ceb085d06bb63b59db8d0b743adaf");
+                    null, "530d544e9c55d97e594e313bcdac5b44239d5b15d0e78af576e2c4d31bd2cd2d");
 
     public static final Dependency vineFlower = new Dependency(
             BuildConfig.VINEFLOWER_DEPENDENCY, MAVEN_CENTRAL,
@@ -137,9 +137,9 @@ public final class DependencyHelper {
 
     public static final Dependency[] kotlinDependencyBundle = new Dependency[]{
             new Dependency("org.jetbrains.kotlin:kotlin-reflect:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "230d91c2e410e3cfca3a4dc73d255455f62ff52aac091a33397a6e30bde91bf7"),
+                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "c48db4f8cd1bfd67f72d59255065fb41bfda43ca2942dac4d9deb897aa126ba4"),
             new Dependency("org.jetbrains.kotlin:kotlin-stdlib:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "65d12d85a3b865c160db9147851712a64b10dadd68b22eea22a95bf8a8670dca"),
+                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a"),
             new Dependency("org.jetbrains.kotlinx:atomicfu-jvm:" + BuildConfig.KOTLINX_ATOMICFU_VERSION,
                     MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "97cd462f8e8ab92571ab8805070e4450c52cb1ad63c224208f71a10943a01e46"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:" + BuildConfig.KOTLINX_COLLECTIONS_IMMUTABLE_VERSION,
@@ -147,7 +147,7 @@ public final class DependencyHelper {
             new Dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:" + BuildConfig.KOTLINX_COROUTINES_VERSION,
                     MAVEN_CENTRAL, "kotlinx.coroutines.CoroutineDispatcher", null, "5ca175b38df331fd64155b35cd8cae1251fa9ee369709b36d42e0a288ccce3fd"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-datetime-jvm:" + BuildConfig.KOTLINX_DATETIME_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.datetime.DateTimeUnit", null, "56d7d4d86372cb3da402c8b66f226b9283182810a667a09ca0e522b4ff992087"),
+                    MAVEN_CENTRAL, "kotlinx.datetime.DateTimeUnit", null, "3b8b98657c9aff3be7f6b4b575e9f3fb9a3a1f452a801da0f438901734acdade"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-io-bytestring-jvm:" + BuildConfig.KOTLINX_IO_VERSION,
                     MAVEN_CENTRAL, "kotlinx.io.bytestring.ByteString", null, "3da805e9da2ff3cb119f744dcd11de6a18e32a5b933518f17418ba5795cfa775"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-io-core-jvm:" + BuildConfig.KOTLINX_IO_VERSION,

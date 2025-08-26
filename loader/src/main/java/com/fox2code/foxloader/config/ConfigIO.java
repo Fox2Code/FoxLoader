@@ -25,8 +25,10 @@ package com.fox2code.foxloader.config;
 
 import blue.endless.jankson.api.Jankson;
 import blue.endless.jankson.api.document.ObjectElement;
-import blue.endless.jankson.api.io.JsonReaderOptions;
-import blue.endless.jankson.api.io.JsonWriterOptions;
+import blue.endless.jankson.api.io.json.JsonReaderOptions;
+import blue.endless.jankson.api.io.json.JsonWriterOptions;
+import blue.endless.jankson.api.io.style.CommentStyle;
+import blue.endless.jankson.api.io.style.WhitespaceStyle;
 import com.fox2code.foxloader.loader.ModContainer;
 import com.fox2code.foxloader.loader.ModLoader;
 import com.fox2code.foxloader.loader.ModLoaderInit;
@@ -37,13 +39,9 @@ import java.nio.file.Files;
 import java.util.logging.Level;
 
 public final class ConfigIO {
-    public static final JsonReaderOptions READER_OPTIONS = new JsonReaderOptions(
-            // JsonReaderOptions.Hint.ALLOW_BARE_ROOT_OBJECT, JsonReaderOptions.Hint.ALLOW_UNQUOTED_KEYS,
-            JsonReaderOptions.Hint.MERGE_DUPLICATE_OBJECTS/*, JsonReaderOptions.Hint.ALLOW_KEY_EQUALS_VALUE */);
-    public static final JsonWriterOptions WRITER_OPTIONS = new JsonWriterOptions("    ",
-            /*JsonWriterOptions.Hint.BARE_ROOT_OBJECT, JsonWriterOptions.Hint.UNQUOTED_KEYS,
-            JsonWriterOptions.Hint.KEY_EQUALS_VALUE,*/ JsonWriterOptions.Hint.WRITE_COMMENTS,
-            JsonWriterOptions.Hint.WRITE_WHITESPACE, JsonWriterOptions.Hint.WRITE_NEWLINES);
+    public static final JsonReaderOptions.Access READER_OPTIONS = new JsonReaderOptions.Builder().build();
+    public static final JsonWriterOptions.Access WRITER_OPTIONS = new JsonWriterOptions.Builder()
+            .setIndentValue("    ").setComments(CommentStyle.ALL).setWhitespace(WhitespaceStyle.PRETTY).build();
     private static final String EXTENSION = ".cfg";
 
     private static void readConfigurationImpl(
