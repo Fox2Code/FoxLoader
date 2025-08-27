@@ -30,4 +30,4 @@ For mixins usage check here: https://github.com/2xsaiko/mixin-cheatsheet
 
 For spark usage check here: https://spark.lucko.me/docs/Command-Usage
 
-For example mod check here: https://github.com/Fox2Code/FoxLoaderExampleMod
+For example mod check here: https://github.com/Modders-of-ReIndev/FoxLoaderExampleMod
