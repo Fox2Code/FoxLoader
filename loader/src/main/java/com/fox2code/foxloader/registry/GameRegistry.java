@@ -95,8 +95,22 @@ public final class GameRegistry {
     private static Block FALLBACK_BLOCK = null;
     private static Item FALLBACK_ITEM = null;
     private static short FALLBACK_ITEM_BLOCK_ID = 0;
+    private static final ThreadLocal<int[]> blockIntArrayLocal =
+            ThreadLocal.withInitial(() -> new int[Internal.nextBlockId]);
 
     private GameRegistry() { throw new AssertionError(); }
+
+    /**
+     * @return array to be temporary used in block calculations.
+     */
+    public static int[] getTemporaryBlockIntArray() {
+        if (GameRegistry.isFrozen()) {
+            int[] array = blockIntArrayLocal.get();
+            Arrays.fill(array, 0);
+            return array;
+        }
+        return new int[Internal.nextBlockId];
+    }
 
     /**
      * @param name the registry id of the item.

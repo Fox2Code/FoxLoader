@@ -39,6 +39,7 @@ final class RegistryPatch extends GamePatch {
     private static final int BLOCK_ID_DIFF = PatchConstants.BLOCK_ID_DIFF;
     private static final Integer ORIGINAL_BLOCK_LIMIT_OBJ = ORIGINAL_BLOCK_LIMIT;
     private static final Integer MODIFIED_BLOCK_LIMIT_OBJ = MODIFIED_BLOCK_LIMIT;
+    private static final String BitSet = "java/util/BitSet";
     private static final String ItemStack = "net/minecraft/common/item/ItemStack";
     private static final String Item = "net/minecraft/common/item/Item";
     private static final String Items = "net/minecraft/common/item/Items";
@@ -62,6 +63,7 @@ final class RegistryPatch extends GamePatch {
     private static final String ItemBlockPlanks = "net/minecraft/common/item/block/ItemBlockPlanks";
     private static final String ItemBlockRedCoral = "net/minecraft/common/item/block/ItemBlockRedCoral";
     private static final String ItemBlockSlab = "net/minecraft/common/item/block/ItemBlockSlab";
+    private static final String ItemMap = "net/minecraft/common/item/children/ItemMap";
     private static final String ItemRecord = "net/minecraft/common/item/children/ItemRecord";
     private static final String Block = "net/minecraft/common/block/Block";
     private static final String Blocks = "net/minecraft/common/block/Blocks";
@@ -139,6 +141,10 @@ final class RegistryPatch extends GamePatch {
             case ItemBlockSlab: {
                 patchItemBlockSlab(classNode);
                 skipGeneric = true;
+                break;
+            }
+            case ItemMap: {
+                patchItemMap(classNode);
                 break;
             }
             case Blocks: {
@@ -1089,6 +1095,27 @@ final class RegistryPatch extends GamePatch {
                 INVOKESPECIAL, ItemBlockSlab, "<init>", "(L" + BlockSlab + ";)V"));
         initializeItemBlock.instructions.add(new InsnNode(ARETURN));
         classNode.methods.add(initializeItemBlock);
+    }
+
+    // ItemMap fix
+    private static void patchItemMap(ClassNode classNode) {
+        for (MethodNode methodNode : classNode.methods) {
+            InsnList insnList = methodNode.instructions;
+            for (AbstractInsnNode insnNode : insnList) {
+                if ((insnNode.getOpcode() == NEWARRAY && ((IntInsnNode) insnNode).operand == T_INT) ||
+                        (insnNode.getOpcode() == INVOKESPECIAL && ((MethodInsnNode) insnNode).owner.equals(BitSet))) {
+                    AbstractInsnNode previous = insnNode.getPrevious();
+                    if (previous instanceof IntInsnNode &&
+                            ((IntInsnNode) previous).operand == PatchConstants.ORIGINAL_BLOCK_LIMIT) {
+                        insnList.insert(insnNode,
+                                new MethodInsnNode(INVOKESTATIC, GameRegistry,
+                                        "getTemporaryBlockIntArray", "()[I"));
+                        insnList.remove(previous);
+                        insnList.remove(insnNode);
+                    }
+                }
+            }
+        }
     }
 
     // Generic
