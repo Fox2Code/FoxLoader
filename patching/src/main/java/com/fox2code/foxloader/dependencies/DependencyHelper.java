@@ -55,6 +55,10 @@ public final class DependencyHelper {
             "com.fox2code.FoxLoader:loader:" + BuildConfig.FOXLOADER_VERSION,
             FOX2CODE, "com.fox2code.foxloader.loader.ModLoader");
 
+    public static final Dependency lwjglx = new Dependency(
+            "com.fox2code:lwjglx:" + BuildConfig.LWJGLX_VERSION,
+            FOX2CODE, "org.lwjgl.system.LWJGLXHelper", null, "d29d5a65988b001dd83d474cd1a1ecb659f353b2ebab5877454cd7d19c1a08bf");
+
     public static final Dependency jansi = new Dependency(
             "org.fusesource.jansi:jansi:" + BuildConfig.JANSI_VERSION, MAVEN_CENTRAL,
             "org.fusesource.jansi.AnsiConsole", null, "0b7b8b003a90ea491579b62f5118828e45112914c65589b00faa49d6ec785839");
@@ -196,8 +200,15 @@ public final class DependencyHelper {
         for (Dependency dependency : commonDependencies) {
             loadDependencyBuiltIn(dependency);
         }
-        for (Dependency dependency : lwjgl2Dependencies) {
-            loadDependencySafe(dependency);
+        if ((DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.opengl.GL11") &&
+                !DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.opengl.Display")) ||
+                DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.system.LWJGLXHelper")) {
+            // If we are on LWJGL3 so let's use LWJGL3
+            loadDependency(lwjglx);
+        } else {
+            for (Dependency dependency : lwjgl2Dependencies) {
+                loadDependencySafe(dependency);
+            }
         }
         if (!(DependencyImpl.CURRENT_IMPL.isDevelopingFoxLoader() ||
                 DependencyImpl.CURRENT_IMPL.isDevelopingMod())) {
@@ -206,6 +217,7 @@ public final class DependencyHelper {
         checkDependency(annotations);
         if (DependencyImpl.CURRENT_IMPL.isDevelopingFoxLoader()) {
             loadDependencyAsFile(vineFlower);
+            loadDependencyAsFile(lwjglx);
         }
     }
 
