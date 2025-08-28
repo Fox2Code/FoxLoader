@@ -1024,4 +1024,61 @@ public final class TransformerUtils {
         }
         return null;
     }
+
+    public static void deInlineFieldConstants(ClassNode classNode) {
+        deInlineFieldConstants(classNode, false);
+    }
+
+    public static void deInlineFieldConstants(ClassNode classNode, boolean strict) {
+        InsnList addedNodes = new InsnList();
+        for (FieldNode fieldNode : classNode.fields) {
+            if ((fieldNode.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL)) !=
+                    (Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL)) {
+                if (strict) {
+                    throw new RuntimeException("Invalid field access: " + fieldNode.access);
+                }
+                continue;
+            }
+            if (fieldNode.value == null) {
+                continue;
+            }
+            AbstractInsnNode constInsn;
+            switch (fieldNode.desc) {
+                case "Ljava/lang/String;":
+                    constInsn = new LdcInsnNode(fieldNode.value);
+                    break;
+                case "I":
+                case "Z":
+                case "S":
+                case "B":
+                case "C":
+                    if (fieldNode.value instanceof Integer) {
+                        constInsn = TransformerUtils.getNumberInsn((Integer) fieldNode.value);
+                    } else if (fieldNode.value instanceof Boolean) {
+                        constInsn = TransformerUtils.getBooleanInsn((Boolean) fieldNode.value);
+                    } else {
+                        throw new RuntimeException("WTF???");
+                    }
+                    break;
+                default:
+                    throw new RuntimeException("Unsupported desc: \"" + fieldNode.desc + "\"");
+            }
+            fieldNode.value = null;
+            addedNodes.add(constInsn);
+            addedNodes.add(new FieldInsnNode(Opcodes.PUTSTATIC,
+                    classNode.name, fieldNode.name, fieldNode.desc));
+        }
+        if (addedNodes.getFirst() == null) {
+            return;
+        }
+        MethodNode clInit = TransformerUtils.findMethod(classNode, "<clinit>");
+        if (clInit == null) {
+            clInit = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", null, null);
+            clInit.instructions.add(new InsnNode(Opcodes.RETURN));
+            classNode.methods.add(clInit);
+        } else if (strict) {
+            throw new RuntimeException("<clinit>()V detected in BuildConfig!");
+        }
+        insertToEndOfCode(clInit, addedNodes);
+    }
 }

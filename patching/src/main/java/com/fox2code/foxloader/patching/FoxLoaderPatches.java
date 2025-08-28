@@ -68,6 +68,7 @@ public final class FoxLoaderPatches implements Opcodes {
         if (!foxloaderJar.renameTo(backup)) {
             throw new IOException("Failed to rename loader jar");
         }
+        boolean patchedBuildConfig = false;
         try (ZipInputStream zipInputStream = new ZipInputStream(
                 new BufferedInputStream(Files.newInputStream(backup.toPath())));
              ZipOutputStream zipOutputStream = new ZipOutputStream(
@@ -83,6 +84,7 @@ public final class FoxLoaderPatches implements Opcodes {
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                     IOUtils.copy(zipInputStream, byteArrayOutputStream);
                     zipOutputStream.write(patchBuildConfig(byteArrayOutputStream.toByteArray()));
+                    patchedBuildConfig = true;
                 } else {
                     IOUtils.copy(zipInputStream, zipOutputStream);
                 }
@@ -90,6 +92,9 @@ public final class FoxLoaderPatches implements Opcodes {
                 zipInputStream.closeEntry();
             }
             zipOutputStream.finish();
+        }
+        if (!patchedBuildConfig) {
+            throw new IOException("Patching BuildConfig failed.");
         }
         if (backup.exists() && !backup.delete()) {
             throw new IOException("Failed to delete backup jar");
@@ -99,40 +104,10 @@ public final class FoxLoaderPatches implements Opcodes {
     private static byte[] patchBuildConfig(byte[] buildConfig) {
         ClassNode classNode = new ClassNode();
         new ClassReader(buildConfig).accept(classNode, 0);
-        if (TransformerUtils.findMethod(classNode, "<clinit>") != null) {
-            throw new RuntimeException("<clinit>()V detected in BuildConfig!");
+        TransformerUtils.deInlineFieldConstants(classNode, true);
+        if (classNode.methods.size() != 2) {
+            throw new RuntimeException("WHAT? " + classNode.methods.size());
         }
-        MethodNode clInit = new MethodNode(ACC_STATIC, "<clinit>", "()V", null, null);
-        for (FieldNode fieldNode : classNode.fields) {
-            if (fieldNode.access != (ACC_PUBLIC | ACC_STATIC | ACC_FINAL)) {
-                throw new RuntimeException("Invalid field access: " + fieldNode.access);
-            }
-            AbstractInsnNode constInsn;
-            switch (fieldNode.desc) {
-                case "Ljava/lang/String;":
-                    constInsn = new LdcInsnNode(fieldNode.value);
-                    break;
-                case "I":
-                case "Z":
-                    if (fieldNode.value instanceof Integer) {
-                        constInsn = TransformerUtils.getNumberInsn((Integer) fieldNode.value);
-                    } else if (fieldNode.value instanceof Boolean) {
-                        constInsn = TransformerUtils.getBooleanInsn((Boolean) fieldNode.value);
-                    } else {
-                        throw new RuntimeException("WTF???");
-                    }
-                    break;
-                default:
-                    throw new RuntimeException("Unsupported desc: \"" + fieldNode.desc + "\"");
-            }
-            fieldNode.value = null;
-            clInit.instructions.add(constInsn);
-            clInit.instructions.add(new FieldInsnNode(PUTSTATIC,
-                    "com/fox2code/foxloader/launcher/BuildConfig",
-                    fieldNode.name, fieldNode.desc));
-        }
-        clInit.instructions.add(new InsnNode(RETURN));
-        classNode.methods.add(clInit);
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classNode.accept(classWriter);
         return classWriter.toByteArray();
