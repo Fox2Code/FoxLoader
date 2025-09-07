@@ -52,6 +52,14 @@ public abstract class FoxPowerCableBlock extends BlockContainer implements FoxPo
     }
 
     @Override
+    public @Nullable FoxPowerInterface getPowerInterfaceForFace(BlockAccess blockAccess, int x, int y, int z, int blockFace) {
+        TileEntity tileEntity = blockAccess.getBlockTileEntity(x, y, z);
+        return tileEntity instanceof FoxPowerCableTileEntity ?
+                ((FoxPowerCableTileEntity) tileEntity).getPowerInterfaceForFace(
+                        Direction.EnumDirection.VALID_DIRECTIONS[blockFace]) : null;
+    }
+
+    @Override
     public void onBlockAdded(World world, int x, int y, int z) {
         FoxPowerCableTileEntity foxPowerCableTileEntity = this.getBlockEntity();
         world.setBlockTileEntity(x, y, z, foxPowerCableTileEntity);

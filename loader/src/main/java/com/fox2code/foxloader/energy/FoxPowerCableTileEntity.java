@@ -27,8 +27,10 @@ import com.mojang.nbt.CompoundTag;
 import net.minecraft.common.block.tileentity.TileEntity;
 import net.minecraft.common.util.Direction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class FoxPowerCableTileEntity extends TileEntity {
     private final FoxPowerCableBlock cableBlock;
@@ -38,17 +40,25 @@ public class FoxPowerCableTileEntity extends TileEntity {
     private int sinkPriority;
     private int sinkSource;
 
-    public FoxPowerCableTileEntity(FoxPowerCableBlock cableBlock) {
+    public FoxPowerCableTileEntity(@NotNull FoxPowerCableBlock cableBlock) {
         this.cableBlock = cableBlock;
-        this.powerInterface = this.makeFoxPowerInterface();
+        this.powerInterface = Objects.requireNonNull(this.makeFoxPowerInterface(), "makeFoxPowerInterface() -> null");
         this.sinkPriorities = new int[6];
         this.storedFoxPower = 0;
         this.sinkPriority = 1;
         this.sinkSource = -1;
     }
 
-    protected FoxPowerInterface makeFoxPowerInterface() {
+    protected @NotNull FoxPowerInterface makeFoxPowerInterface() {
         return new FoxPowerInterfaceCable(this);
+    }
+
+    protected @Nullable FoxPowerInterface getPowerInterfaceForFace(@NotNull Direction.EnumDirection direction) {
+        return this.powerInterface;
+    }
+
+    protected boolean allowDispatchPower(@NotNull Direction.EnumDirection direction) {
+        return true;
     }
 
     @Override
@@ -88,19 +98,27 @@ public class FoxPowerCableTileEntity extends TileEntity {
         tag.setIntArray("sinkPriorities", this.sinkPriorities);
     }
 
+    public int getMinSinkPriority() {
+        return 1;
+    }
+
     public void updateSinkPriorities() {
-        int cableSinkPriority = 1;
+        final int minSinkPriority = this.worldObj.isRemote ? 1 : this.getMinSinkPriority();
+        int cableSinkPriority = minSinkPriority;
         int cableSinkFaceSource = -1;
         final int oldCableSinkPriority = this.sinkPriority;
         final int oldCableSinkFaceSource = this.sinkSource;
         final int oldCableSinkFaceSourcePriority = // For fast un-propagation.
                 oldCableSinkFaceSource == -1 ? 0 : this.sinkPriorities[oldCableSinkFaceSource];
         for (Direction.EnumDirection blockFace : Direction.EnumDirection.VALID_DIRECTIONS) {
-            FoxPowerInterface powerInterface = FoxPowerUtils.getPowerInterface(this.worldObj,
+            FoxPowerInterface powerInterface = this.allowDispatchPower(blockFace) ?
+                    FoxPowerUtils.getPowerInterface(this.worldObj,
                     this.xCoord + blockFace.offsX, this.yCoord + blockFace.offsY,
-                    this.zCoord + blockFace.offsZ, blockFace.ordinal() ^ 1);
+                    this.zCoord + blockFace.offsZ, blockFace.ordinal() ^ 1) : null;
             int faceSinkPriority = powerInterface == null ? 0 :
-                    Math.min(FoxPowerUtils.maxSinkPriorityValue, powerInterface.getCableSinkPriority());
+                    Math.min(FoxPowerUtils.maxSinkPriorityValue,
+                            powerInterface.getFoxPowerStorageMaxInput() > 0 ?
+                                    powerInterface.getCableSinkPriority() : 0);
             this.sinkPriorities[blockFace.ordinal()] = faceSinkPriority;
             faceSinkPriority -= 1;
             if (faceSinkPriority >= cableSinkPriority) {
@@ -112,7 +130,7 @@ public class FoxPowerCableTileEntity extends TileEntity {
         if (!this.worldObj.isRemote) {
             if (this.updateSinkPriorityValues(oldCableSinkFaceSource,
                     oldCableSinkPriority, oldCableSinkFaceSourcePriority,
-                    cableSinkPriority, cableSinkFaceSource)) {
+                    cableSinkPriority, cableSinkFaceSource, minSinkPriority)) {
                 FoxPowerUtils.notifyNeighboringPowerBlocks(
                         this.worldObj, this.xCoord, this.yCoord, this.zCoord);
             }
@@ -124,12 +142,15 @@ public class FoxPowerCableTileEntity extends TileEntity {
                 this.xCoord + blockFace.offsX, this.yCoord + blockFace.offsY,
                 this.zCoord + blockFace.offsZ, blockFace.ordinal() ^ 1);
         this.sinkPriorities[blockFace.ordinal()] = powerInterface == null ? 0 :
-                Math.min(FoxPowerUtils.maxSinkPriorityValue, powerInterface.getCableSinkPriority());
+                Math.min(FoxPowerUtils.maxSinkPriorityValue,
+                        powerInterface.getFoxPowerStorageMaxInput() > 0 ?
+                                powerInterface.getCableSinkPriority() : 0);
         if (worldObj.isRemote) {
             // Skip any expensive calculations on client only worlds
             return false;
         }
-        int cableSinkPriority = 1;
+        final int minSinkPriority = this.getMinSinkPriority();
+        int cableSinkPriority = minSinkPriority;
         int cableSinkFaceSource = -1;
         final int oldCableSinkPriority = this.sinkPriority;
         final int oldCableSinkFaceSource = this.sinkSource;
@@ -144,16 +165,16 @@ public class FoxPowerCableTileEntity extends TileEntity {
         }
         return this.updateSinkPriorityValues(oldCableSinkFaceSource,
                 oldCableSinkPriority, oldCableSinkFaceSourcePriority,
-                cableSinkPriority, cableSinkFaceSource);
+                cableSinkPriority, cableSinkFaceSource, minSinkPriority);
     }
 
     protected final boolean updateSinkPriorityValues(
             int oldCableSinkFaceSource, int oldCableSinkPriority, int oldCableSinkFaceSourcePriority,
-            int cableSinkPriority, int cableSinkFaceSource) {
+            int cableSinkPriority, int cableSinkFaceSource, int minSinkPriority) {
         if (oldCableSinkFaceSource != -1 && cableSinkPriority < oldCableSinkPriority &&
                 this.sinkPriorities[oldCableSinkFaceSource] < oldCableSinkFaceSourcePriority) {
             // Allow power sink to un-propagate faster, this is an attempt to get "O(n)" un-propagation.
-            cableSinkPriority = Math.max(this.sinkPriorities[oldCableSinkFaceSource] - 1, 1);
+            cableSinkPriority = Math.max(this.sinkPriorities[oldCableSinkFaceSource] - 1, minSinkPriority);
         }
         this.sinkSource = cableSinkFaceSource;
         this.sinkPriority = cableSinkPriority;
