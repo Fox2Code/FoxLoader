@@ -101,7 +101,7 @@ public final class GuiScreenPatch extends GamePatch {
 
     private static void patchGuiScreen(ClassNode classNode) {
         MethodNode setWorldAndResolution = TransformerUtils.getMethod(classNode, "setWorldAndResolution");
-        setWorldAndResolution.access |= ACC_FINAL;
+        setWorldAndResolution.access &= ~ACC_FINAL;
         InsnList insnList = new InsnList();
         insnList.add(new VarInsnNode(ALOAD, 0));
         insnList.add(new VarInsnNode(ALOAD, 0));
