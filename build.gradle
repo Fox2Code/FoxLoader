@@ -106,6 +106,7 @@ subprojects {
 
     spotless {
         java {
+            cleanthat().excludeMutator('ModifierOrder')
             licenseHeader(processedLicense)
             removeUnusedImports()
             formatAnnotations()
