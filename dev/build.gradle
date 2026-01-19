@@ -112,9 +112,13 @@ File sourcesFile = new File(project.rootProject.rootDir, "loader" + File.separat
         "patched" + File.separator + (project['reindev.patchedJar'] as String).replace(".jar", "-sources.jar"))
 
 tasks.register("decompileGame", JavaExec) {
-    classpath = tasks.shadeJarFile.outputs.files + sourceSets.main.runtimeClasspath
+    tasks.decompileGame.classpath = tasks.jar.outputs.files + sourceSets.main.runtimeClasspath
     mainClass = "com.fox2code.foxloader.dev.FoxLoaderDecompiler"
     args = ["default", unpickedFile.getAbsolutePath(), sourcesFile.getAbsolutePath()]
     dependsOn(":patching:unpickGame")
     dependsOn(tasks.jar)
+}
+
+afterEvaluate {
+    // tasks.decompileGame.classpath = tasks.shadeJarFile.outputs.files + sourceSets.main.runtimeClasspath
 }
