@@ -25,11 +25,7 @@ package com.fox2code.foxloader.spark;
 
 import blue.endless.jankson.api.Jankson;
 import blue.endless.jankson.api.SyntaxError;
-import blue.endless.jankson.api.document.KeyValuePairElement;
-import blue.endless.jankson.api.document.ObjectElement;
-import blue.endless.jankson.api.document.PrimitiveElement;
-import blue.endless.jankson.api.document.ValueElement;
-import blue.endless.jankson.impl.document.BooleanElementImpl;
+import blue.endless.jankson.api.document.*;
 import com.fox2code.foxloader.config.ConfigIO;
 import com.fox2code.foxloader.loader.ModLoaderInit;
 import com.google.gson.JsonElement;
@@ -75,7 +71,7 @@ final class FoxLoaderSparkJanksonConfigParser implements ConfigParser {
                         hashMap, keyValuePairElement.getValue());
             }
         } else if (valueElement instanceof PrimitiveElement) {
-            hashMap.put(path, ((BooleanElementImpl) valueElement)
+            hashMap.put(path, ((PrimitiveElement) valueElement)
                     .getValue().orElseThrow(NoSuchElementException::new));
         }
     }

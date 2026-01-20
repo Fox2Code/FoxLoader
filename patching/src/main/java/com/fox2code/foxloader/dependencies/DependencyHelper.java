@@ -74,26 +74,26 @@ public final class DependencyHelper {
     // Extra dependencies not included in ReIndev
     public static final Dependency jvmDowngraderCore =
             new Dependency("xyz.wagyourtail.jvmdowngrader:jvmdowngrader:" + BuildConfig.JVM_DOWNGRADER_VERSION,
-                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.ClassDowngrader", null, "6f3543575eb970f7e8e0f5e87c16486e3a8db198d391ff525e67a0d15879b0b7");
+                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.ClassDowngrader", null, "b6e0188e0aaa419a5b553a8bd54940733745427138944ad16d8a988bcce439b1");
     public static final Dependency jvmDowngraderJavaAPI =
             new Dependency("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:" + BuildConfig.JVM_DOWNGRADER_VERSION,
-                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader", null, "6bebc6fc4950c7121b5ff76ff1b792bec8dcb9b8d0bb949cb8bfddda59c1e51b");
+                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader", null, "42cb56bf25e104719d111781b800a15f6cc50d025a7ccd9e8819770f37677845");
 
     public static final Dependency[] commonDependencies = new Dependency[]{
             new Dependency("org.slf4j:slf4j-api:" + BuildConfig.SLF4J_VERSION, MAVEN_CENTRAL, "org.slf4j.Logger", null, "7b751d952061954d5abfed7181c1f645d336091b679891591d63329c622eb832"),
-            new Dependency("org.ow2.asm:asm:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor", null, "03d99a74ad1ee5c71334ef67437f4ef4fe3488caa7c96d8645abc73c8e2017d4"),
-            new Dependency("org.ow2.asm:asm-tree:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode", null, "42178f3775c9c63f9e5e1446747d29b4eca4d91bd6e75e5c43cfa372a47d38c6"),
-            new Dependency("org.ow2.asm:asm-analysis:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer", null , "6a15d28e8bd29ba4fd5bca4baf9b50e8fba2d7b51fbf78cfa0c875a7214c678b"),
-            new Dependency("org.ow2.asm:asm-commons:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter", null, "db2f6f26150bbe7c126606b4a1151836bcc22a1e05a423b3585698bece995ff8"),
-            new Dependency("org.ow2.asm:asm-util:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter", null, "3842e13cfe324ee9ab7cdc4914be9943541ead397c17e26daf0b8a755bede717"),
+            new Dependency("org.ow2.asm:asm:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor", null, "6f3828a215c920059a5efa2fb55c233d6c54ec5cadca99ce1b1bdd10077c7ddd"),
+            new Dependency("org.ow2.asm:asm-tree:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode", null, "0f3555096b720b820bbacab0b515589bee0200bee099bda14c561738ae837ba1"),
+            new Dependency("org.ow2.asm:asm-analysis:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer", null , "6260bffc8ec008dd1b713702c7994e2c94d188a3da5bef9e87278a16df6a7522"),
+            new Dependency("org.ow2.asm:asm-commons:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter", null, "c2319e014ce7199f2b7f7d56d6bb991863168c3f4b6cd6c9f542a4937ef7ef88"),
+            new Dependency("org.ow2.asm:asm-util:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter", null, "c5ebbbeaf68126af094b42fa4800f59bc4413abd02d95b9aefad722cd257e207"),
             GSON_DEPENDENCY, new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files", null, "972139718abc8a4893fa78cba8cf7b2c903f35c97aaf44fa3031b0669948b480"),
             new Dependency("it.unimi.dsi:fastutil-core:" + BuildConfig.FASTUTIL_VERSION, MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair", null, "edae1dc6de09e46ab7646616125cc0575a6810f17ed6298bfc6e8dc85f9c4258"),
             new Dependency("com.unascribed:ears-api:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.api.features.EarsFeatures", null, "6482fe4f9473c1b49e0513684e95647a95dca289528b5fdcad3347c193500871"),
             new Dependency("com.unascribed:ears-common:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.common.EarsCommon", null, "8ec4fb89e30901abf1f9d35c5ed5ac4d0d57d212dc4f4260566b33fbc826ca0d"),
             new Dependency("net.fabricmc:sponge-mixin:" + BuildConfig.FABRIC_MIXIN_VERSION, FABRIC_MC,
-                    "org.spongepowered.asm.mixin.Mixins", null, "bf65996f6edd93ba4061a175e2c814205c1ba694357a1e5a336c7ba5078ca376"),
+                    "org.spongepowered.asm.mixin.Mixins", null, "e7889fcd185e4199052dcbcf0fe2128581cbf8630aea7feb37429667b1ba49a9"),
             new Dependency("io.github.llamalad7:mixinextras-common:" + BuildConfig.MIXIN_EXTRAS_VERSION, MAVEN_CENTRAL,
-                    "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "42c6bdf93c12cbf90f5451988dfed763ab8489ce2e40a1d843518b309ff0abaa"),
+                    "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "30e7538eb27d8f7e78e4745dc0c56c857464a6f03fcacfd3101d2fce29cf8890"),
             new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:" + BuildConfig.MIXIN_SQUARED_VERSION,
                     FOX2CODE, "com.bawnorton.mixinsquared.MixinSquaredBootstrap", null, "5ae421a724f2cc9b06ade3da79fb3224e8073fdeac9a35df6f16ae59147a1abb"),
             new Dependency("com.fox2code:ReBuild:" + BuildConfig.REBUILD_VERSION, FOX2CODE,
@@ -115,7 +115,7 @@ public final class DependencyHelper {
     public static final Dependency[] commonDependenciesModernJava = new Dependency[]{
             new Dependency("blue.endless:jankson:" + BuildConfig.JANKSON_VERSION, SLEEPING_TOWN,
                     "blue.endless.jankson.api.Jankson", null,
-                    "9e22cfd3d4eb59da6026f6d8310b498dc1775d86c7f92b8301f7aa30ac7d2e51", 21),
+                    "c2216ae22bcf45bc7de45c90f0fa58f3c2d5af3d72b25adca42a86b4ce19c4a0", 21),
             new Dependency("com.moulberry:mixinconstraints:" + BuildConfig.MIXIN_CONSTRAINTS_VERSION,
                     MAVEN_CENTRAL, "com.moulberry.mixinconstraints.MixinConstraints", null,
                     "67e1fca9cb518f8afb356105c7816587e02880c2acca3bbdb6e08c8e967fc1be", 17),
@@ -123,12 +123,12 @@ public final class DependencyHelper {
 
     public static final Dependency sparkDependency =
             new Dependency(BuildConfig.SPARK_DEPENDENCY, MODRINTH, "me.lucko.spark.common.SparkPlugin",
-                    null, "6944504c201f20845713f710fbaed48b29bd6f4176b94ac047fee548719c2637");
+                    null, "36ed138ffde2a2f1fcb32ecbcc7fa21beaf1611e003d19e3ad40954873e572fa");
 
     public static final Dependency vineFlower = new Dependency(
             BuildConfig.VINEFLOWER_DEPENDENCY, MAVEN_CENTRAL,
             "org.jetbrains.java.decompiler.main.Fernflower", null,
-            "a615d07ddbbcd489369674f40e42df639c32be95410890b38f173d5c1e2ea39c", 17);
+            "e1e2415e7f78b34960402c4beddfc88e033d7842a23ecd132a8ec2eadd54f6bf", 17);
 
     public static final Dependency reIndevDependencySlim =
             new Dependency("net.silveros:reindev-slim:" + BuildConfig.REINDEV_VERSION,
@@ -141,9 +141,9 @@ public final class DependencyHelper {
 
     public static final Dependency[] kotlinDependencyBundle = new Dependency[]{
             new Dependency("org.jetbrains.kotlin:kotlin-reflect:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "8209083a4a7c4e476d9842b078308fa96a96f07a6bd99f05f3586ee13289ab26"),
+                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "714df4be819545ff4de1f36aa2183e0dea94b4c8cdf7ca29e9c89919baf36362"),
             new Dependency("org.jetbrains.kotlin:kotlin-stdlib:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "8836ccffd3585fadda9901244b20d42901d2f3cd581058d8434e2ffabcf3a3e7"),
+                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "887587c91713250ad52fe14ad9166d042c33835049890e9437f355ffc5a195b1"),
             new Dependency("org.jetbrains.kotlinx:atomicfu-jvm:" + BuildConfig.KOTLINX_ATOMICFU_VERSION,
                     MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "97cd462f8e8ab92571ab8805070e4450c52cb1ad63c224208f71a10943a01e46"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:" + BuildConfig.KOTLINX_COLLECTIONS_IMMUTABLE_VERSION,
@@ -201,7 +201,8 @@ public final class DependencyHelper {
             loadDependencyBuiltIn(dependency);
         }
         if ((DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.opengl.GL11") &&
-                !DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.opengl.Display")) ||
+                (!DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.opengl.AMDDebugOutputCallback$Handler") ||
+                        !DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.opengl.Display"))) ||
                 DependencyImpl.CURRENT_IMPL.hasClass("org.lwjgl.system.LWJGLXHelper")) {
             // If we are on LWJGL3 so let's use LWJGL3
             loadDependency(lwjglx);
