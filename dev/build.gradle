@@ -113,8 +113,8 @@ File sourcesFile = new File(project.rootProject.rootDir, "loader" + File.separat
 
 tasks.register("decompileGame", JavaExec) {
     tasks.decompileGame.classpath = tasks.jar.outputs.files + sourceSets.main.runtimeClasspath
-    mainClass = "com.fox2code.foxloader.dev.FoxLoaderDecompiler"
-    args = ["default", unpickedFile.getAbsolutePath(), sourcesFile.getAbsolutePath()]
+    mainClass = "com.fox2code.foxloader.dev.Main"
+    args = ["decomp", unpickedFile.getAbsolutePath(), sourcesFile.getAbsolutePath()]
     dependsOn(":patching:unpickGame")
     dependsOn(tasks.jar)
 }

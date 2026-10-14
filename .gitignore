@@ -22,5 +22,6 @@ hs_err_pid*.log
 /.profileconfig.json
 /local.properties
 
+/dev/*.jar
 /loader/libs/*.jar
 /loader/patched/*.jar

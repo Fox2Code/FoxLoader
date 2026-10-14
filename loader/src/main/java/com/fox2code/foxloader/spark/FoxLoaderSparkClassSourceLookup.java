@@ -23,7 +23,10 @@
  */
 package com.fox2code.foxloader.spark;
 
+import com.fox2code.foxloader.dependencies.DependencyFileInfo;
+import com.fox2code.foxloader.launcher.FileInfo;
 import com.fox2code.foxloader.launcher.FoxLauncher;
+import com.fox2code.foxloader.loader.ModInfo;
 import me.lucko.spark.common.sampler.source.ClassSourceLookup;
 import org.objectweb.asm.Type;
 import org.spongepowered.asm.mixin.FabricUtil;
@@ -34,6 +37,7 @@ import org.spongepowered.asm.mixin.transformer.meta.MixinMerged;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 
 final class FoxLoaderSparkClassSourceLookup extends ClassSourceLookup.ByCodeSource {
     public String identify(MethodCall methodCall) throws Exception {
@@ -128,5 +132,13 @@ final class FoxLoaderSparkClassSourceLookup extends ClassSourceLookup.ByCodeSour
         } catch (ClassNotFoundException e) {
             return null;
         }
+    }
+
+    @Override
+    public String identify(Path path) throws Exception {
+        FileInfo fileInfo = FoxLauncher.getFoxClassLoader().findFileInfoFromJarURL(path.toUri().toURL());
+        return fileInfo == null ? "<null>" : fileInfo instanceof ModInfo ? ((ModInfo) fileInfo).id :
+                fileInfo instanceof DependencyFileInfo ?
+                        ((DependencyFileInfo) fileInfo).getDependency().toString() : "<" + fileInfo.file + ">";
     }
 }

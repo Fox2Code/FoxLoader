@@ -195,15 +195,19 @@ final class FoxVariableNamingFactory implements IVariableNamingFactory, CodeCons
                 } else {
                     for (StructClass anyStructClass : DecompilerContext.getStructContext().getOwnClasses()) {
                         if (anyStructClass.superClass != null) {
-                            if (qualifiedName.equals(anyStructClass.superClass.getString())) {
+                            String anySuperCls = anyStructClass.superClass.getString();
+                            if (anySuperCls == null || anySuperCls.isEmpty() ||
+                                    "java/lang/Object".equals(anySuperCls)) {
+                                continue;
+                            }
+                            if (qualifiedName.equals(anySuperCls)) {
                                 candidates.add(anyStructClass);
                                 continue;
                             }
-                            for (StructClass anySuperClasses : anyStructClass.getAllSuperClasses()) {
-                                if (anySuperClasses == this.structClass) {
-                                    candidates.add(anyStructClass);
-                                    break;
-                                }
+                            StructClass parent = DecompilerContext.getStructContext().getClass(anySuperCls);
+                            if (parent != null && (candidates.contains(parent) ||
+                                    qualifiedName.equals(parent.superClass.getString()))) {
+                                candidates.add(anyStructClass);
                             }
                         }
                     }

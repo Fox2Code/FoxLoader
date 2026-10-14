@@ -101,6 +101,16 @@ public class MixinService extends MixinServiceAbstract implements IMixinService,
     }
 
     @Override
+    public IFeatureValidator getFeatureValidator() {
+        return IFeatureValidator.ALLOW_ALL;
+    }
+
+    @Override
+    public IAdviceProvider getAdviceProvider() {
+        return IAdviceProvider.GENERIC;
+    }
+
+    @Override
     public Collection<String> getPlatformAgents() {
         return Collections.emptyList();
     }

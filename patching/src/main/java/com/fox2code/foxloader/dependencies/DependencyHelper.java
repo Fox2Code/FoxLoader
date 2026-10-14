@@ -45,8 +45,8 @@ public final class DependencyHelper {
     private static final File JAR_FOLDER = JAR_FILE.getParentFile();
     private static final Logger LOGGER = Logger.getLogger("FoxLoader");
     public static final String MAVEN_CENTRAL = "https://repo1.maven.org/maven2";
-    public static final String SLEEPING_TOWN = "https://repo.sleeping.town/";
-    public static final String FABRIC_MC = "https://maven.fabricmc.net/";
+    public static final String SLEEPING_TOWN = "https://repo.sleeping.town";
+    public static final String FABRIC_MC = "https://maven.fabricmc.net";
     public static final String MODRINTH = "https://api.modrinth.com/maven";
     public static final String FOX2CODE = "https://cdn.fox2code.com/maven";
     public static final String UNASCRIBED = "https://repo.unascribed.com";
@@ -61,7 +61,7 @@ public final class DependencyHelper {
 
     public static final Dependency jansi = new Dependency(
             "org.fusesource.jansi:jansi:" + BuildConfig.JANSI_VERSION, MAVEN_CENTRAL,
-            "org.fusesource.jansi.AnsiConsole", null, "0b7b8b003a90ea491579b62f5118828e45112914c65589b00faa49d6ec785839");
+            "org.fusesource.jansi.AnsiConsole", null, "ec168cf31c4c3849348dfff7a04e90170615f7784f1255ee6747b98a854c04c5");
 
     public static final Dependency annotations =
             new Dependency("org.jetbrains:annotations:24.1.0", MAVEN_CENTRAL,
@@ -74,26 +74,26 @@ public final class DependencyHelper {
     // Extra dependencies not included in ReIndev
     public static final Dependency jvmDowngraderCore =
             new Dependency("xyz.wagyourtail.jvmdowngrader:jvmdowngrader:" + BuildConfig.JVM_DOWNGRADER_VERSION,
-                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.ClassDowngrader", null, "b6e0188e0aaa419a5b553a8bd54940733745427138944ad16d8a988bcce439b1");
+                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.ClassDowngrader", null, "16587d404fc69e04ab9647e1ce138d63c393f295f3f43a74050c7b4f003da537");
     public static final Dependency jvmDowngraderJavaAPI =
             new Dependency("xyz.wagyourtail.jvmdowngrader:jvmdowngrader-java-api:" + BuildConfig.JVM_DOWNGRADER_VERSION,
-                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader", null, "42cb56bf25e104719d111781b800a15f6cc50d025a7ccd9e8819770f37677845");
+                    MAVEN_CENTRAL, "xyz.wagyourtail.jvmdg.j9.stub.java_base.J_L_ClassLoader", null, "d533215c52ab81a28dc88c6a9315e933ee3ac616a8c80b415cab400d98dcf044");
 
     public static final Dependency[] commonDependencies = new Dependency[]{
-            new Dependency("org.slf4j:slf4j-api:" + BuildConfig.SLF4J_VERSION, MAVEN_CENTRAL, "org.slf4j.Logger", null, "7b751d952061954d5abfed7181c1f645d336091b679891591d63329c622eb832"),
-            new Dependency("org.ow2.asm:asm:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor", null, "6f3828a215c920059a5efa2fb55c233d6c54ec5cadca99ce1b1bdd10077c7ddd"),
-            new Dependency("org.ow2.asm:asm-tree:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode", null, "0f3555096b720b820bbacab0b515589bee0200bee099bda14c561738ae837ba1"),
-            new Dependency("org.ow2.asm:asm-analysis:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer", null , "6260bffc8ec008dd1b713702c7994e2c94d188a3da5bef9e87278a16df6a7522"),
-            new Dependency("org.ow2.asm:asm-commons:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter", null, "c2319e014ce7199f2b7f7d56d6bb991863168c3f4b6cd6c9f542a4937ef7ef88"),
-            new Dependency("org.ow2.asm:asm-util:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter", null, "c5ebbbeaf68126af094b42fa4800f59bc4413abd02d95b9aefad722cd257e207"),
+            new Dependency("org.slf4j:slf4j-api:" + BuildConfig.SLF4J_VERSION, MAVEN_CENTRAL, "org.slf4j.Logger", null, "7e1446499b359675d8aabe6af2de86b85e72ae8a2a932c0b40d0e5ba57097439"),
+            new Dependency("org.ow2.asm:asm:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.ClassVisitor", null, "5fe3b469b8646e5bc53a897840952d63b712d4923d2a7a26aebc585f1fec7676"),
+            new Dependency("org.ow2.asm:asm-tree:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.ClassNode", null, "da8ad24d0bf7efb0674a906f59a7d441692b641718371f3bce6762b191a169fd"),
+            new Dependency("org.ow2.asm:asm-analysis:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.tree.analysis.Analyzer", null , "a1421c20978ca0a330f241b17923a751a23fb1c9423fda1aba7591bb086b01d8"),
+            new Dependency("org.ow2.asm:asm-commons:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.commons.InstructionAdapter", null, "fcff37e6a0227a9f5ee81a7c07f51249307fa15889b56a359ae6f773c164c22b"),
+            new Dependency("org.ow2.asm:asm-util:" + BuildConfig.ASM_VERSION, MAVEN_CENTRAL, "org.objectweb.asm.util.CheckClassAdapter", null, "d5a23a677f31b8a7d2419895906e1fcbd9ac995beffb20944c8610c1bc377609"),
             GSON_DEPENDENCY, new Dependency("com.google.guava:guava:21.0", MAVEN_CENTRAL, "com.google.common.io.Files", null, "972139718abc8a4893fa78cba8cf7b2c903f35c97aaf44fa3031b0669948b480"),
-            new Dependency("it.unimi.dsi:fastutil-core:" + BuildConfig.FASTUTIL_VERSION, MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair", null, "edae1dc6de09e46ab7646616125cc0575a6810f17ed6298bfc6e8dc85f9c4258"),
+            new Dependency("it.unimi.dsi:fastutil-core:" + BuildConfig.FASTUTIL_VERSION, MAVEN_CENTRAL, "it.unimi.dsi.fastutil.Pair", null, "57ad7ac9f7aef23317446e996732236b18e1eaf07638c4325b6f464cf69c18ab"),
             new Dependency("com.unascribed:ears-api:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.api.features.EarsFeatures", null, "6482fe4f9473c1b49e0513684e95647a95dca289528b5fdcad3347c193500871"),
             new Dependency("com.unascribed:ears-common:" + BuildConfig.EARS_VERSION, UNASCRIBED, "com.unascribed.ears.common.EarsCommon", null, "8ec4fb89e30901abf1f9d35c5ed5ac4d0d57d212dc4f4260566b33fbc826ca0d"),
             new Dependency("net.fabricmc:sponge-mixin:" + BuildConfig.FABRIC_MIXIN_VERSION, FABRIC_MC,
-                    "org.spongepowered.asm.mixin.Mixins", null, "e7889fcd185e4199052dcbcf0fe2128581cbf8630aea7feb37429667b1ba49a9"),
+                    "org.spongepowered.asm.mixin.Mixins", null, "03f0065023bfc3045d71bfb99872451d9ad5a0800a5a0dac34ab8c7d5c134f5d"),
             new Dependency("io.github.llamalad7:mixinextras-common:" + BuildConfig.MIXIN_EXTRAS_VERSION, MAVEN_CENTRAL,
-                    "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "30e7538eb27d8f7e78e4745dc0c56c857464a6f03fcacfd3101d2fce29cf8890"),
+                    "com.llamalad7.mixinextras.MixinExtrasBootstrap", null, "6aca5ce982d7924413c0a65fb8709735c09a59cc2354fc0430932549b5ca24ce"),
             new Dependency("com.github.bawnorton.mixinsquared:mixinsquared-common:" + BuildConfig.MIXIN_SQUARED_VERSION,
                     FOX2CODE, "com.bawnorton.mixinsquared.MixinSquaredBootstrap", null, "5ae421a724f2cc9b06ade3da79fb3224e8073fdeac9a35df6f16ae59147a1abb"),
             new Dependency("com.fox2code:ReBuild:" + BuildConfig.REBUILD_VERSION, FOX2CODE,
@@ -115,7 +115,7 @@ public final class DependencyHelper {
     public static final Dependency[] commonDependenciesModernJava = new Dependency[]{
             new Dependency("blue.endless:jankson:" + BuildConfig.JANKSON_VERSION, SLEEPING_TOWN,
                     "blue.endless.jankson.api.Jankson", null,
-                    "c2216ae22bcf45bc7de45c90f0fa58f3c2d5af3d72b25adca42a86b4ce19c4a0", 21),
+                    "c698bf0722a97c90332a9e36507ecb6b3de26f8708b8d9845123130d9f08add5", 21),
             new Dependency("com.moulberry:mixinconstraints:" + BuildConfig.MIXIN_CONSTRAINTS_VERSION,
                     MAVEN_CENTRAL, "com.moulberry.mixinconstraints.MixinConstraints", null,
                     "67e1fca9cb518f8afb356105c7816587e02880c2acca3bbdb6e08c8e967fc1be", 17),
@@ -123,12 +123,12 @@ public final class DependencyHelper {
 
     public static final Dependency sparkDependency =
             new Dependency(BuildConfig.SPARK_DEPENDENCY, MODRINTH, "me.lucko.spark.common.SparkPlugin",
-                    null, "36ed138ffde2a2f1fcb32ecbcc7fa21beaf1611e003d19e3ad40954873e572fa");
+                    null, "3fc00663caa542b1e78333730609b4eb2568326628e3666a3938ad58cbc9acc6");
 
     public static final Dependency vineFlower = new Dependency(
             BuildConfig.VINEFLOWER_DEPENDENCY, MAVEN_CENTRAL,
             "org.jetbrains.java.decompiler.main.Fernflower", null,
-            "e1e2415e7f78b34960402c4beddfc88e033d7842a23ecd132a8ec2eadd54f6bf", 17);
+            "1dfcfe974395734fa467ce620661c7623d05ba83670de0529b1fbd63ff548b9d", 17);
 
     public static final Dependency reIndevDependencySlim =
             new Dependency("net.silveros:reindev-slim:" + BuildConfig.REINDEV_VERSION,
@@ -141,34 +141,36 @@ public final class DependencyHelper {
 
     public static final Dependency[] kotlinDependencyBundle = new Dependency[]{
             new Dependency("org.jetbrains.kotlin:kotlin-reflect:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "714df4be819545ff4de1f36aa2183e0dea94b4c8cdf7ca29e9c89919baf36362"),
+                    MAVEN_CENTRAL, "kotlin.reflect.full.KClasses", null, "7c9e8bda3cafa85b65692065acd22578b2843292b4e4baa8361bdc9175746e88"),
             new Dependency("org.jetbrains.kotlin:kotlin-stdlib:" + BuildConfig.KOTLIN_VERSION,
-                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "887587c91713250ad52fe14ad9166d042c33835049890e9437f355ffc5a195b1"),
+                    MAVEN_CENTRAL, "kotlin.KotlinVersion", null, "bd8250210584cb659847dce9cda660f8e9906e5def7fbebcea93dc6dcb6a88a3"),
             new Dependency("org.jetbrains.kotlinx:atomicfu-jvm:" + BuildConfig.KOTLINX_ATOMICFU_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "97cd462f8e8ab92571ab8805070e4450c52cb1ad63c224208f71a10943a01e46"),
+                    MAVEN_CENTRAL, "kotlinx.atomicfu.AtomicRef", null, "cdc94bfe4f739a0121860e61977d5c1e6a3d53c21f2471493393ba9e900d394e"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-collections-immutable-jvm:" + BuildConfig.KOTLINX_COLLECTIONS_IMMUTABLE_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.collections.immutable.ImmutableCollection", null, "d767014ad0c9a27d27d26fd38e7afa030aee0d141338f108781ff02ecf2fdab5"),
+                    MAVEN_CENTRAL, "kotlinx.collections.immutable.ImmutableCollection", null, "6d7f84d544644fa857bba83292820cdb1e0dae408fa41d2dced903d290286463"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:" + BuildConfig.KOTLINX_COROUTINES_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.coroutines.CoroutineDispatcher", null, "5ca175b38df331fd64155b35cd8cae1251fa9ee369709b36d42e0a288ccce3fd"),
+                    MAVEN_CENTRAL, "kotlinx.coroutines.CoroutineDispatcher", null, "d1d75aa01dffbb4d1c520e67e4c4e7f5f6174718e7cb4632412503f2f0e604fa"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-datetime-jvm:" + BuildConfig.KOTLINX_DATETIME_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.datetime.DateTimeUnit", null, "3b8b98657c9aff3be7f6b4b575e9f3fb9a3a1f452a801da0f438901734acdade"),
+                    MAVEN_CENTRAL, "kotlinx.datetime.DateTimeUnit", null, "ee44b51f8977c2f51d575299a4fc6782ab3700eba4cfc7fad548cced1543936a"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-io-bytestring-jvm:" + BuildConfig.KOTLINX_IO_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.io.bytestring.ByteString", null, "3da805e9da2ff3cb119f744dcd11de6a18e32a5b933518f17418ba5795cfa775"),
+                    MAVEN_CENTRAL, "kotlinx.io.bytestring.ByteString", null, "8589de0b7c476bfdd02a24641685f609ade72f5e595cf2909c168acdba7e6ba4"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-io-core-jvm:" + BuildConfig.KOTLINX_IO_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.io.Buffer", null, "610770cc855edf1c57d9fcd7c69fd040af57adaf8834505f91805de680783d13"),
+                    MAVEN_CENTRAL, "kotlinx.io.Buffer", null, "765d8851d8ca694706931331b92386844800867e041b720f1f193dbda874d370"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-metadata-jvm:" + BuildConfig.KOTLINX_METADATA_VERSION,
                     MAVEN_CENTRAL, "kotlinx.metadata.KmClass", null, "d42f4bac60b81c4fdcef1c666aed4181d00401e5e696e496f44935fe32fea58f"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.serialization.cbor.Cbor", null, "e45f32f0d80e1164593cfcf9f1907ae39871084c6aa08e49acc2e8e22e1d93ce"),
+                    MAVEN_CENTRAL, "kotlinx.serialization.cbor.Cbor", null, "744e8db1d55f4a23f6656d5ac33723a5c13fdcfab477f7fd3457b49b6bd96723"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.serialization.KSerializer", null, "1f0afa172110e45a7231ef1b44ae8fd84c1ebaff96f3fc3ad68ef8c48120b59c"),
+                    MAVEN_CENTRAL, "kotlinx.serialization.KSerializer", null, "f4a801c647d4351327cd9e1ac4113e2be9ea37a64ab0abae269c25a52e28f35d"),
             new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
-                    MAVEN_CENTRAL, "kotlinx.serialization.json.Json", null, "d94cc34cae39246a1af74fda63f9c4812ce12216ef641d5fa3bbbb539a6922d8"),
+                    MAVEN_CENTRAL, "kotlinx.serialization.json.Json", null, "563a25b4eb5c9128ae9c2479f3d1a5c44dcd176112b91cf03682e906eba5c935"),
+            new Dependency("org.jetbrains.kotlinx:kotlinx-serialization-properties-jvm:" + BuildConfig.KOTLINX_SERIALIZATION_VERSION,
+                    MAVEN_CENTRAL, "kotlinx.serialization.json.Json", null, "563a25b4eb5c9128ae9c2479f3d1a5c44dcd176112b91cf03682e906eba5c935"),
     };
 
     public static final Dependency[] jnaDependencyBundle = new Dependency[]{
             new Dependency("net.java.dev.jna:jna:" + BuildConfig.JNA_VERSION,
-                    MAVEN_CENTRAL, "com.sun.jna.Native", null, "260c4b1e22b1db9e110ee441c4f13ce115f841fa48c41d78750986214b395557"),
+                    MAVEN_CENTRAL, "com.sun.jna.Native", null, "4fb141dd8ef6b0585ffceea4bc49602fbc6312fa977e2c488794ea3e6aafecae"),
     };
 
     private static File mcLibraries;
@@ -433,8 +435,7 @@ public final class DependencyHelper {
         }
 
         public static void agentmain(final String agentArgs, final Instrumentation inst) {
-            if (DependencyImpl.CURRENT_IMPL.isClassLoaderInitialized())
-                throw new IllegalStateException("FoxClassLoader already initialized!");
+            if (DependencyImpl.CURRENT_IMPL.isClassLoaderInitialized()) return;
             Agent.inst = inst;
         }
 
